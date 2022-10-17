@@ -245,6 +245,8 @@ h' =
 \end{cases}
 $$
 
+![image](../pictures/dropout.png)
+
 ## Convolutional Neural Network
 
 1. Convolution: apply filters to generate feature maps.
