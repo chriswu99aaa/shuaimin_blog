@@ -503,3 +503,41 @@ In order to activate the dense MLP, we have to flattern the layers into a long v
 
 Traditional machine learning experts belive ml is beautiful and eminent in terms of theories, whereas compution vision experts belive that better features extraction techniques and larger and cleaner datasets are more important to accuracy than learning algorithms
 
+## AlexNet
+
+The code below helps you to identify the dimension of layers  
+``` python
+x = torch.rand(size=(1,1,224,224),dtype=torch.float32)
+for layer in net:
+  x = layer(x)
+  print(layer.__class__.__name__,
+        f'\t{x.shape}')
+```
+
+Deep Learning compresses knowledge in images into a vector in which machines can understand. In ML, it is a filed of compressing knowledge of the raw data regardless text or images so that machines can recognize, and machines can perform many jobs upon the compression such as searching, recognizing, and classifying.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
