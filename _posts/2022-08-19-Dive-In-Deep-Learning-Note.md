@@ -506,6 +506,7 @@ Traditional machine learning experts belive ml is beautiful and eminent in terms
 ## AlexNet
 
 The code below helps you to identify the dimension of layers  
+
 ``` python
 x = torch.rand(size=(1,1,224,224),dtype=torch.float32)
 for layer in net:
