@@ -516,7 +516,16 @@ for layer in net:
 
 Deep Learning compresses knowledge in images into a vector in which machines can understand. In ML, it is a filed of compressing knowledge of the raw data regardless text or images so that machines can recognize, and machines can perform many jobs upon the compression such as searching, recognizing, and classifying.
 
+## VGG
 
+* Deeper and larger than AlexNet and LeNet
+* More Fully connected layers
+* More convolution layers
+* integrate convolution layers as blocks
+
+* Deeper and narrower networks have better performance according
+
+VGG uses repeatable convolutional blocks to construct neural networks, and different convolutional blocks amount and hyperparameters can give different complexity.
 
 
 
