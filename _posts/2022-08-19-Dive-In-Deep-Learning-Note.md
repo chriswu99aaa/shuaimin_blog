@@ -530,11 +530,34 @@ VGG uses repeatable convolutional blocks to construct neural networks, and diffe
 
 
 
+VGG makes convolution layers as blocks and stack them together
+
+VGG Block
+
+* 3x3 convolution layers with padding 1
+* 2x2 max pooling layers with stride 2
+ 
+
+![image](../pictures/vgg.png)
 
 
+VGG Architecture
+
+* multiple VGG blocks add with MLP
+* different repeated times of blocks will produce different architecutre
 
 
+### Summary
 
+* VGG uses repeatable convolution blocks to construct the neural networks
+* differnt convolution blocks count gives different architectural variants
+* Stacking 3x3 convolutions has become a gold standard in later deep networks.
+
+
+modern shallow neural network ParNet
+
+Goyal et al., 2021
+Goyal, A., Bochkovskiy, A., Deng, J., & Koltun, V. (2021). Non-deep networks. arXiv preprint arXiv:2110.07641.
 
 
 
