@@ -457,6 +457,11 @@ $$ c_o \times c_i \times k_h \times k_w $$
 
 The result on each output channel is calculated from the convolution kernel corresponding to that output channel, and takes input from all channels in the input channels
 
+### 1x1 Convolutional Layer
+
+![image](../pictures/1x1_conv.png)
+
+1x1 convolutional layers can be thought as a MLP applied at every single pixel location to transform the input into output. Convolutional layers are non-linear because of the ReLU activation functions. 
 
 #### 2D Convolution Layer
 
@@ -559,8 +564,24 @@ modern shallow neural network ParNet
 Goyal et al., 2021
 Goyal, A., Bochkovskiy, A., Deng, J., & Koltun, V. (2021). Non-deep networks. arXiv preprint arXiv:2110.07641.
 
+## Network in Network
 
+Issues of MLP
 
+* convolution layers need less parameter $$c_i \times c_o \times k^2$$
+* the first MLP after convolution layers requires
+  * LeNet: $$16 \times 5 \times 5 \times 120$$ 
+  * AlexNet: $$256 \times 5 \times 5 \times 4096 $$
+  * VGG $$512 \times 7 \times 7 \times 4096 $$
+
+NiN uses 1x1 convolutional layers to add local nonlinearity across the channel activations, and use global average pooling to integrate across all locations
+
+summary of NiN
+
+* NiN block uses convolution layers plus two 1x1 convolution layers. The latter increases the non-linearity of each pixels
+* Nin uses global average pooling to replace the MLPs in VGG and AlexNet. This method has less parameters and less liable to be overfittting.
+
+![image](../piectures/nin.png)
 
 
 
