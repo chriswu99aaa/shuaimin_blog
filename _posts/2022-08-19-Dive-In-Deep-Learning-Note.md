@@ -581,11 +581,26 @@ summary of NiN
 * NiN block uses convolution layers plus two 1x1 convolution layers. The latter increases the non-linearity of each pixels
 * Nin uses global average pooling to replace the MLPs in VGG and AlexNet. This method has less parameters and less liable to be overfittting.
 
-![image](../piectures/nin.png)
+![image](../pictures/nin.png)
 
+## GoogLeNet
 
+![image](../pictures/inception.png)
 
+Inception Blocks: it uses 4 ways to spread the computation, and deceases the model complexity by decreasing the amount of channels. Among 4 ways, the amount of channels might be different.
 
+In the image above, white layers are for changing layer dimensions, and blue layers capture channel information but not spatial information.
+
+Inception blocks decrease the amount of parameters and floating point operations, and adds diversity within the blocks
+
+### Variation of Inception
+
+* Inception-BN (v2): applied batch normalization
+* Inception-V3: changed inception blocks
+  * replace 5x5 with multiple 3x3 convolution layers
+  * replace 5x5 with 1x7 and 7x1 convolution layers
+  * replace 3x3 with 1x3 and 3x1 convolution layers
+* Inception(v4): residual network
 
 
 
