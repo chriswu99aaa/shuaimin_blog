@@ -457,6 +457,11 @@ $$ c_o \times c_i \times k_h \times k_w $$
 
 The result on each output channel is calculated from the convolution kernel corresponding to that output channel, and takes input from all channels in the input channels
 
+### 1x1 Convolutional Layer
+
+![image](../pictures/1x1_conv.png)
+
+1x1 convolutional layers can be thought as a MLP applied at every single pixel location to transform the input into output. Convolutional layers are non-linear because of the ReLU activation functions. 
 
 #### 2D Convolution Layer
 
@@ -530,18 +535,72 @@ VGG uses repeatable convolutional blocks to construct neural networks, and diffe
 
 
 
+VGG makes convolution layers as blocks and stack them together
+
+VGG Block
+
+* 3x3 convolution layers with padding 1
+* 2x2 max pooling layers with stride 2
+ 
+
+![image](../pictures/vgg.png)
 
 
+VGG Architecture
+
+* multiple VGG blocks add with MLP
+* different repeated times of blocks will produce different architecutre
 
 
+### Summary
+
+* VGG uses repeatable convolution blocks to construct the neural networks
+* differnt convolution blocks count gives different architectural variants
+* Stacking 3x3 convolutions has become a gold standard in later deep networks.
 
 
+modern shallow neural network ParNet
 
+Goyal et al., 2021
+Goyal, A., Bochkovskiy, A., Deng, J., & Koltun, V. (2021). Non-deep networks. arXiv preprint arXiv:2110.07641.
 
+## Network in Network
 
+Issues of MLP
 
+* convolution layers need less parameter $$c_i \times c_o \times k^2$$
+* the first MLP after convolution layers requires
+  * LeNet: $$16 \times 5 \times 5 \times 120$$ 
+  * AlexNet: $$256 \times 5 \times 5 \times 4096 $$
+  * VGG $$512 \times 7 \times 7 \times 4096 $$
 
+NiN uses 1x1 convolutional layers to add local nonlinearity across the channel activations, and use global average pooling to integrate across all locations
 
+summary of NiN
+
+* NiN block uses convolution layers plus two 1x1 convolution layers. The latter increases the non-linearity of each pixels
+* Nin uses global average pooling to replace the MLPs in VGG and AlexNet. This method has less parameters and less liable to be overfittting.
+
+![image](../pictures/nin.png)
+
+## GoogLeNet
+
+![image](../pictures/inception.png)
+
+Inception Blocks: it uses 4 ways to spread the computation, and deceases the model complexity by decreasing the amount of channels. Among 4 ways, the amount of channels might be different.
+
+In the image above, white layers are for changing layer dimensions, and blue layers capture channel information but not spatial information.
+
+Inception blocks decrease the amount of parameters and floating point operations, and adds diversity within the blocks
+
+### Variation of Inception
+
+* Inception-BN (v2): applied batch normalization
+* Inception-V3: changed inception blocks
+  * replace 5x5 with multiple 3x3 convolution layers
+  * replace 5x5 with 1x7 and 7x1 convolution layers
+  * replace 3x3 with 1x3 and 3x1 convolution layers
+* Inception(v4): residual network
 
 
 
