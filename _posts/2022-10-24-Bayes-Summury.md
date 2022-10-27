@@ -216,3 +216,5 @@ Moreover, the chapter 9 of this book gives an understandable and comprehensive i
 
 
 ### We better further discuss how this links to bayesian neural network
+
+[this video shows BNN](https://www.youtube.com/watch?v=OVne8jDKGUI)
