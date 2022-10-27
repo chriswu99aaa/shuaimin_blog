@@ -11,8 +11,8 @@ One fundamental theorem in Bayesian statistics is the **Bayes Theorem**
 
 $$p(x|y) = \frac{p(y|x)p(x)}{p(y)} $$
 
-* p(x|y) is the posterior probability
-* p(y|x) is the likelihood of model
+* p(x\|y) is the posterior probability
+* p(y\|x) is the likelihood of model
 * p(x) is the prior probability
 * p(y) is the marginal probability
 
@@ -60,7 +60,7 @@ $$
 x|p \sim Bin(n,p), ~~~ f(x|p) = \binom{n}{x}p^x(1-p)^{n-x}
 $$
 
-where n  is sample  size, and f(x|p) is the probability mass function of binomial distribution.
+where n  is sample  size, and f(x\|p) is the probability mass function of binomial distribution.
 
 Given the prior and the likelihood, we are able to find the Posterior distribution.
 
@@ -70,7 +70,7 @@ $$
 p|x \sim Beta(\alpha + x, \beta + n - x), ~~~ f(p|x) = \frac{p^{\alpha + x -1}(1-p)^{\beta + n - x +1}}{B(\alpha+x,\beta + n -x)}
 $$
 
-where f(x|p) is the probability mass function of Beta distribution.
+where f(x\|p) is the probability mass function of Beta distribution.
 
 The posterior mean and posterior variance of the distribution is given below
 
@@ -160,7 +160,7 @@ $$
 
 The marginal likelihood at the denominator is computed differently for simple and composite models. If the model parameters are specified i.e. a number is given, then the model is simple. If the mdoel parameters are not specified, then it is a composite model, indicating it consists of a set of simple models.
 
-For a simple model, it is computed as standard likelihood of the model M. For a composite model, it is more complex. The likelihood should be marginalised over all parameter $\theta$. To read more on the computation of marginal likelihood for composite models [go to this part](https://strimmerlab.github.io/publications/lecture-notes/MATH20802/bayesian-model-comparison.html#simple-and-composite-models)
+For a simple model, it is computed as standard likelihood of the model M. For a composite model, it is more complex. The likelihood should be marginalised over all parameter $$\theta$$. To read more on the computation of marginal likelihood for composite models [go to this part](https://strimmerlab.github.io/publications/lecture-notes/MATH20802/bayesian-model-comparison.html#simple-and-composite-models)
 
 Here we introduce the equation of Log-marginal likelihood as penalised maximum log-likelihood
 
@@ -210,9 +210,9 @@ In this tutorial, we have introduced the origination of Bayesian statistics, thr
 
 The materials mentioned in this tutorial is difficult to understand, because they introduced more advanced techniques of parameter estimation as well as bayesian testing. 
 
-This video gives a practical application and explanation of bayesian inference[here](https://www.youtube.com/watch?v=0w_4QcvBYII)
+This video gives a practical application and explanation of bayesian inference [here](https://www.youtube.com/watch?v=0w_4QcvBYII)
 
-Moreover, the chapter 9 of this book gives an understandable and comprehensive introduction to Bayesian  inference[here](https://www.probabilitycourse.com/chapter9/9_1_0_bayesian_inference.php)
+Moreover, the chapter 9 of this book gives an understandable and comprehensive introduction to Bayesian  inference [here](https://www.probabilitycourse.com/chapter9/9_1_0_bayesian_inference.php)
 
 
-
+### We better further discuss how this links to bayesian neural network
