@@ -146,14 +146,73 @@ There are many optimal properties regarding Bayesian framework. [Read this link 
 
 ## Bayesian Model Comparison
 
+only meniton simple model comparison and reference the composite model as a reading
 
+When evaluating the null hypothesis, frequentist statisticians only consider information in the null hypthesis and ignore all information contained in the alternative hypothesis. For example, traditionally a 95% confidence interval will be set for the null hypothesis. If the value is within the confidence interval, we can't reject the null hypothesis. Here we only used the information in the null hypothsis i.e. sample mean and sample standard deviation of the observed data. 
 
-### BIC
+In Bayesian framework, we include information in both the null hypothesis and the alternative hypothesis.
 
+Baye's Rule
 
+$$
+p(\theta|D,M) = \frac{p(\theta|M)p(D|\theta,M)}{p(D|M)}
+$$
 
-### Bayesian Testing
+The marginal likelihood at the denominator is computed differently for simple and composite models. If the model parameters are specified i.e. a number is given, then the model is simple. If the mdoel parameters are not specified, then it is a composite model, indicating it consists of a set of simple models.
 
+For a simple model, it is computed as standard likelihood of the model M. For a composite model, it is more complex. The likelihood should be marginalised over all parameter $\theta$. To read more on the computation of marginal likelihood for composite models [go to this part](https://strimmerlab.github.io/publications/lecture-notes/MATH20802/bayesian-model-comparison.html#simple-and-composite-models)
+
+Here we introduce the equation of Log-marginal likelihood as penalised maximum log-likelihood
+
+$$
+log(p(D|M)) = log(p(D|\theta,M)) - log(\frac{p(\theta|D,M)}{p(\theta,M)})
+$$
+
+The second part of on the write is the penalty for model complexity. The more complex the model is the lower the score is. [read here for a more detailed discussion for model complexity](https://strimmerlab.github.io/publications/lecture-notes/MATH20802/bayesian-model-comparison.html#model-complexity-and-occams-razor)
+
+The penalisation idea will also be introduced in the later approximation equation. Keep in mind that a simpler model is always more preferable than a complex model in preventing over-fitting.
+
+To compare two models, we introduce **Bayes Factor**: the ratio of the likelihoods of the two models.
+
+$$B_{12} = \frac{p(D|M_1)}{p(D|M_2)} $$
+
+If we apply logrithnm to the equation, we will git log-Bayes-factor, which is called **weight of evidence** for M_1 over M_2.
+
+We introduce two more odds below, namely, Prior odds and Posterior odds.
+
+$$
+\frac{Pr(M_1)}{Pr(M_2)}, ~~~ \frac{Pr(M_1|D)}{Pr(M_2|D)} = \frac{p(D|M_1)}{p(D|M_2)} \frac{Pr(M_1)}{Pr(M_2)},
+$$
+
+The middle term is the Bayes factor mentioned above. We can think Bayes factor as a multiplicative factor which update prior odds to posterior odds.
+
+### Scale of the Bayes Factor
+
+![image](../pictures/bayes_scale.png)
+
+Again, Bayes factor indicate the weight of evidence to prefer M_1 over M_2. The image above shows the scale of each weight evidence as well as the corresponding interpretations.
+
+In practice, the Bayes factor and marginal likelihood are hard to compute, so below we intoduce some approximation techniques to estimate there terms.
+
+Scharwarz approximation of log-marginal likelihood
+
+$$
+log(p(D|M)) \approx l^M_n(\hat{\theta}^M_{ML}) - \frac{1}{2}d_M log(n)
+$$
+
+where d is the number of parameters of the model M.
+
+[read more approximation techniques in bayesian framework](https://strimmerlab.github.io/publications/lecture-notes/MATH20802/bayesian-model-comparison.html#approximate-computations)
+
+## Discussion
+
+In this tutorial, we have introduced the origination of Bayesian statistics, three common models to estimate parameters of posterior distribution, and techniques to perform bayesian testing.
+
+The materials mentioned in this tutorial is difficult to understand, because they introduced more advanced techniques of parameter estimation as well as bayesian testing. 
+
+This video gives a practical application and explanation of bayesian inference[here](https://www.youtube.com/watch?v=0w_4QcvBYII)
+
+Moreover, the chapter 9 of this book gives an understandable and comprehensive introduction to Bayesian  inference[here](https://www.probabilitycourse.com/chapter9/9_1_0_bayesian_inference.php)
 
 
 
