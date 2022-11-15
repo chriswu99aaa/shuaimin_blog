@@ -603,9 +603,47 @@ Inception blocks decrease the amount of parameters and floating point operations
 * Inception(v4): residual network
 
 
+## Batch Normalization
+
+The purpose of BN is that can we learn the bottom layers without changing the top layers
+
+$$
+x_{i+1} = \gamma \frac{x_i - \mu_B}{\sigma_B} = \beta$$
+
+beta and gamma are learnable parameters
+
+* apply for output of MLP and Convolution layers just before activation funciton
+* apply on MLP and convolution layers
+* for MLP apply on feature dimensions
+* for Convolution layers, apply on tunnel dimensions
+
+Batch Normalization allows the loss to converge quicker
 
 
+## ResNet
 
+![image](../pictures/resnet.png)
+
+The idea of ResNet is that we add the input to the learned function as the new function. In the worst case, nothing is learned we still obtain the original input.
+
+34 convolution layers are most often
+
+RstNet allows training for deeper network more easier.
+
+## Computer Vision
+
+### Data Augmentation
+
+1. random size and scale cut for the image
+2. random color and RGB for the image. [image augmentation package](https://github.com/aleju/imgaug)
+3. in summury, data augmentation uses variants of data to perform better in generailization
+4. flip, cut, color chaning
+
+
+## Question
+
+1. I am wondering how we start from begining to finish the whole project. Let's watch a competition video
+2. How to utilize the most of the hardware in training. Watch the training video.
 
 
 
