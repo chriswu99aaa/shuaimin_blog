@@ -200,12 +200,150 @@ for i, route in enumerate(routes):
 [Link to the tutorial](https://developers.google.com/optimization/routing/tsp#python_3)
 
 
+### Solve Integer Programming Problem
+
+```Python
+from ortools.linear_solver import pywraplp
+
+
+def main():
+    # Create the mip solver with the SCIP backend.
+    solver = pywraplp.Solver.CreateSolver('SCIP')
+    if not solver:
+        return
+
+    infinity = solver.infinity()
+    # x and y are integer non-negative variables.
+    x = solver.IntVar(0.0, infinity, 'x')
+    y = solver.IntVar(0.0, infinity, 'y')
+
+    print('Number of variables =', solver.NumVariables())
+
+    # x + 7 * y <= 17.5.
+    solver.Add(x + 7 * y <= 17.5)
+
+    # x <= 3.5.
+    solver.Add(x <= 3.5)
+
+    print('Number of constraints =', solver.NumConstraints())
+
+    # Maximize x + 10 * y.
+    solver.Maximize(x + 10 * y)
+
+    status = solver.Solve()
+
+    if status == pywraplp.Solver.OPTIMAL:
+        print('Solution:')
+        print('Objective value =', solver.Objective().Value())
+        print('x =', x.solution_value())
+        print('y =', y.solution_value())
+    else:
+        print('The problem does not have an optimal solution.')
+
+    print('\nAdvanced usage:')
+    print('Problem solved in %f milliseconds' % solver.wall_time())
+    print('Problem solved in %d iterations' % solver.iterations())
+    print('Problem solved in %d branch-and-bound nodes' % solver.nodes())
+
+
+if __name__ == '__main__':
+    main()
+```
+
+**Note:** The difference between linear programming and integer programming in the implementation. 
+
+|Solver|Variable Type|
+|------|-------------|
+|GLOP(LP)|Continuous value|
+|SCIP (ILP)| Integer Value|
+
+### Define and Solve Models in an Array style
+
+```Python
+from ortools.linear_solver import pywraplp
+
+
+def create_data_model():
+    """Stores the data for the problem."""
+    data = {}
+    data['constraint_coeffs'] = [
+        [5, 7, 9, 2, 1],
+        [18, 4, -9, 10, 12],
+        [4, 7, 3, 8, 5],
+        [5, 13, 16, 3, -7],
+    ]
+    data['bounds'] = [250, 285, 211, 315]
+    data['obj_coeffs'] = [7, 8, 2, 9, 6]
+    data['num_vars'] = 5
+    data['num_constraints'] = 4
+    return data
 
 
 
+def main():
+    data = create_data_model()
+    # Create the mip solver with the SCIP backend.
+    solver = pywraplp.Solver.CreateSolver('SCIP')
+    if not solver:
+        return
+
+    infinity = solver.infinity()
+    x = {}
+    for j in range(data['num_vars']):
+        x[j] = solver.IntVar(0, infinity, 'x[%i]' % j)
+    print('Number of variables =', solver.NumVariables())
+
+    for i in range(data['num_constraints']):
+        constraint = solver.RowConstraint(0, data['bounds'][i], '')
+        for j in range(data['num_vars']):
+            constraint.SetCoefficient(x[j], data['constraint_coeffs'][i][j])
+    print('Number of constraints =', solver.NumConstraints())
+    # In Python, you can also set the constraints as follows.
+    # for i in range(data['num_constraints']):
+    #  constraint_expr = \
+    # [data['constraint_coeffs'][i][j] * x[j] for j in range(data['num_vars'])]
+    #  solver.Add(sum(constraint_expr) <= data['bounds'][i])
+
+    objective = solver.Objective()
+    for j in range(data['num_vars']):
+        objective.SetCoefficient(x[j], data['obj_coeffs'][j])
+    objective.SetMaximization()
+    # In Python, you can also set the objective as follows.
+    # obj_expr = [data['obj_coeffs'][j] * x[j] for j in range(data['num_vars'])]
+    # solver.Maximize(solver.Sum(obj_expr))
+
+    status = solver.Solve()
+
+    if status == pywraplp.Solver.OPTIMAL:
+        print('Objective value =', solver.Objective().Value())
+        for j in range(data['num_vars']):
+            print(x[j].name(), ' = ', x[j].solution_value())
+        print()
+        print('Problem solved in %f milliseconds' % solver.wall_time())
+        print('Problem solved in %d iterations' % solver.iterations())
+        print('Problem solved in %d branch-and-bound nodes' % solver.nodes())
+    else:
+        print('The problem does not have an optimal solution.')
 
 
+if __name__ == '__main__':
+    main()
+```
 
+For linear programming, we follow the same procedure
+
+1. Define the data model
+2. Instantiate the solver: SCIP, GLOP
+3. Define variables: solver.IntVar()
+4. Define Constraints: solver.Add()/ solver.RowConstraint(), constraint.SetCoefficient()
+5. Define the objective
+6. Invoke the solver
+7. Print the solution
+
+## Vehicle Routing
+
+Vehicle Routing problems are sometimes intractable, so Google OR tools returns relatively good solution rather than the optimal solution. To find a better solution
+we can change the [solution search strategy.](https://developers.google.com/optimization/routing/tsp#search_strategy)
 
 
 
