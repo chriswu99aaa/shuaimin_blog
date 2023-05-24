@@ -17,3 +17,7 @@
 * Iterative process
   * try something
   * analyze where is the result does not give what you want
+
+
+
+
