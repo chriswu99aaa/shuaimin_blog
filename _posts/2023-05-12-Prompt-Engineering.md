@@ -42,7 +42,9 @@
 ## How to write clear and concise prompts
 
 1. Define the purpose and the focus of the conversation: what is your goal? Act as a tuor or anythingelse. What should aspects of the tutor need to be considered
-2. 
+2. Use Specific and relevant language
+3. Avoid open-ended or overly broad prompts
+4. Keep the conversation on track
 
 
 
