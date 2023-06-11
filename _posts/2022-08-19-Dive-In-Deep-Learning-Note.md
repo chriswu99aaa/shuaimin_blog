@@ -640,11 +640,64 @@ RstNet allows training for deeper network more easier.
 4. flip, cut, color chaning
 
 
+## Fine Tuning
+
+Lower layers are more general such edges, and upper layers are more relevant to objects.
+
+It gets the pre-trained model from lager datasets, so that the model on the targeted dataset can be initialized better.
+
+Pre-trained model is faster and more acurates. The quality of pre-trained model is important, so you need to train on good 
+data set
+
+## Object Detection
+
+To detect interested objects in images, and use bounding box to bind these objects.
+
+Bounding Box: it uses two pairs of x and y to show the box
+
+### Anchor Box
+
+It generates several anchor boxes, and predicts whether the objects is contained in any box. If yes, how far does the anchor box
+deviats from the true binding box?
+
+Anchor Box is the main algorithms for object detection
+
+Intersection over Union (IoU)
+
+$$
+J(A,B) = \frac{A \cap B}{A \cup B}
+$$
+
+This value is called Jacquard Index, and it indicates the similarity between two anchors
+
+Most of anchors are negative anchors, which are the background. This will cost   a lot of non-relevant anchor box.
+
+For every anchor box, either it's a negative sample or it relates to a ground truth bounding box.
+
+The anchor boxes will be generated every time when a new image read in. We need to aware the capacity of memory
+
+#### Non Maximum Suspension (NMS)
+
+NMS will merge similar predictions. One prediction will either merged for remained. 
+
+Those anchor with IoU value higher than a threashold will be merged, and repeat the above process until the output is clean.
+
+*Question:* 
+
+* How to determine the threashold value? Because it's possible after all anchor with IoU values higher than the threashold
+removed, there still exists anchor with IoU lower than the threashold.
+* How to understand the code for generating the anchor box?
+* Do we have better way to generate anchor box? Find out if we have any papers.
+
 ## Question
 
 1. I am wondering how we start from begining to finish the whole project. Let's watch a competition video
 2. How to utilize the most of the hardware in training. Watch the training video.
 
 
+## Progress
 
+2022/11/14
+
+Today I went through ResNet, Batch Normalization, Fine Tuning, Data Augmentation. Next part I will continue object detection video and reading part.
 
