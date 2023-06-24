@@ -251,7 +251,7 @@ class Solution{
 ```
 这里我们要删除的是current 的下一个元素。实际上我们删除的方式，就是把current 的指针指向下一个的下一个，这样就删除了。所以while loop 的检查是current.next 不为空。在链表的题目中，我们需要注意的是空指针的问题。
 
-### 链表经典题目
+### 实现链表增删操作
 
 
 
@@ -411,7 +411,7 @@ class ListNode{
 }
 ```
 
-### 反转链表哦
+### 反转链表
 
 给定单链表的头节点 head ，请反转链表，并返回反转后的链表的头节点。
 
@@ -445,18 +445,6 @@ class Solution{
         head = pred;
         return head;
 
-
-        ListNode pred = null
-        ListNode current = head;
-        while(current != null)
-        {
-            ListNode tmp = current.next;
-            current.next = pred;
-            pred = current;
-            current = tmp;
-        }
-        head = pred;
-        return head;
     }
 }
 ```
@@ -569,3 +557,81 @@ class Solution{
 ```
 
 当我们要删除第n个节点时，我们需要获取n的前一个节点。所以我们需要把快指针在第一个循环之后再移动一下。先让快指针移动n次，就是为了让快慢指针之间的距离是n，当快指针移动到末端时，慢指针刚好指向倒数第n 个节点。本体的思路是先移动快指针n+1次，然后快慢指针同时移动至末端。最后慢指针删除下一个节点。
+
+
+### 环形链表 2
+
+给定一个链表的头节点  head ，返回链表开始入环的第一个节点。 如果链表无环，则返回 null。
+
+如果链表中有某个节点，可以通过连续跟踪 next 指针再次到达，则链表中存在环。 为了表示给定链表中的环，评测系统内部使用整数 pos 来表示链表尾连接到链表中的位置（索引从 0 开始）。如果 pos 是 -1，则在该链表中没有环。注意：pos 不作为参数进行传递，仅仅是为了标识链表的实际情况。
+
+不允许修改 链表。
+
+```
+输入：head = [3,2,0,-4], pos = 1
+输出：返回索引为 1 的链表节点
+解释：链表中有一个环，其尾部连接到第二个节点。
+
+输入：head = [1,2], pos = 0
+输出：返回索引为 0 的链表节点
+解释：链表中有一个环，其尾部连接到第一个节点。
+
+输入：head = [1], pos = -1
+输出：返回 null
+解释：链表中没有环。
+```
+
+```java
+class Solution{
+    public ListNode detectCycle(ListNode head)
+    {
+        //双指针思路
+        ListNode fast = head;
+        ListNode slow = head;
+
+        while(fast != null && fast.next != null)
+        {
+            fast = fast.next.next;
+            slow = slow.next;
+
+            if(slow == fast)
+            {
+                ListNode index1 = head;
+                ListNode index2 = fast;
+
+                while(index1 != index2)
+                {
+                    index1 = index1.next;
+                    index2 = index2.next;
+                }
+                return index1;
+            }
+        }
+        return null;
+    }
+}
+```
+
+这一道题目首先涉及检查链表内是否有环，然后寻找环入口节点。
+
+当我们让快指针每次移动两次，而慢指针每次移动一次，如果存在环，双指针就会相遇，否则不然。
+
+在寻找环入口的时候，涉及到一些数学计算。x 是从头节点到环入口的距离，y 是从环入口到快慢指针相遇节点的距离，z是从相遇节点到环入口的距离。 y+z 等于环的长度。
+
+$$
+2(x+y) = x+y + n(y+z)
+$$
+$$
+x = z 
+$$
+if z = 1.
+
+当z >= 1 是拥有相同逻辑。我们需要。x=z 代表着从头节点到环入口的距离，和从相遇节点到环入口的距离相等，可以让两个指针同时从两处以相同速度出发，他们相遇的地方就是环入口。
+
+### 链表总结
+
+![image](../pictures/array_linkedlist_time.png)
+
+数组插入删除很贵，查询很便宜。链表插入删除很便宜，但查询很贵。
+
+虚拟头节点的使用可以一体化的处理所有链表操作。我们要注意空指针异常，检查当前和下一个节点是否为空，这才循环中是很重要的一步。
