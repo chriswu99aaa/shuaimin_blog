@@ -635,3 +635,108 @@ if z = 1.
 数组插入删除很贵，查询很便宜。链表插入删除很便宜，但查询很贵。
 
 虚拟头节点的使用可以一体化的处理所有链表操作。我们要注意空指针异常，检查当前和下一个节点是否为空，这才循环中是很重要的一步。
+
+## 哈希表
+
+一般哈希问题都会用到三个数据结构
+* 数组
+* set
+* map
+
+如果要用最快的就用unordered set,如果要有序就用 ordered set
+
+### 有效的字母异位词
+
+给定两个字符串 s 和 t ，编写一个函数来判断 t 是否是 s 的字母异位词。
+
+注意：若 s 和 t 中每个字符出现的次数都相同，则称 s 和 t 互为字母异位词。
+
+```
+输入: s = "anagram", t = "nagaram"
+输出: true
+
+输入: s = "rat", t = "car"
+输出: false
+```
+
+这道题目我们用通过空间换时间的思路来解决问题。两个string 是否可以通过互换字母位置变为相等，最核心的点就是字母频率相等。通过使用一个数组记录两个string 字幕出现频率，就可以回答这个问题。如果遍历后，数组中的任何元素不为0，两个string 不可置换。
+
+```java
+class Solution {
+    public boolean isAnagram(String s, String t) {
+        int[] hashMap = new int[26];
+        for(int i=0; i<s.length(); i++)
+        {
+            char a = s.charAt(i);
+            hashMap[a - 'a']++; 
+            // 在对应位置记录字母频率
+        }
+
+        for(int i=0; i<t.length(); i++)
+        {
+            char a = t.charAt(i);
+            hashMap[a-'a']--;
+        }
+
+        for(int i=0; i<hashMap.length; i++)
+        {
+            if(hashMap[i]!= 0)
+                return false;
+        }
+        return true;
+    }
+}
+```
+
+### 两个数组的交集
+
+给定两个数组 nums1 和 nums2 ，返回 它们的交集 。输出结果中的每个元素一定是 唯一 的。我们可以 不考虑输出结果的顺序 。
+
+```
+输入：nums1 = [1,2,2,1], nums2 = [2,2]
+输出：[2]
+
+输入：nums1 = [4,9,5], nums2 = [9,4,9,8,4]
+输出：[9,4]
+解释：[4,9] 也是可通过的
+
+1 <= nums1.length, nums2.length <= 1000
+0 <= nums1[i], nums2[i] <= 1000
+```
+
+```java
+import java.util.HashSet;
+import java.util.Set;
+
+
+class Solution {
+    public int[] intersection(int[] nums1, int[] nums2)   
+    {
+        Set<Integer> hashSet = new HashSet<Integer>();
+        Set<Integer> resultSet = new HashSet<Integer>();
+
+        for(int i : nums1)
+        {
+            hashSet.add(i);
+        }
+        for(int i : nums2)
+        {
+            if(hashSet.contains(i))
+            {
+                resultSet.add(i);   
+            }
+        }
+        int[] arr = new int[resultSet.size()];
+        int j=0;
+        for(int i : resultSet)
+        {
+            arr[j] = i;
+            j++;
+        }
+        return arr;
+
+    }
+}
+```
+
+这个题目主要是要知道，正确的选择set数据结构。如果在没有数据范围的情况下，使用set可以很好的应对分散的数值情况而不浪费内存空间。但是有了范围，使用数组可以更快的解决。
