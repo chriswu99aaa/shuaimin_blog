@@ -743,4 +743,197 @@ class Solution {
 
 定义两个set，第一个遍历记录数组1 的元素，然后遍历数组2，如果有重合的元素，再将该元素加入set2. 因为set 元素不重复，所以返回的数组是唯一且无序的。
 
+### 两数之和
+给定一个整数数组 nums 和一个整数目标值 target，请你在该数组中找出 和为目标值 target  的那 两个 整数，并返回它们的数组下标。
+你可以假设每种输入只会对应一个答案。但是，数组中同一个元素在答案里不能重复出现。
+
+你可以按任意顺序返回答案。
+
+```java
+import java.util.HashMap;
+class Solution {
+    public int[] twoSum(int[] nums, int target) {
+
+        HashMap<Integer,Integer> map = new HashMap<>();
+        int[] result = new int[2];
+
+
+        for(int i=0; i<nums.length; i++)
+        {
+            int diff = target - nums[i];
+            if(map.containsKey(diff))
+            {
+                result[0] = i;
+                result[1] = map.get(diff);
+                return result;
+            }
+
+            map.put(nums[i], i);
+        }
+        return result;
+    }
+}
+```
+
+### 三数之和
+
+给你一个整数数组 nums ，判断是否存在三元组 [nums[i], nums[j], nums[k]] 满足 i != j、i != k 且 j != k ，同时还满足 nums[i] + nums[j] + nums[k] == 0 。请
+你返回所有和为 0 且不重复的三元组。
+注意：答案中不可以包含重复的三元组。
+
+```
+输入：nums = [-1,0,1,2,-1,-4]
+输出：[[-1,-1,2],[-1,0,1]]
+解释：
+nums[0] + nums[1] + nums[2] = (-1) + 0 + 1 = 0 。
+nums[1] + nums[2] + nums[4] = 0 + 1 + (-1) = 0 。
+nums[0] + nums[3] + nums[4] = (-1) + 2 + (-1) = 0 。
+不同的三元组是 [-1,0,1] 和 [-1,-1,2] 。
+注意，输出的顺序和三元组的顺序并不重要。
+
+输入：nums = [0,1,1]
+输出：[]
+解释：唯一可能的三元组和不为 0 。
+
+输入：nums = [0,0,0]
+输出：[[0,0,0]]
+解释：唯一可能的三元组和为 0 。
+```
+
+```java
+import java.util.ArrayList;
+import java.util.Arrays;
+
+class Solution {
+    public List<List<Integer>> threeSum(int[] nums) {
+        
+        List<List<Integer>> result = new ArrayList<>();
+        
+        //对数组进行排序
+        Arrays.sort(nums);
+
+        for(int i=0; i<nums.length; i++)
+        {
+            //如果排序后第一个元素大于零，就代表不能找到和为0的三元组
+            if(nums[i] > 0)
+                return result;
+            
+            if(i>0 && nums[i]==nums[i-1])
+                continue;
+            
+            int left = i+1;
+            int right = nums.length-1;
+            
+            while(left < right)
+            {
+                int sum = nums[i] + nums[left] + nums[right];
+                
+                if(sum > 0)
+                    right--;
+                else if(sum < 0)
+                    left++;
+                else{
+                    result.add(Arrays.asList(nums[i], nums[left], nums[right]));
+
+                    //b and c 去重
+                    while(left < right && nums[left]==nums[left+1]){
+                        left++;
+                    }
+                    while(left < right && nums[right]==nums[right-1]){
+                        right--;
+                    }
+                    // 找到答案时，双指针同时收缩
+                    left++;
+                    right--;
+                }
+            }
+        }
+        return result;
+    }
+}
+```
+
+这个题目不能使用哈希法的原因在于去重。哈希法的去重逻辑很复杂，在面试时容易出错。双指针的方法就可以有效避免很多错误。四数之和都可以用这样的双指针。用一个for 循环遍历i，然后在循环里面保持left 和 right 的双指针。如果i，left，right 上的数字相加小于0，就右移left。反之，则左移right。
+
+这个题目中的一个重要步骤就是去重。对于abc 指针上的元素去重。对于a 的去重，要用i-1。同样，对于 left 和right 的去重，就是不等于他们的下一个元素。在这里就是left+1，right-1。如果是一样的话，那么这个指针给出的是一样的数字，就没有意义了。
+
+### 四数之和
+
+给你一个由 n 个整数组成的数组 nums ，和一个目标值 target 。请你找出并返回满足下述全部条件且不重复的四元组 [nums[a], nums[b], nums[c], nums[d]] （若两个四元组元素一一对应，则认为两个四元组重复）：
+
+0 <= a, b, c, d < n
+a、b、c 和 d 互不相同
+nums[a] + nums[b] + nums[c] + nums[d] == target
+你可以按 任意顺序 返回答案 。
+
+```
+输入：nums = [1,0,-1,0,-2,2], target = 0
+输出：[[-2,-1,1,2],[-2,0,0,2],[-1,0,0,1]]
+
+输入：nums = [2,2,2,2,2], target = 8
+输出：[[2,2,2,2]]
+```
+
+```java
+import java.util.ArrayList;
+import java.util.Arrays;
+
+
+class Solution {
+    public List<List<Integer>> fourSum(int[] nums, int target) {
+      List<List<Integer>> result = new ArrayList<>();
+      Arrays.sort(nums);
+
+      for(int k=0; k<nums.length; k++)
+      {
+          //k 剪枝
+          if(nums[k] > target && target >= 0)
+              break;
+          //k 去重
+          if(k>0 && nums[k] == nums[k-1])
+              continue;
+          for(int i=k+1; i<nums.length; i++)
+          {
+              //i 剪枝 nums[i] 大于0 就代表后面的数字单调递增，这就不会有target
+              if(nums[k] + nums[i] > target && nums[i] > 0)
+                  break;
+              //i 去重
+              if(i>k+1 && nums[i]==nums[i-1])
+                  continue;
+
+              new left = i+1;
+              new right = nums.length-1;
+              while(left < right)
+              {
+                  int sum = nums[k] + nums[i] + nums[left] + nums[right];
+                  if(sum > target)
+                    right--;
+                  else if(sum < target)
+                    left++;
+                  else{
+                          result.add(Arrays.asList(nums[k], nums[i], nums[left], nums[right]));
+                          while(left < right && nums[left] == nums[left+1])
+                              left++;
+                          while(left < right && nums[right] == nums[right-1])
+                              right--;
+
+                          left++;
+                          right--;                              
+                      }
+              }
+
+          }
+      }
+      return result;
+    }
+}
+```
+
+这个题目的重点在于前两个指针的剪枝和去重逻辑。k指针指向的元素如果大于0，同时target 大于等于0，那就可以跳过，因为根据单调性就不会有满足target 的四元组。k 的去重和三数和相同。下一步进入二级剪枝 i 指针。i的剪枝，是检查nums[k] + nums[i] 是否大于0，同时 nums[i] > 0 这也是检查数组元素单调性的操作。
+
+
+
+
+
+
 
