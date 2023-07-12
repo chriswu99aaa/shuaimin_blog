@@ -744,3 +744,48 @@ class Solution {
 定义两个set，第一个遍历记录数组1 的元素，然后遍历数组2，如果有重合的元素，再将该元素加入set2. 因为set 元素不重复，所以返回的数组是唯一且无序的。
 
 
+### 两数之和
+
+给定一个整数数组 nums 和一个整数目标值 target，请你在该数组中找出 和为目标值 target  的那 两个 整数，并返回它们的数组下标。
+
+你可以假设每种输入只会对应一个答案。但是，数组中同一个元素在答案里不能重复出现。
+
+你可以按任意顺序返回答案。
+
+```
+
+输入：nums = [2,7,11,15], target = 9
+输出：[0,1]
+解释：因为 nums[0] + nums[1] == 9 ，返回 [0, 1] 。
+
+输入：nums = [3,2,4], target = 6
+输出：[1,2]
+```
+
+```java
+import java.util.HashMap;
+class Solution {
+    public int[] twoSum(int[] nums, int target) {
+
+        HashMap<Integer,Integer> map = new HashMap<>();
+        int[] result = new int[2];
+
+
+        for(int i=0; i<nums.length; i++)
+        {
+            int diff = target - nums[i];
+            if(map.containsKey(diff))
+            {
+                result[0] = i;
+                result[1] = map.get(diff);
+                return result;
+            }
+
+            map.put(nums[i], i);
+        }
+        return result;
+    }
+}
+```
+
+这里的我们的思路是遍历一边数组，看当前元素与target 的差diff。不仅仅要知道diff 是否存在，也要知道它的下标，这就需要map。因为set 之查看元素是否在集合中，而不会包含更多信息。用数组的话就会浪费很多内存，因为数组元素可能会很稀疏。
