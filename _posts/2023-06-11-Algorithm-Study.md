@@ -934,7 +934,98 @@ class Solution {
 
 ## 字符串
 
+### 反转字符串2
 
+给定一个字符串 s 和一个整数 k，从字符串开头算起，每计数至 2k 个字符，就反转这 2k 字符中的前 k 个字符。
+
+如果剩余字符少于 k 个，则将剩余字符全部反转。
+如果剩余字符小于 2k 但大于或等于 k 个，则反转前 k 个字符，其余字符保持原样。
+
+```
+输入：s = "abcdefg", k = 2
+输出："bacdfeg"
+
+输入：s = "abcd", k = 2
+输出："bacd"
+```
+
+```java
+class Solution {
+    public String reverseStr(String s, int k) {
+
+        char[] str = s.toCharArray();
+        int length = str.length;
+
+        for(int i=0; i<str.length; i += 2*k)
+        {
+            int left = i;
+
+            //判断left + k -1 是否长于length
+            int right = Math.min(length - 1, left + k - 1);
+
+            while(left < right)
+            {
+                char tmp = str[left];
+                str[left] = str[right];
+                str[right] = tmp;
+
+                left++;
+                right--;
+            }
+
+        }
+        return new String(str);
+    }
+}
+```
+这个题目的重点是怎样模拟复杂的规则。要判断当剩余部分不足k 或者超出k 但小于2k 是怎么操作。这里使用了一个min 函数选择两者之间的最小值。length-1 代表原数组长度， left+k-1 代表当前left 指针向右偏移k次的结果。如果前者大就代表当前还可以替换k个字母。如果后者大，那么就代表当前剩余字母不足k个，就把剩下的全部反转。如果有k个，就把前k个字母反转，如果不足就把剩下的反转。
+
+
+### 替换空格
+请实现一个函数，把字符串 s 中的每个空格替换成"%20"。
+
+```
+输入：s = "We are happy."
+输出："We%20are%20happy."
+```
+
+```java
+class Solution {
+    public String replaceSpace(String s) {
+        char[] charArray = s.toCharArray();
+        int count = 0;
+        for(char a : charArray)
+        {
+            if(a == ' ')
+                count++;
+        }
+        //获取数组长度
+        int oldSize = charArray.length;
+        char[] newArray = new char[oldSize + 2*count];
+        int left = charArray.length-1;
+        int right = newArray.length-1;
+        
+        while(left >= 0)
+        {
+            if(charArray[left] == ' ')
+            {
+                newArray[right--] = '0';
+                newArray[right--] = '2';
+                newArray[right] = '%';
+            }else{
+            newArray[right] = charArray[left];
+
+            }
+            right--;
+            left--;  
+        }
+
+        return new String(newArray);
+    }
+}
+```
+
+先扫描整个数组，寻找空格出现的次数。新建一个数组，长度是length + 两倍的空格出现频率。 使用双指针left 指向原数组的最后，right 指向新数组的最后。使用left遍历原数组，如果left 指向空格，就在新数组中写下 %20，right 指针向左移动2次。因为在if 里面指针只需要移动两次，在外面会统一的移动双指针。
 
 
 
