@@ -1027,6 +1027,127 @@ class Solution {
 
 先扫描整个数组，寻找空格出现的次数。新建一个数组，长度是length + 两倍的空格出现频率。 使用双指针left 指向原数组的最后，right 指向新数组的最后。使用left遍历原数组，如果left 指向空格，就在新数组中写下 %20，right 指针向左移动2次。因为在if 里面指针只需要移动两次，在外面会统一的移动双指针。
 
+### 反转字符串中的单词
+
+给你一个字符串 s ，请你反转字符串中 单词 的顺序。
+
+单词 是由非空格字符组成的字符串。s 中使用至少一个空格将字符串中的 单词 分隔开。
+
+返回 单词 顺序颠倒且 单词 之间用单个空格连接的结果字符串。
+
+注意：输入字符串 s中可能会存在前导空格、尾随空格或者单词间的多个空格。返回的结果字符串中，单词间应当仅用单个空格分隔，且不包含任何额外的空格。
+
+```
+输入：s = "the sky is blue"
+输出："blue is sky the"
+
+输入：s = "  hello world  "
+输出："world hello"
+解释：反转后的字符串中不能存在前导空格和尾随空格。
+
+输入：s = "a good   example"
+输出："example good a"
+解释：如果两个单词间有多余的空格，反转后的字符串需要将单词间的空格减少到仅有一个。
+```
+
+```java
+class Solution {
+    // reverse the string 
+    // reverse every word
+    // remove spaces
+    public String reverseWords(String s) {
+        
+        char[] str =s.toCharArray();
+        int left =  0;     
+        //remove extra spaces
+        str = removeSpace(str);
+        
+          
+        // reverse the string
+        reverseString(str, left, str.length-1);
+        
+
+        // reverse words
+        reverseSingleWord(str);
+       System.out.println(str);
+        
+        return new String(str);
+
+    }
+
+    public void reverseString(char[] str, int left, int right)
+    {
+        if (right >= str.length)
+        {
+            System.out.println("set a wrong right");
+            return;
+        }
+        while(left < right)
+        {
+
+            str[left] ^= str[right];
+            str[right] ^= str[left];
+            str[left] ^= str[right];
+
+            left++;
+            right--;
+        }
+    }
+
+    public void reverseSingleWord(char[] str)
+    {
+        int slow = 0;
+
+        // <= 是这里的一个关键。因为在下面reverseString 函数使用的是 fast < str.length
+        // 如果这里也是用 <  那就会有最后一个字母漏掉。
+        for(int fast=0; fast <= str.length; fast++)
+        {
+            //处理过的string，每次遇到space 就是一个单词结束
+            if(fast == str.length || str[fast] == ' ')
+            {
+                reverseString(str, slow, fast - 1);
+                slow = fast+1;
+            }
+
+        }
+    }
+
+    public char[] removeSpace(char[] str)
+    {
+        int slow = 0;
+        for(int fast=0; fast<str.length; fast++)
+        {
+            if(str[fast] != ' ')
+            {
+                //开头不需要空格,再用slow 加空格
+                if(slow != 0)
+                {
+                    str[slow++] = ' ';
+                }
+                //fast 遇到空格或遍历到字符串末尾，就证明遍历完一个单词了
+                while(fast < str.length && str[fast] != ' ')
+                {
+                    str[slow++] = str[fast++];
+                }
+            }
+
+        }
+
+        //相当于 c++ 里的 resize()
+        char[] newChars = new char[slow];
+        System.arraycopy(str, 0, newChars, 0, slow); 
+        return newChars;
+    }
+}
+```
+
+这个题目要处理的细节非常多。整体的思路是，首先将多余的空格去除，首尾中间的空格，再将字符串反转，再将每一个单词反转。
+
+移除空格时，就像在数组中移除一个元素，这个元素是空格。fast 指针探索新元素，slow 指针定义一个左闭右开区间，其中没有不需要的空格。使用if 判断 fast 是否指向 ‘ ’，如果不是，再判断slow 是否是在最开始的位置，如果是就不需要加空格，如果不是就会在下面的while loop 开始之前添加一个空格。while loop 会不断地将fast 指向的字母传给slow。当while 结束之后fast 会结束当前的传递，因为会指向‘ ’，然后进入下一个for loop 循环。因为每次在while 中都会 slow++ and fast ++，所以slow 在结束时也会指向‘ ’ 。但是这是中间可能你会有多个空格，所以fast 会不断遍历知道找到下一个非空格元素，从而进入第一个if。这时slow 因为不是0，代表这不是第一个单词了，所以单词之间要有一个空格，所以给slow 赋一个空格，然后再开始下一次的while loop。在最后返回一个新的char【】因为原有的长度和新的不一样。
+
+之后的两不，反转字符串以及，反转单词都是
+
+
 
 
 
