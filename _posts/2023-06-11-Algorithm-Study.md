@@ -59,7 +59,7 @@ class Solution {
 }
 ```
 
-使用快慢指针做两个for 循环的工作。快指针探索新的元素，慢指针决定新数组的下标。
+使用快慢指针做两个for 循环的工作。快指针探索新的元素，慢指针决定新数组的下标。慢指针定义了一个左闭右开的区间，这个区间内不包含target。当fast 指向一个非target的值时，就将它复制给slow 指针。如果fast 指向target，那么这个值就不会放进slow 区间内，在后续的快慢指针数值交换的过程中被慢指针覆盖。
 
 ### 有序数组平方
 
@@ -1027,51 +1027,96 @@ class Solution {
 
 先扫描整个数组，寻找空格出现的次数。新建一个数组，长度是length + 两倍的空格出现频率。 使用双指针left 指向原数组的最后，right 指向新数组的最后。使用left遍历原数组，如果left 指向空格，就在新数组中写下 %20，right 指针向左移动2次。因为在if 里面指针只需要移动两次，在外面会统一的移动双指针。
 
+### 找出字符串中第一个匹配项的下标
 
-
-
-### 两数之和
-
-给定一个整数数组 nums 和一个整数目标值 target，请你在该数组中找出 和为目标值 target  的那 两个 整数，并返回它们的数组下标。
-
-你可以假设每种输入只会对应一个答案。但是，数组中同一个元素在答案里不能重复出现。
-
-你可以按任意顺序返回答案。
+给你两个字符串 haystack 和 needle ，请你在 haystack 字符串中找出 needle 字符串的第一个匹配项的下标（下标从 0 开始）。如果 needle 不是 haystack 的一部分，则返回  -1 。
 
 ```
+输入：haystack = "sadbutsad", needle = "sad"
+输出：0
+解释："sad" 在下标 0 和 6 处匹配。
+第一个匹配项的下标是 0 ，所以返回 0 。
 
-输入：nums = [2,7,11,15], target = 9
-输出：[0,1]
-解释：因为 nums[0] + nums[1] == 9 ，返回 [0, 1] 。
-
-输入：nums = [3,2,4], target = 6
-输出：[1,2]
+输入：haystack = "leetcode", needle = "leeto"
+输出：-1
+解释："leeto" 没有在 "leetcode" 中出现，所以返回 -1 。
 ```
 
 ```java
-import java.util.HashMap;
+
 class Solution {
-    public int[] twoSum(int[] nums, int target) {
-
-        HashMap<Integer,Integer> map = new HashMap<>();
-        int[] result = new int[2];
-
-
-        for(int i=0; i<nums.length; i++)
+    public int strStr(String haystack, String needle) {
+        int j=-1; //j指向模式串起始位置，i指向文本出串起始位置。j 是-1，因为next从-1开始
+        int[] next = new int[needle.length()];
+        
+        char[] haystackArray = haystack.toCharArray();
+        char[] needleArray = needle.toCharArray();
+        
+        //构建next 数组
+        getNext(next, needleArray);
+        
+        for(int i=0; i<haystackArray.length; i++)
         {
-            int diff = target - nums[i];
-            if(map.containsKey(diff))
+            while(j>=0 && haystackArray[i] != needleArray[j+1])
             {
-                result[0] = i;
-                result[1] = map.get(diff);
-                return result;
+                j = next[j];
             }
 
-            map.put(nums[i], i);
+            if(haystackArray[i] == needleArray[j+1])
+            {
+                j++;
+            }
+
+            if(j == needleArray.length-1)
+            {
+                return i-needleArray.length+1; //
+            }
         }
-        return result;
+        return -1;
+    }
+
+    public void getNext(int[] next, char[] s )
+    {
+        //前缀表统一减一实现
+        int j=-1; //j 指向前缀末尾
+        next[0] = j;
+
+        //i 指向后缀末尾
+
+        for(int i=1; i<s.length; i++)
+        {
+            // i and j+1指向不同的字母
+            while(j >= 0 && s[i] != s[j+1])
+            {
+                j = next[j]; //向前回退
+            }
+            //j+1 and i 指向相同的字母
+            if(s[i] == s[j+1])
+            {
+                j++;
+            }
+            next[i] = j; //next 纪录最长前后缀的长度后缀的末端记录前缀末端的长度。这是最长前后缀子串相等的长度          
+        }
     }
 }
 ```
 
-这里的我们的思路是遍历一边数组，看当前元素与target 的差diff。不仅仅要知道diff 是否存在，也要知道它的下标，这就需要map。因为set 之查看元素是否在集合中，而不会包含更多信息。用数组的话就会浪费很多内存，因为数组元素可能会很稀疏。
+这个题目运用KMP 算法匹配字符串。答案由两部分组成。getNext 和 strStr 调用。
+
+getNext 函数便利模式串，便利自己寻找前后缀最长子串。我们定义两个指针 i and j，j 指向前缀末尾，i指向后缀末尾。j=-1， 然后next 数组 next[0] = j。 i = 1，因为从第一个元素没有前后缀，所以从第二个元素开始遍历。
+
+处理两个情况
+1. s[i] != s[j+1]，通过使用while loop 不断回退。j = next[j]。这一个指令就会不断的往前寻找最长前后缀子串。如果没有匹配，j 就会回到最开始的地方 j=0。
+2. s[i] == s[j+1], 双指针同时向后一位
+
+最后将next[i] = j，就是把j 的长度赋给next 数组的第i 位。这个就是当之后匹配失败时，将作为参考回退到前后子串最长的情况。
+
+strStr 函数调用getNext 函数构建next数组。同样定义两个指针i j。i 指向目标串的末尾，j 指向模式串的末尾。j=-1。
+
+同样处理两种情况
+1. s[i] != t[j+1]，这样就使用j=next[j]回退策略
+2. s[i] == t[j+1] 双指针后移动一位。
+
+在for loop 中判断，j 是否等于t.length -1，如果是就返回 i - t.length+1，也就是匹配子串开始的下标。
+
+如果for loop 循环结束没有找到，return -1
