@@ -1135,7 +1135,7 @@ class Solution {
         char[] newChars = new char[slow];
         System.arraycopy(str, 0, newChars, 0, slow); 
         return newChars;
-    }
+    }´
 }
 ```
 
@@ -1144,6 +1144,8 @@ class Solution {
 移除空格时，就像在数组中移除一个元素，这个元素是空格。fast 指针探索新元素，slow 指针定义一个左闭右开区间，其中没有不需要的空格。使用if 判断 fast 是否指向 ‘ ’，如果不是，再判断slow 是否是在最开始的位置，如果是就不需要加空格，如果不是就会在下面的while loop 开始之前添加一个空格。while loop 会不断地将fast 指向的字母传给slow。当while 结束之后fast 会结束当前的传递，因为会指向‘ ’，然后进入下一个for loop 循环。因为每次在while 中都会 slow++ and fast ++，所以slow 在结束时也会指向‘ ’ 。但是这是中间可能你会有多个空格，所以fast 会不断遍历知道找到下一个非空格元素，从而进入第一个if。这时slow 因为不是0，代表这不是第一个单词了，所以单词之间要有一个空格，所以给slow 赋一个空格，然后再开始下一次的while loop。在最后返回一个新的char【】因为原有的长度和新的不一样。
 
 之后的两不，反转字符串以及，反转单词都是
+
+
 ### 找出字符串中第一个匹配项的下标
 
 给你一个字符串 s ，请你反转字符串中 单词 的顺序。
@@ -1235,3 +1237,59 @@ strStr 函数调用getNext 函数构建next数组。同样定义两个指针i j�
 在for loop 中判断，j 是否等于t.length -1，如果是就返回 i - t.length+1，也就是匹配子串开始的下标。
 
 如果for loop 循环结束没有找到，return -1
+
+### 重复的子字符串
+
+```
+输入: s = "abab"
+输出: true
+解释: 可由子串 "ab" 重复两次构成。
+
+输入: s = "aba"
+输出: false
+
+输入: s = "abcabcabcabc"
+输出: true
+解释: 可由子串 "abc" 重复四次构成。 (或子串 "abcabc" 重复两次构成。)
+```
+
+```java
+class Solution {
+    public boolean repeatedSubstringPattern(String s) {
+
+        char[] str = s.toCharArray();
+        int[] next = new int[str.length];
+        getNext(next, str);
+
+        int len = next.length;        
+
+        //不等于-1 代表有前后缀相等子串
+        if(next[len-1] != -1 && len % (len - (next[len-1] + 1)) == 0)
+        {
+            return true;
+        }
+        return false;
+    }
+
+    public void getNext(int[] next, char[] s)
+    {
+        int j = -1;
+        next[0] = j;
+        for(int i = 1; i<next.length; i++)
+        {
+            while(j>=0 && s[i] != s[j+1])
+            {
+                j = next[j];
+            }
+            if(s[i] == s[j+1]){
+                j++;
+            }
+            next[i] = j;
+        }
+    }
+}
+```
+
+不被最长前后缀相等子串所包含的部分就是重复的子串，其原因在于，前缀不包含最后一个字母，后缀不包含第一个字母，这就意味着在字符串起始位置往后偏移几位的位置会成为最长相等前后缀子串的开始位置。同时前面不被包含的那一部分就会是重复子串。这里确定是否有重复子串的方式是通过取模判断字符串长度是否可以整除最长相等前后缀的长度与字符串长度之间的差而确定的。如果可以整除，就代表着字符串是由那个差构成。
+
+
