@@ -1293,3 +1293,426 @@ class Solution {
 不被最长前后缀相等子串所包含的部分就是重复的子串，其原因在于，前缀不包含最后一个字母，后缀不包含第一个字母，这就意味着在字符串起始位置往后偏移几位的位置会成为最长相等前后缀子串的开始位置。同时前面不被包含的那一部分就会是重复子串。这里确定是否有重复子串的方式是通过取模判断字符串长度是否可以整除最长相等前后缀的长度与字符串长度之间的差而确定的。如果可以整除，就代表着字符串是由那个差构成。
 
 
+## 栈与队列
+
+### 用栈实现队列
+
+请你仅使用两个栈实现先入先出队列。队列应当支持一般队列支持的所有操作（push、pop、peek、empty）：
+
+实现 MyQueue 类：
+
+void push(int x) 将元素 x 推到队列的末尾
+int pop() 从队列的开头移除并返回元素
+int peek() 返回队列开头的元素
+boolean empty() 如果队列为空，返回 true ；否则，返回 false
+
+```java
+import java.util.Stack;
+
+
+class MyQueue {
+
+    Stack<Integer> stackIn;
+    Stack<Integer> stackOut;
+
+
+    public MyQueue() {
+        stackIn = new Stack<>();
+        stackOut = new Stack<>();
+    }
+    
+    public void push(int x) {
+        stackIn.push(x);
+    }
+    
+    public int pop() {
+        changeStack();
+        return stackOut.pop();
+    }
+    
+    public int peek() {
+
+        if(stackOut.empty())
+            changeStack();
+        return stackOut.peek();
+    }
+    
+    public boolean empty() {
+        return stackIn.empty() && stackOut.empty();
+    }
+
+    public void changeStack()
+    {
+        if(!stackOut.empty())
+            return;
+        while(!stackIn.empty())
+        {
+            stackOut.push(stackIn.pop());
+        }
+    }
+}
+
+/**
+ * Your MyQueue object will be instantiated and called as such:
+ * MyQueue obj = new MyQueue();
+ * obj.push(x);
+ * int param_2 = obj.pop();
+ * int param_3 = obj.peek();
+ * boolean param_4 = obj.empty();
+ */
+```
+
+### 用队列实现栈
+
+请你仅使用两个队列实现一个后入先出（LIFO）的栈，并支持普通栈的全部四种操作（push、top、pop 和 empty）。
+
+实现 MyStack 类：
+
+void push(int x) 将元素 x 压入栈顶。
+int pop() 移除并返回栈顶元素。
+int top() 返回栈顶元素。
+boolean empty() 如果栈是空的，返回 true ；否则，返回 false 。
+
+```java
+class MyStack {
+    //q1作为主要的队列，其元素排列顺序和出栈顺序相同
+    Queue<Integer> queue1 = new ArrayDeque<>();
+
+    public MyStack() {
+
+    }
+    //在加入元素时先将q1中的元素依次出栈压入q2，然后将新加入的元素压入q1，再将q2中的元素依次出栈压入q1
+    public void push(int x) {
+        queue1.add(x);
+
+        int size = queue1.size()-1;
+        while(size > 0)
+        {
+            int tmp = queue1.poll();
+            queue1.add(tmp);
+
+            size--;
+        }
+    }
+
+    public int pop() {
+
+        return queue1.poll();
+    }
+
+    public int top() {
+        return queue1.peek();
+    }
+
+    public boolean empty() {
+        return queue1.isEmpty();
+    }
+}
+```
+这个题目主要就是在push函数上作准备。将最后一个进队列的元素一直移到第一个元素，从而形成stack 所需要的模式。当最后一个元素，成为下一个弹出的元素就会符合stack。
+
+
+### 有效的括号
+给定一个只包括 '('，')'，'{'，'}'，'['，']' 的字符串 s ，判断字符串是否有效。
+
+有效字符串需满足：
+
+左括号必须用相同类型的右括号闭合。
+左括号必须以正确的顺序闭合。
+每个右括号都有一个对应的相同类型的左括号。
+
+```
+输入：s = "()"
+输出：true
+
+输入：s = "()[]{}"
+输出：true
+
+输入：s = "(]"
+输出：false
+```
+
+```java
+
+class Solution {
+    public boolean isValid(String s) {
+        Stack<Character> stack = new Stack<>();
+
+        char[] chars = s.toCharArray();
+        for(int i=0; i<chars.length; i++)
+        {
+            if(chars[i] == '(')
+                stack.push(')');
+            else if(chars[i] == '{')
+                stack.push('}');
+            else if(chars[i] == '[')
+               stack.push(']');
+            else if(stack.empty() || stack.peek() != chars[i])
+                return false;
+            else
+                stack.pop();
+        }
+        return stack.empty();
+    }
+}
+```
+
+这个题目处理括号有三种情况，左括号多，右括号多，括号不匹配。从左到右，遍历字符串。扫描到左括号，在stack 中添加对应的右括号。因为stack 先进后出的原则，括号的先后顺序可以解决。如果遍历没结束，stack 为空过就代表有多余的右括号，如果左括号扫描结束，开始右括号，就检查当前字符是否与stack.peek 匹配。如果不匹配就有问题。最后如果遍历结束，stack 不为空，这就代表着有多余的左括号。
+
+stack 这个数据结构处理了先进后出的问题，在括号左右匹配问题上有所应用。
+
+
+### 删除字符串中的所有相邻重复项
+
+```java
+class Solution {
+    public String removeDuplicates(String s) {
+        Stack<Character> stack = new Stack<>();
+
+        char[] chars = s.toCharArray();
+
+        for(int i=0; i<chars.length; i++)
+        {
+            if(!stack.empty() && chars[i] == stack.peek())
+            {
+                stack.pop();
+            }else{
+                stack.push(chars[i]);
+            }
+        }
+        String str = "";
+        while(!stack.empty())
+        {
+            str = stack.pop() + str;
+        }
+
+        return str;
+    }
+}
+```
+
+栈这个数据结构是否做相邻字符是否匹配，相邻字符运算之类的问题。
+
+### 逆波兰表达式
+
+给你一个字符串数组 tokens ，表示一个根据 逆波兰表示法 表示的算术表达式。
+
+请你计算该表达式。返回一个表示表达式值的整数。
+
+有效的算符为 '+'、'-'、'*' 和 '/' 。
+每个操作数（运算对象）都可以是一个整数或者另一个表达式。
+两个整数之间的除法总是 向零截断 。
+表达式中不含除零运算。
+输入是一个根据逆波兰表示法表示的算术表达式。
+答案及所有中间计算结果可以用 32 位 整数表示。
+
+```
+输入：tokens = ["2","1","+","3","*"]
+输出：9
+解释：该算式转化为常见的中缀算术表达式为：((2 + 1) * 3) = 9
+
+输入：tokens = ["4","13","5","/","+"]
+输出：6
+解释：该算式转化为常见的中缀算术表达式为：(4 + (13 / 5)) = 6
+```
+
+```java
+class Solution {
+    public int evalRPN(String[] tokens) {
+        
+        Stack<Integer> stack = new Stack<>();
+
+        for(int i=0; i<tokens.length; i++)
+        {
+
+            if(tokens[i].equals("+") || tokens[i].equals("-") || tokens[i].equals("*")|| tokens[i].equals("/"))
+            {
+                if(tokens[i].equals("+"))
+                {
+                    int num1 = stack.pop();
+                    int num2 = stack.pop();
+                    stack.push(num2+num1);
+                }else if(tokens[i].equals("-"))
+                {
+                    int num1 = stack.pop();
+                    int num2 = stack.pop();
+                    stack.push(num2-num1);
+                }else if(tokens[i].equals("*"))
+                {
+                    int num1 = stack.pop();
+                    int num2 = stack.pop();
+                    stack.push(num2*num1);
+                }else if(tokens[i].equals("/"))
+                {
+                    int num1 = stack.pop();
+                    int num2 = stack.pop();
+                    stack.push(num2/num1);
+                }
+            }else{
+                int num = Integer.valueOf(tokens[i]);
+                stack.push(num);
+            }
+        }
+        return stack.pop();
+    }
+}
+```
+
+这个题目就是理解逆波兰表达式的后续遍历。每次遇到符号就弹出两个元素做运算，每次遇到数字就压进栈。
+
+### 滑动窗口最大值
+
+给你一个整数数组 nums，有一个大小为 k 的滑动窗口从数组的最左侧移动到数组的最右侧。你只可以看到在滑动窗口内的 k 个数字。滑动窗口每次只向右移动一位。
+
+返回 滑动窗口中的最大值 。
+
+
+```
+输入：nums = [1,3,-1,-3,5,3,6,7], k = 3
+输出：[3,3,5,5,6,7]
+解释：
+滑动窗口的位置                最大值
+---------------               -----
+[1  3  -1] -3  5  3  6  7       3
+ 1 [3  -1  -3] 5  3  6  7       3
+ 1  3 [-1  -3  5] 3  6  7       5
+ 1  3  -1 [-3  5  3] 6  7       5
+ 1  3  -1  -3 [5  3  6] 7       6
+ 1  3  -1  -3  5 [3  6  7]      7
+
+输入：nums = [1], k = 1
+输出：[1]
+```
+
+```java
+
+class Solution {
+
+    public class Myqueue{
+
+        Deque<Integer> deque = new LinkedList<>();
+
+        public void poll(int value){
+
+            // 所有小于value 的值都已经弹出，除非等于否则不用再弹出
+            if(!deque.isEmpty() && value == deque.peek())
+                deque.poll();
+        }
+
+        public void add(int value)
+        {
+            //如果value 大于当前队列最大值，弹出所有元素队列元素，然后加入value
+            while(!deque.isEmpty() && value > deque.peekLast())
+                deque.pollLast();
+            
+            deque.add(value);
+        }
+
+        public int peek(){
+
+            //返回当前单调队列最大值
+            return deque.peek();
+        }
+    }
+    public int[] maxSlidingWindow(int[] nums, int k) {
+        Myqueue queue = new Myqueue();
+
+        //储存结果
+        int[] result = new int[nums.length - k + 1];
+        int num = 0;
+
+        for(int i=0; i<k; i++)
+        {
+            queue.add(nums[i]);
+        }
+
+        result[num++] = queue.peek();
+
+        for(int i=k; i<nums.length; i++)
+        {
+            //先移除滑动窗空最左边的元素
+            queue.poll(nums[i-k]);
+            
+            //添加新元素
+            queue.add(nums[i]);
+
+            result[num++] = queue.peek();
+        }
+
+        return result;
+    }
+}
+```
+
+这个题目使用单调队列解决。我们自行定义一个队列，pop 的时候如果当前值与队列出口值相等就弹出，否则忽略。忽略的原因是，在那之前，已经把那个值弹出了。 add 一个值时，如果如果队列出口的值小于就一直弹出。如果value 大于当前队尾，弹出队尾元素元素，直到对列为空或队尾大于value，然后加入value。这里维护的单调栈，让队列内元素单调递减。被弹出的元素如果不是之前的最大值，将不会被用于result 数组。如果窗口右移，同时弹出的元素是最大值，那么下一个元素就会是下一个窗口的最大值。这样设计的一个单调队列就可以维持一个窗口的最大值。
+
+这里peek 直接返回最大值。
+
+在maxSlidingWindow 中初始化一个 长为 length-k 的数组储存答案。现将前k个元素放进队列，再把当前最大值放进数组第一位。
+
+遍历nums 数组，将最大值放进结果数组，弹出。
+
+### 前 K 个高频元素
+
+给你一个整数数组 nums 和一个整数 k ，请你返回其中出现频率前 k 高的元素。你可以按 任意顺序 返回答案。
+
+```
+输入: nums = [1,1,1,2,2,3], k = 2
+输出: [1,2]
+
+输入: nums = [1], k = 1
+输出: [1]
+```
+
+```java
+class Solution {
+    public int[] topKFrequent(int[] nums, int k) {
+        
+        //将所有元素出现的频率放入map 中
+        HashMap<Integer,Integer> map = new HashMap<>();
+
+        for(int num: nums)
+        {
+            map.put(num, map.getOrDefault(num, 0)+1);
+        }
+
+        //使用min-heap 对k个元素进行排序。使用min-heap 是因为仅需要频率最高的k个元素。
+
+        PriorityQueue<int[]> pq = new PriorityQueue<>((o1, o2) -> o1[1] - o2[1]); //定义小顶堆
+
+        for(Map.Entry<Integer, Integer> entry: map.entrySet())
+        {
+            int num = entry.getKey();
+            int count = entry.getValue();
+
+            if(pq.size() == k)
+            {
+                if(count > pq.peek()[1])
+                {
+                    pq.poll();
+                    pq.offer(new int[] {num, count});
+                }
+            }else{
+                pq.offer(new int[] {num, count});
+            }
+        }
+     int[] result = new int[k];
+
+    for(int i=0; i<k; i++)
+    {
+        result[i] = pq.poll()[0];
+    }   
+    return result;
+    }
+}
+```
+
+这个题目首先使用map记录数字出现频率，然后使用min-heap 小顶堆存放map 里面的key。java 里使用priority queue，然后通过定义comparator 函数来定义 min-heap。
+
+```
+min-heap: PriorityQueue<>((o1,o2) -> o1[1] - o2[1])
+max-heap: PriotyQueue<>((o1,o2) -> o2[1] - o1[1])
+```
+
+
+遍历map 里面的所有Entry，每一个entry 包含 (key,value)。获取这两个值。如果pq 的size 小于k就直接放入，如果大于k 就将当前count 的值与 pq 的peek 比较，如果后者大就忽略。如果前者大，就弹出peek 然后插入 {num, count} 进入pq。这里使用min-heap 的原因在于我们需要弹出堆中最不频繁出现的数字，如果当前的数字小于堆顶就弹出，反之则忽略。
