@@ -1716,3 +1716,140 @@ max-heap: PriotyQueue<>((o1,o2) -> o2[1] - o1[1])
 
 
 遍历map 里面的所有Entry，每一个entry 包含 (key,value)。获取这两个值。如果pq 的size 小于k就直接放入，如果大于k 就将当前count 的值与 pq 的peek 比较，如果后者大就忽略。如果前者大，就弹出peek 然后插入 {num, count} 进入pq。这里使用min-heap 的原因在于我们需要弹出堆中最不频繁出现的数字，如果当前的数字小于堆顶就弹出，反之则忽略。
+
+
+
+## 二叉树
+
+满二叉树：如果一棵二叉树只有度为0的结点和度为2的结点，并且度为0的结点在同一层上，则这棵二叉树为满二叉树。
+
+
+完全二叉树的定义如下：在完全二叉树中，除了最底层节点可能没填满外，其余每层节点数都达到最大值，并且最下面一层的节点都集中在该层最左边的若干位置。若最底层为第 h 层（h从1开始），则该层包含 1~ 2^(h-1) 个节点。
+
+前面介绍的树，都没有数值的，而二叉搜索树是有数值的了，二叉搜索树是一个有序树。
+
+若它的左子树不空，则左子树上所有结点的值均小于它的根结点的值；
+若它的右子树不空，则右子树上所有结点的值均大于它的根结点的值；
+它的左、右子树也分别为二叉排序树
+
+AVL（Adelson-Velsky and Landis）树，且具有以下性质：它是一棵空树或它的左右两个子树的高度差的绝对值不超过1，并且左右两个子树都是一棵平衡二叉树。
+
+* 深度优先遍历
+  * 前序遍历（递归法，迭代法）
+  * 中序遍历（递归法，迭代法）
+  * 后序遍历（递归法，迭代法）
+广度优先遍历
+  * 层次遍历（迭代法）
+
+
+* 前序遍历：中左右
+* 中序遍历：左中右
+* 后序遍历：左右中
+
+```java
+public class TreeNode {
+    int val;
+    TreeNode left;
+    TreeNode right;
+
+    TreeNode() {}
+    TreeNode(int val) { this.val = val; }
+    TreeNode(int val, TreeNode left, TreeNode right) {
+        this.val = val;
+        this.left = left;
+        this.right = right;
+    }
+}
+```
+
+## 二叉树遍历
+
+递归框架：
+
+1. 确定递归函数的参数和返回值： 确定哪些参数是递归的过程中需要处理的，那么就在递归函数里加上这个参数， 并且还要明确每次递归的返回值是什么进而确定递归函数的返回类型。
+
+2. 确定终止条件： 写完了递归算法, 运行的时候，经常会遇到栈溢出的错误，就是没写终止条件或者终止条件写的不对，操作系统也是用一个栈的结构来保存每一层递归的信息，如果递归没有终止，操作系统的内存栈必然就会溢出。
+
+3. 确定单层递归的逻辑： 确定每一层递归需要处理的信息。在这里也就会重复调用自己来实现递归的过程。
+
+```java
+class Solution {
+    public List<Integer> preorderTraversal(TreeNode root) {
+        List<Integer> list = new ArrayList<>();
+
+        preorderTraversal(root, list);
+        return list;
+    }
+
+    public void preorderTraversal(TreeNode root, List<Integer> list)
+    {
+        if(root == null)
+            return;
+        
+        list.add(root.val);
+        preorderTraversal(root.left, list);
+        preorderTraversal(root.right, list);
+    }
+}
+
+class Solution {
+    public List<Integer> postorderTraversal(TreeNode root){
+        
+        List<Integer> list = new ArrayList<>();
+
+        postorderTraversal(root, list);
+        return list;
+    }
+
+    public void postorderTraversal(TreeNode root, List<Integer> list)
+    {
+        if(root == null)
+            return;
+        
+        postorderTraversal(root.left, list);
+        postorderTraversal(root.right, list);
+
+        list.add(root.val);
+    }
+}
+
+class Solution {
+    public List<Integer> inorderTraversal(TreeNode root) {
+        List<Integer> list = new ArrayList<>();
+
+        inorderTraversal(root, list);
+
+        return list;
+    }
+
+    public void inorderTraversal(TreeNode root, List<Integer> list)
+    {
+        if(root == null)
+            return;
+        
+        inorderTraversal(root.left, list);
+
+        list.add(root.val);
+
+        inorderTraversal(root.right, list);
+
+        
+    }
+}
+
+```
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
