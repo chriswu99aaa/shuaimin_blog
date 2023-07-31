@@ -1839,6 +1839,69 @@ class Solution {
 
 ```
 
+### 迭代法遍历
+
+使用stack 数据结构模拟树的遍历。
+
+依次将root 放进stack，然后弹出处理，然后将右节点，然后左节点放入stack。根据先进后出的原则，stack 会先处理左节点从而符合前序遍历。
+
+```java
+class Solution {
+    public List<Integer> preorderTraversal(TreeNode root) {
+        List<Integer> list = new ArrayList<>();
+
+        if(root == null)
+            return list;
+        
+        Deque<TreeNode> stack = new LinkedList<>();
+        stack.push(root);
+        
+        while(!stack.isEmpty())
+        {
+            TreeNode current = stack.pop();   
+
+            list.add(current.val);
+
+            if(current.right != null)
+                stack.push(current.right);
+            if(current.left != null)
+                stack.push(current.left);
+            
+        }
+        return list;
+    }
+}
+```
+后序遍历：
+```java
+class Solution {
+    public List<Integer> preorderTraversal(TreeNode root) {
+        List<Integer> list = new ArrayList<>();
+
+        if(root == null)
+            return list;
+        
+        Deque<TreeNode> stack = new LinkedList<>();
+        stack.push(root);
+        
+        while(!stack.isEmpty())
+        {
+            TreeNode current = stack.pop();   
+
+            list.add(current.val);
+
+            if(current.right != null)
+                stack.push(current.right);
+            if(current.left != null)
+                stack.push(current.left);
+            
+        }
+        return list;
+    }
+
+}
+```
+
 
 
 
