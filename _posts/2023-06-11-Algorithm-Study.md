@@ -1900,7 +1900,35 @@ class Solution {
     }
 
 }
+
+//中序遍历
+class Solution {
+    public List<Integer> inorderTraversal(TreeNode root) {
+        List<Integer> list = new ArrayList<Integer>();
+        Deque<TreeNode> stack = new LinkedList<TreeNode>();  
+        
+        if(root == null)
+            return list;       
+          
+        while(root != null || !stack.isEmpty())
+        {
+            if(root != null)
+            {
+                stack.push(root);
+                root = root.left;
+            }else{
+                root = stack.pop();
+                list.add(root.val);
+                root = root.right;
+            }                
+        }
+        return list;
+    }
+}
 ```
+迭代法就是用栈模拟树的前中后序遍历。前后序遍历是相同的，中左右，左右中。都是使用栈，前者先将cur 加入list，再将右左节点入栈。后者先处理cur，再将左右节点入栈。这里的先后顺序是至关重要的。
+
+中序遍历不能按照相同的逻辑，因为栈弹出的顺序与遍历顺序不相符。这个时候我们要先处理左节点，再处理中节点，最后右节点。利用cur 指针便利不断向左，直到指针为空，然后弹出栈，处理弹出的节点，再将cur 指向cur.right 查看右边的节点。如果也为空，在下一个循环中就会弹出上一层的节点，并且处理它。
 
 
 
