@@ -1930,6 +1930,59 @@ class Solution {
 
 中序遍历不能按照相同的逻辑，因为栈弹出的顺序与遍历顺序不相符。这个时候我们要先处理左节点，再处理中节点，最后右节点。利用cur 指针便利不断向左，直到指针为空，然后弹出栈，处理弹出的节点，再将cur 指向cur.right 查看右边的节点。如果也为空，在下一个循环中就会弹出上一层的节点，并且处理它。
 
+### 二叉树的层序遍历
+
+给你二叉树的根节点 root ，返回其节点值的 层序遍历 。 （即逐层地，从左到右访问所有节点）。
+
+```
+输入：root = [3,9,20,null,null,15,7]
+输出：[[3],[9,20],[15,7]]
+
+输入：root = [1]
+输出：[[1]]
+
+输入：root = []
+输出：[]
+```
+```java
+class Solution {
+    public List<List<Integer>> levelOrder(TreeNode root) {
+
+        List<List<Integer>> result = new ArrayList<List<Integer>>();
+
+        Deque<TreeNode> queue = new LinkedList<>();
+
+        //空指针不入栈
+        if(root != null)
+            queue.add(root);
+
+        while(!queue.isEmpty())
+        {
+            int size = queue.size();
+            ArrayList<Integer> list = new ArrayList<>();            
+            while(size != 0)
+            {
+                TreeNode cur = queue.poll();
+                list.add(cur.val);
+
+                //空指针不入栈
+                if(cur.left != null)
+                    queue.add(cur.left);
+                if(cur.right != null)
+                    queue.add(cur.right);
+
+                size--;
+            }
+            result.add(list);
+        }
+        return result;
+    }
+}
+```
+
+这个题目要返回层序遍历的二叉树结点。一层一层遍历使用队列先进先出的特性。每次入队都要检查节点是否为空，不为空加入队列中。否则不加入。
+
+在最开始入队root 后队列不为空，然后使用while 循环直到队列为空。在循环内首先获取队列size，这个size 将会作为每一层list 加入的元素个数。可以让我们知道每一层应该有多少个数字加入list。然后初始化一个list，在使用while 循环直到size 为0。循环内队列弹出节点，获取当前节点的值，然后把左右子节点加入队列。然后size--。要检查左右节点是否为空。内循环结束后，将list 加入result 中。
 
 
 
