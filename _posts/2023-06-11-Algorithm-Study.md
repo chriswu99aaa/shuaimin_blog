@@ -1985,8 +1985,163 @@ class Solution {
 在最开始入队root 后队列不为空，然后使用while 循环直到队列为空。在循环内首先获取队列size，这个size 将会作为每一层list 加入的元素个数。可以让我们知道每一层应该有多少个数字加入list。然后初始化一个list，在使用while 循环直到size 为0。循环内队列弹出节点，获取当前节点的值，然后把左右子节点加入队列。然后size--。要检查左右节点是否为空。内循环结束后，将list 加入result 中。
 
 
+### 翻转二叉树
+
+给你一棵二叉树的根节点 root ，翻转这棵二叉树，并返回其根节点。
+
+```
+输入：root = [4,2,7,1,3,6,9]
+输出：[4,7,2,9,6,3,1]
+
+输入：root = [2,1,3]
+输出：[2,3,1]
+
+输入：root = []
+输出：[]
+```
+
+```java
+class Solution {
+    public TreeNode invertTree(TreeNode root) {
+        invertTrees(root);
+        return root;
+    }
+
+    public void invertTrees(TreeNode cur)
+    {
+        if(cur == null)
+            return;
+        
+        TreeNode tmp = cur.left;
+        cur.left = cur.right;
+        cur.right = tmp;
+
+        invertTrees(cur.left);
+        invertTrees(cur.right);
+    }
+}
+```
+
+递归法。首先定义函数参数以及返回值。参数就是root 当前节点，递归不需要返回，只需要反转。所以递归函数void，只是需要在整体的返回式 return root。终止条件就是当cur 为空时终止。递归逻辑是前序遍历。在cur 时交换左右指针，然后对左右子节点使用递归函数。
+
+```java
+class Solution {
+    public TreeNode invertTree(TreeNode root) {
+
+        Deque<TreeNode> stack = new LinkedList<>();
+
+        if(root != null)
+            stack.push(root);
+        
+        while(!stack.isEmpty())
+        {
+            TreeNode cur = stack.pop();
+            
+            TreeNode tmp = cur.left;
+            cur.left = cur.right;
+            cur.right = tmp;
+
+            if(cur.right != null)
+                stack.push(cur.right);
+            if(cur.left != null)
+                stack.push(cur.left);
+        }
+
+        return root;
+    }
+}
+```
+
+迭代法：这里使用深度优先前序遍历。借助stack 函数模拟深度优先算法。先把root 进栈，然后while stack 不为空，就stack 弹出元素，处理指针交换，然后右左子节点先后入栈。每次入栈前都需要检查节点是否为空。
 
 
+```java
+class Solution {
+    public TreeNode invertTree(TreeNode root) {
+
+        Deque<TreeNode> queue = new LinkedList<>();
+
+        if(root != null)
+            queue.push(root);
+        
+        while(!queue.isEmpty())
+        {
+            int size = queue.size();
+
+            while(size != 0)
+            {
+                TreeNode cur = queue.poll();
+                
+                TreeNode tmp = cur.left;
+                cur.left = cur.right;
+                cur.right = tmp;
+
+                if(cur.left != null)
+                    queue.push(cur.left);   
+                if(cur.right != null)
+                    queue.push(cur.right);
+             
+                size--;
+            }
+        }
+        return root;
+    }
+
+}
+```
+
+层序遍历：借助queue 数据结构完成先进先出的逻辑。先把root 进队。while queue 不为空，获取queue size，然后从队列中取出size 个元素处理。
+
+
+### 对称二叉树
+
+需要我们收集子节点信息，向上一层返回的的时候要使用**后序遍历**
+
+给你一个二叉树的根节点 root ， 检查它是否轴对称。
+
+```
+输入：root = [1,2,2,3,4,4,3]
+输出：true
+
+输入：root = [1,2,2,null,3,null,3]
+输出：false
+```
+
+```java
+class Solution {
+    public boolean isSymmetric(TreeNode root) {
+
+        return compare(root.left, root.right);
+    }
+
+    public boolean compare(TreeNode left, TreeNode right)
+    {
+        if(left==null && right!=null)
+            return false;
+        else if(left!=null && right == null)
+            return false;
+        else if(left==null && right==null)
+            return true;
+        else if(left.val != right.val)
+            return false;
+
+        //后序遍历
+
+        boolean outside = compare(left.left, right.right);
+        boolean inside = compare(left.right, right.left);
+
+        //内外都true
+        return outside && inside;
+    }
+}
+```
+这个题目利用的是递归方法。
+递归三步走：
+1. 定义函数参数和返回值：这里需要返回boolean看两边子树是否相等，所以递归函数返回boolean。参数因为是要对比两个子树，所以要左右节点。
+2. 终止条件：如果在左子树上的左节点为空，而右子树上的右节点不会空，两边不对称，所以false。同理右为空，左不空，也为false。如果两边都不为空，但是数值不相等，也是false。只有两边都为空的情况return true。这里是终止条件。如果左右两边都不为空，数值也相等，这就是继续递归的逻辑，如下
+3. 单层递归的逻辑：outside 递归compare left.left and right.right。这个就是外侧树。 inside 递归 compare left.right and right.left。一棵二叉树只有内外两边，这也就是主要的变化。只有outside 和 inside 都true 才是true
+
+我们使用后序遍历是因为要先把左右子节点信息传入父节点，然后比较。
 
 
 
