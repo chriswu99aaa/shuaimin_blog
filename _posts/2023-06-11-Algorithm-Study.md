@@ -2143,10 +2143,150 @@ class Solution {
 
 我们使用后序遍历是因为要先把左右子节点信息传入父节点，然后比较。
 
+### 二叉树的最大深度
+
+给定一个二叉树 root ，返回其最大深度。
+
+二叉树的 最大深度 是指从根节点到最远叶子节点的最长路径上的节点数。
+```
+输入：root = [3,9,20,null,null,15,7]
+输出：3
+输入：root = [1,null,2]
+输出：2
+
+```
+```java
+class Solution {
+    public int maxDepth(TreeNode root) {
+
+        return getHight(root);
+    }
+
+    public int getHight(TreeNode root)
+    {
+        if(root == null)
+            return 0;
+        
+        //后序遍历
+        int leftHight = getHight(root.left);
+        int rightHight = getHight(root.right);
+
+        int hight = Math.max(leftHight, rightHight);
+
+        return hight+1;
+    }
+}
+```
+
+深度优先后序遍历。这里计算的其实是树的高度，但高度和深度其实是一样的。计算深度的逻辑使用前序遍历不断地在深度上+1。 题目要求返回一个int，所以计算高度时的递归函数也返回int，参数就一个TreeNode。参数里面不用传int 是因为高度将会作为返回值。终止条件是，当root 为空时返回0，因为这个时候就是叶子节点。 然后就是后序遍历逻辑，左右中。中间部分的处理就是获得最大高度，然后return hight+1
+
+```java
+class Solution {
+
+    public int maxDepth(TreeNode root) {
+        int result=0;
+        Deque<TreeNode> queue = new LinkedList<>();
+
+        if(root != null)
+            queue.add(root);
+        
+        while(!queue.isEmpty())
+        {
+            int size = queue.size();
+            result++;
+            while(size != 0)
+            {
+                TreeNode cur = queue.poll();
+                if(cur.left != null)
+                    queue.add(cur.left);
+                if(cur.right != null)
+                    queue.add(cur.right);
+                size--;
+            }
+        }
+        return result;
+    }
+}
+```
+
+### 二叉树的最小深度
+
+给定一个二叉树，找出其最小深度。
+
+最小深度是从根节点到最近叶子节点的最短路径上的节点数量。
+
+说明：叶子节点是指没有子节点的节点。
+```
+输入：root = [3,9,20,null,null,15,7]
+输出：2
+
+输入：root = [2,null,3,null,4,null,5,null,6]
+输出：5
+```
+```java
+class Solution {
+    public int minDepth(TreeNode root) {
+        
+        return getDepth(root);
+    }
+
+    public int getDepth(TreeNode root)
+    {
+        if(root == null)
+            return 0;
+        
+        int leftDepth = getDepth(root.left);
+        int rightDepth = getDepth(root.right);
+
+        if(root.left == null && root.right != null)
+            return rightDepth+1;
+        if(root.left != null && root.right == null)
+            return leftDepth+1;
+        
+        return Math.min(leftDepth, rightDepth)+1;
+    }
+}
+```
+深度优先，后序遍历法。
+1. 确定返回值和参数：返回int 二叉树最小深度。使用TreeNode 参数
+2. 终止条件是 root==null，也就是达到叶节点 return 0
+3. 单层递归逻辑：后序遍历，先处理左右子树的深度。return 部分的处理。因为有可能是左右子树有一边为空，所以要检查这种情况。如果这个情况属实，就return 另一边子树的深度+1。如果两边都有子树，那么就选择左右最小深度+1。
+
+这个题目因为是使用的后序遍历，实际上会有很多多余的计算，因为是从最深处不断网上递归。因为使用层序遍历就更加快
 
 
+```java
+class Solution {
+    public int minDepth(TreeNode root) {
+        int depth = 0;
+        int size;
+        Deque<TreeNode> queue = new LinkedList<>();
+        if(root != null)
+            queue.add(root);
+    
+        while(!queue.isEmpty())
+        {
+            size = queue.size();
+            depth++;        
+            while(size != 0)
+            {
+                TreeNode cur = queue.poll();
 
+                if(cur.left == null && cur.right == null)
+                    return depth;
+                if(cur.left != null)
+                    queue.add(cur.left);
+                if(cur.right != null)
+                    queue.add(cur.right);
+                size--;
+            }
+        }
+        return depth;
+    }
+}
+```
 
+层序遍历法：维持一个变量depth。使用正常的检查逻辑入队，然后开始while 循环。层序遍历要思考，什么情况下停止算法。这里我们是自顶向下，当我们遍历一层时，要思考怎样达到了最小深度。达到叶子节点就代表，达到最小深度。叶子节点就是没有左右子节点，这就是内while 循环中检查的逻辑。
 
  
 
