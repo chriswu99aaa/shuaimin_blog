@@ -2288,7 +2288,163 @@ class Solution {
 
 层序遍历法：维持一个变量depth。使用正常的检查逻辑入队，然后开始while 循环。层序遍历要思考，什么情况下停止算法。这里我们是自顶向下，当我们遍历一层时，要思考怎样达到了最小深度。达到叶子节点就代表，达到最小深度。叶子节点就是没有左右子节点，这就是内while 循环中检查的逻辑。
 
- 
+ ### 完全二叉树的节点个数
+
+给你一棵 完全二叉树 的根节点 root ，求出该树的节点个数。
+
+完全二叉树 的定义如下：在完全二叉树中，除了最底层节点可能没填满外，其余每层节点数都达到最大值，并且最下面一层的节点都集中在该层最左边的若干位置。若最底层为第 h 层，则该层包含 1~ 2h 个节点。
+
+```
+输入：root = [1,2,3,4,5,6]
+输出：6
+
+输入：root = []
+输出：0
+
+输入：root = [1]
+输出：1
+```
+```java
+class Solution {
+    public int countNodes(TreeNode root) {
+        return count(root);
+    }
+
+    public int count(TreeNode root)
+    {
+        //终止条件
+        if(root == null)
+            return 0;
+        
+        TreeNode left = root.left;
+        TreeNode right = root.right;
+
+        int leftDepth = 0;
+        int rightDepth = 0;
+
+        while(left != null)
+        {
+            left = left.left;
+            leftDepth++;
+        }
+        while(right != null)
+        {
+            right = right.right;
+            rightDepth++;
+        }
+        if(leftDepth == rightDepth)
+        {
+            return (2 << leftDepth) -1;
+        }
+
+        //后序遍历
+        int leftCount = count(root.left);
+        int rightCount = count(root.right);
+
+        return leftCount + rightCount + 1;
+    }
+}
+```
+
+本题使用一般二叉树求解同样可以通过，但是线性时间复杂度，远远不如 $(log(n))^2$。我们需要利用完全二叉树的特性，也就是处最后一层外二叉树全满，最后一层从左边开始填充。当我们不断往左右分解子树，就会遇到满二叉树，此时满二叉树节点个数可以通过 $2^k -1$ k 是当前二叉树深度。
+
+那么如何判断是否有满二叉子树？通过不断遍历左指针和右指针。如果左右指针为空时，左右深度相同，那么就会是满二叉树，否则就继续使用正常的后序遍历逻辑。
+
+### 平衡二叉树
+给定一个二叉树，判断它是否是高度平衡的二叉树。
+
+本题中，一棵高度平衡二叉树定义为：
+
+一个二叉树每个节点 的左右两个子树的高度差的绝对值不超过 1 。
+
+```
+输入：root = [3,9,20,null,null,15,7]
+输出：true
+
+输入：root = [1,2,2,3,3,null,null,4,4]
+输出：false
+
+输入：root = []
+输出：true
+```
+```java
+class Solution {
+
+    public boolean isBalanced(TreeNode root) {
+        return check(root) == -1? false : true;
+    }
+
+    public int check(TreeNode root)
+    {
+        if(root == null)
+            return 0;
+
+        //后序遍历
+        int left = check(root.left);
+        if(left == -1)
+            return -1;
+
+        int right = check(root.right);
+        if(right == -1)
+            return -1;
+
+        if(Math.abs(left - right) > 1)
+        {
+            return -1;           
+        }        
+        return Math.max(left, right)+1;
+    }
+}
+
+class Solution {
+
+    boolean balance = true;
+    public boolean isBalanced(TreeNode root) {
+        check(root);
+        return balance;
+    }
+
+    public int check(TreeNode root)
+    {
+        if(root == null)
+            return 0;
+
+        //后序遍历
+        int left = check(root.left);
+        int right = check(root.right);
+
+        if(Math.abs(left - right) > 1)
+        {
+            balance = false;
+            return 1;           
+        }        
+        return Math.max(left, right)+1;
+    }
+}
+```
+
+这个题目的关键在于左右子树高度差不大于1。首先用题目函数返回值需要时boolean，所以做重要做一个true/false 比较。因为我们需要计算左右子树高度，所以使用int 作为递归函数的return。函数参数就是root。
+
+* 终止条件，如果root为空返回0。
+* 递归逻辑：后序遍历。先递归左子树，然后检查return 是否为-1，再递归右子树，检查return 是否为-1。如果是-1 直接return -1。中间的处理是，两边遍历完成了后，检查左右子树的高度如果相差大于1，直接return -1。两边相差小于1，就正常返回左右子树的高度最大值+1。
+
+  
+这里使用-1就是将结果作为比较结果。如果如果高度差大于1，就会返回-1。那么上层递归就会收到-1的返回，再继续返回-1，就会让整体函数的返回为-1。最后比较递归函数的返回是否为-1，如果是就不平衡，否则平衡。
+
+这里我最开始的思路是维持一个变量balance ，如果不平衡就是false，否则就是true。这里的变量与返回的数字形成了冗余效果，因为出现不平衡情况后我们可以直接返回而不需要后续的计算。
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
