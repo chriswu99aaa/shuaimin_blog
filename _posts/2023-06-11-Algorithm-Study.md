@@ -2434,8 +2434,161 @@ class Solution {
 这里我最开始的思路是维持一个变量balance ，如果不平衡就是false，否则就是true。这里的变量与返回的数字形成了冗余效果，因为出现不平衡情况后我们可以直接返回而不需要后续的计算。
 
 
+### 二叉树的所有路径
+
+给你一个二叉树的根节点 root ，按 任意顺序 ，返回所有从根节点到叶子节点的路径。
+
+叶子节点 是指没有子节点的节点。
+
+```
+输入：root = [1,2,3,null,5]
+输出：["1->2->5","1->3"]
+
+输入：root = [1]
+输出：["1"]
+```
+
+```java
+class Solution {
+    public List<String> binaryTreePaths(TreeNode root) {
+        List<String> result = new ArrayList<>();  
+        List<Integer> path = new ArrayList<>();      
+        traversal(path,result, root);
+        return result;
+    }
+
+    public void traversal(List<Integer> path, List<String> result, TreeNode root)
+    {
+        //前序遍历
+        path.add(root.val);     
+
+        if(root.left == null && root.right == null)
+        {
+           StringBuilder sb = new StringBuilder();
+           for(int i=0; i<path.size(); i++)
+           {
+               if(i != path.size()-1)
+               {
+                    sb.append(path.get(i));
+                    sb.append("->");                   
+               }else
+               {
+                   sb.append(path.get(i));
+               }
+           }
+           result.add(sb.toString());
+        }
+        if(root.left != null)
+        {
+            traversal(path, result, root.left);
+            path.remove(path.size()-1); //回溯。 移除最后一个元素            
+        }
+        if(root.right != null)
+        {
+            traversal(path, result, root.right);
+            path.remove(path.size()-1); //回溯。 移除最后一个元素   
+        }
+    }
+}
+```
+快的版本
+
+```java
+class Solution {
 
 
+
+    public List<String> binaryTreePaths(TreeNode root) {
+        String path = "";
+        List<String> paths = new ArrayList<>();        
+        traversal(path,paths, root);
+        return paths;
+    }
+
+    public void traversal(String path, List<String> paths, TreeNode root)
+    {
+
+        //前序遍历
+        path = path + root.val;     
+
+        if(root.left == null && root.right == null)
+        {
+            paths.add(path);
+        }
+
+        if(root.left != null)
+        {
+            traversal(path + "->", paths, root.left);            
+        }
+
+        if(root.right != null)
+        {
+            traversal(path + "->", paths, root.right);            
+        }
+
+    }
+}
+```
+慢的版本
+
+```java
+class Solution {
+    public List<String> binaryTreePaths(TreeNode root) {
+        List<String> result = new ArrayList<>();  
+        Deque<Integer> path = new LinkedList<>();      
+        traversal(path,result, root);
+        return result;
+    }
+
+    public void traversal(Deque<Integer> path, List<String> result, TreeNode root)
+    {
+        //前序遍历
+        path.add(root.val);     
+
+        if(root.left == null && root.right == null)
+        {
+           StringBuilder sb = new StringBuilder();
+           int size = path.size();
+            int i=0;
+           while(i < size)
+           {
+                int tmp = path.pollFirst();               
+               if(i != size-1)
+               {
+                    sb.append(tmp);
+                    sb.append("->");                   
+               }else{
+                   sb.append(tmp);
+               }
+               path.add(tmp);
+               i++;
+           }
+           result.add(sb.toString());
+        }
+        if(root.left != null)
+        {
+            traversal(path, result, root.left);
+            path.pollLast(); //回溯。 移除最后一个元素            
+        }
+        if(root.right != null)
+        {
+            traversal(path, result, root.right);
+            path.pollLast(); //回溯。 移除最后一个元素   
+        }
+    }
+}
+```
+这个版本借助队列实现功能，更加繁琐。
+
+两个版本都是正确的，但是第一个更快，原因在于对字符串的操作都集中在了最后，而第二个版本每一侧递归都会进行字符串操作。
+
+这个题目使用递归解决，它涉及到回溯算法。
+1. 确定函数返回值和参数：calling 函数要返回 List<String>，递归函数可以将那个result list 作为参数，同时使用List<Integer>，然后就是TreeNode
+2. 终止条件：当碰到叶子节点就终止。
+3. 单层递归逻辑：先将root.val 入list，然后检测左右子节点是否会空，否则递归。
+
+函数的最开始把中节点加入path，否则如果放在返回逻辑之后就会导致叶节点不能入list。当碰到叶节点时，使用stringbuilder，然后通过for 循环构造返回的路径字符串，然后加进result。
+然后在完成左右递归后，要进行回溯操作，也就是把下一层递归加入的子节点移除。
 
 
 
