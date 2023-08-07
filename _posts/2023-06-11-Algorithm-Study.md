@@ -2591,6 +2591,45 @@ class Solution {
 然后在完成左右递归后，要进行回溯操作，也就是把下一层递归加入的子节点移除。
 
 
+### 左叶子之和
+
+给定二叉树的根节点 root ，返回所有左叶子之和。
+
+```
+输入: root = [3,9,20,null,null,15,7] 
+输出: 24 
+解释: 在这个二叉树中，有两个左叶子，分别是 9 和 15，所以返回 24
+
+输入: root = [1]
+输出: 0
+```
+
+```java
+class Solution {
+    public int sumOfLeftLeaves(TreeNode root) {
+        return nodeSum(root);
+    }
+    public int nodeSum(TreeNode root)
+    {
+        // 终止条件
+        if(root == null)
+            return 0;
+        if(root.left == null && root.right == null)
+            return 0;
+        
+        int left = nodeSum(root.left);
+        int right = nodeSum(root.right);
+        
+        if(root.left != null && root.left.left == null && root.left.right == null)
+            left =  root.left.val;
+        return left + right;        
+    }
+}
+```
+
+这个题目要判断叶子节点，当我们遍历到底层时，返回0，因为不能判断是否为左叶子。当回溯到父节点时再判断左叶子节点是否为空，如果否，就将左叶子节点的数值赋给left。
+
+这里使用后序遍历，左右中。当我们完成左遍历后，如果左叶子节点不为空，就可以完成上面提到的赋值。中的处理就是当前单层逻辑的处理，没有递归调用。
 
 
 
