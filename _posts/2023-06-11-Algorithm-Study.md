@@ -1714,5 +1714,6 @@ min-heap: PriorityQueue<>((o1,o2) -> o1[1] - o2[1])
 max-heap: PriotyQueue<>((o1,o2) -> o2[1] - o1[1])
 ```
 
-
 遍历map 里面的所有Entry，每一个entry 包含 (key,value)。获取这两个值。如果pq 的size 小于k就直接放入，如果大于k 就将当前count 的值与 pq 的peek 比较，如果后者大就忽略。如果前者大，就弹出peek 然后插入 {num, count} 进入pq。这里使用min-heap 的原因在于我们需要弹出堆中最不频繁出现的数字，如果当前的数字小于堆顶就弹出，反之则忽略。
+
+
