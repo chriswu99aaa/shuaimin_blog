@@ -1717,3 +1717,927 @@ max-heap: PriotyQueue<>((o1,o2) -> o2[1] - o1[1])
 遍历map 里面的所有Entry，每一个entry 包含 (key,value)。获取这两个值。如果pq 的size 小于k就直接放入，如果大于k 就将当前count 的值与 pq 的peek 比较，如果后者大就忽略。如果前者大，就弹出peek 然后插入 {num, count} 进入pq。这里使用min-heap 的原因在于我们需要弹出堆中最不频繁出现的数字，如果当前的数字小于堆顶就弹出，反之则忽略。
 
 
+
+## 二叉树
+
+满二叉树：如果一棵二叉树只有度为0的结点和度为2的结点，并且度为0的结点在同一层上，则这棵二叉树为满二叉树。
+
+
+完全二叉树的定义如下：在完全二叉树中，除了最底层节点可能没填满外，其余每层节点数都达到最大值，并且最下面一层的节点都集中在该层最左边的若干位置。若最底层为第 h 层（h从1开始），则该层包含 1~ 2^(h-1) 个节点。
+
+前面介绍的树，都没有数值的，而二叉搜索树是有数值的了，二叉搜索树是一个有序树。
+
+若它的左子树不空，则左子树上所有结点的值均小于它的根结点的值；
+若它的右子树不空，则右子树上所有结点的值均大于它的根结点的值；
+它的左、右子树也分别为二叉排序树
+
+AVL（Adelson-Velsky and Landis）树，且具有以下性质：它是一棵空树或它的左右两个子树的高度差的绝对值不超过1，并且左右两个子树都是一棵平衡二叉树。
+
+* 深度优先遍历
+  * 前序遍历（递归法，迭代法）
+  * 中序遍历（递归法，迭代法）
+  * 后序遍历（递归法，迭代法）
+广度优先遍历
+  * 层次遍历（迭代法）
+
+
+* 前序遍历：中左右
+* 中序遍历：左中右
+* 后序遍历：左右中
+
+```java
+public class TreeNode {
+    int val;
+    TreeNode left;
+    TreeNode right;
+
+    TreeNode() {}
+    TreeNode(int val) { this.val = val; }
+    TreeNode(int val, TreeNode left, TreeNode right) {
+        this.val = val;
+        this.left = left;
+        this.right = right;
+    }
+}
+```
+
+## 二叉树遍历
+
+递归框架：
+
+1. 确定递归函数的参数和返回值： 确定哪些参数是递归的过程中需要处理的，那么就在递归函数里加上这个参数， 并且还要明确每次递归的返回值是什么进而确定递归函数的返回类型。
+
+2. 确定终止条件： 写完了递归算法, 运行的时候，经常会遇到栈溢出的错误，就是没写终止条件或者终止条件写的不对，操作系统也是用一个栈的结构来保存每一层递归的信息，如果递归没有终止，操作系统的内存栈必然就会溢出。
+
+3. 确定单层递归的逻辑： 确定每一层递归需要处理的信息。在这里也就会重复调用自己来实现递归的过程。
+
+```java
+class Solution {
+    public List<Integer> preorderTraversal(TreeNode root) {
+        List<Integer> list = new ArrayList<>();
+
+        preorderTraversal(root, list);
+        return list;
+    }
+
+    public void preorderTraversal(TreeNode root, List<Integer> list)
+    {
+        if(root == null)
+            return;
+        
+        list.add(root.val);
+        preorderTraversal(root.left, list);
+        preorderTraversal(root.right, list);
+    }
+}
+
+class Solution {
+    public List<Integer> postorderTraversal(TreeNode root){
+        
+        List<Integer> list = new ArrayList<>();
+
+        postorderTraversal(root, list);
+        return list;
+    }
+
+    public void postorderTraversal(TreeNode root, List<Integer> list)
+    {
+        if(root == null)
+            return;
+        
+        postorderTraversal(root.left, list);
+        postorderTraversal(root.right, list);
+
+        list.add(root.val);
+    }
+}
+
+class Solution {
+    public List<Integer> inorderTraversal(TreeNode root) {
+        List<Integer> list = new ArrayList<>();
+
+        inorderTraversal(root, list);
+
+        return list;
+    }
+
+    public void inorderTraversal(TreeNode root, List<Integer> list)
+    {
+        if(root == null)
+            return;
+        
+        inorderTraversal(root.left, list);
+
+        list.add(root.val);
+
+        inorderTraversal(root.right, list);
+
+        
+    }
+}
+
+```
+
+### 迭代法遍历
+
+使用stack 数据结构模拟树的遍历。
+
+依次将root 放进stack，然后弹出处理，然后将右节点，然后左节点放入stack。根据先进后出的原则，stack 会先处理左节点从而符合前序遍历。
+
+```java
+class Solution {
+    public List<Integer> preorderTraversal(TreeNode root) {
+        List<Integer> list = new ArrayList<>();
+
+        if(root == null)
+            return list;
+        
+        Deque<TreeNode> stack = new LinkedList<>();
+        stack.push(root);
+        
+        while(!stack.isEmpty())
+        {
+            TreeNode current = stack.pop();   
+
+            list.add(current.val);
+
+            if(current.right != null)
+                stack.push(current.right);
+            if(current.left != null)
+                stack.push(current.left);
+            
+        }
+        return list;
+    }
+}
+```
+后序遍历：
+```java
+class Solution {
+    public List<Integer> preorderTraversal(TreeNode root) {
+        List<Integer> list = new ArrayList<>();
+
+        if(root == null)
+            return list;
+        
+        Deque<TreeNode> stack = new LinkedList<>();
+        stack.push(root);
+        
+        while(!stack.isEmpty())
+        {
+            TreeNode current = stack.pop();   
+
+            list.add(current.val);
+
+            if(current.right != null)
+                stack.push(current.right);
+            if(current.left != null)
+                stack.push(current.left);
+            
+        }
+        return list;
+    }
+
+}
+
+//中序遍历
+class Solution {
+    public List<Integer> inorderTraversal(TreeNode root) {
+        List<Integer> list = new ArrayList<Integer>();
+        Deque<TreeNode> stack = new LinkedList<TreeNode>();  
+        
+        if(root == null)
+            return list;       
+          
+        while(root != null || !stack.isEmpty())
+        {
+            if(root != null)
+            {
+                stack.push(root);
+                root = root.left;
+            }else{
+                root = stack.pop();
+                list.add(root.val);
+                root = root.right;
+            }                
+        }
+        return list;
+    }
+}
+```
+迭代法就是用栈模拟树的前中后序遍历。前后序遍历是相同的，中左右，左右中。都是使用栈，前者先将cur 加入list，再将右左节点入栈。后者先处理cur，再将左右节点入栈。这里的先后顺序是至关重要的。
+
+中序遍历不能按照相同的逻辑，因为栈弹出的顺序与遍历顺序不相符。这个时候我们要先处理左节点，再处理中节点，最后右节点。利用cur 指针便利不断向左，直到指针为空，然后弹出栈，处理弹出的节点，再将cur 指向cur.right 查看右边的节点。如果也为空，在下一个循环中就会弹出上一层的节点，并且处理它。
+
+### 二叉树的层序遍历
+
+给你二叉树的根节点 root ，返回其节点值的 层序遍历 。 （即逐层地，从左到右访问所有节点）。
+
+```
+输入：root = [3,9,20,null,null,15,7]
+输出：[[3],[9,20],[15,7]]
+
+输入：root = [1]
+输出：[[1]]
+
+输入：root = []
+输出：[]
+```
+```java
+class Solution {
+    public List<List<Integer>> levelOrder(TreeNode root) {
+
+        List<List<Integer>> result = new ArrayList<List<Integer>>();
+
+        Deque<TreeNode> queue = new LinkedList<>();
+
+        //空指针不入栈
+        if(root != null)
+            queue.add(root);
+
+        while(!queue.isEmpty())
+        {
+            int size = queue.size();
+            ArrayList<Integer> list = new ArrayList<>();            
+            while(size != 0)
+            {
+                TreeNode cur = queue.poll();
+                list.add(cur.val);
+
+                //空指针不入栈
+                if(cur.left != null)
+                    queue.add(cur.left);
+                if(cur.right != null)
+                    queue.add(cur.right);
+
+                size--;
+            }
+            result.add(list);
+        }
+        return result;
+    }
+}
+```
+
+这个题目要返回层序遍历的二叉树结点。一层一层遍历使用队列先进先出的特性。每次入队都要检查节点是否为空，不为空加入队列中。否则不加入。
+
+在最开始入队root 后队列不为空，然后使用while 循环直到队列为空。在循环内首先获取队列size，这个size 将会作为每一层list 加入的元素个数。可以让我们知道每一层应该有多少个数字加入list。然后初始化一个list，在使用while 循环直到size 为0。循环内队列弹出节点，获取当前节点的值，然后把左右子节点加入队列。然后size--。要检查左右节点是否为空。内循环结束后，将list 加入result 中。
+
+
+### 翻转二叉树
+
+给你一棵二叉树的根节点 root ，翻转这棵二叉树，并返回其根节点。
+
+```
+输入：root = [4,2,7,1,3,6,9]
+输出：[4,7,2,9,6,3,1]
+
+输入：root = [2,1,3]
+输出：[2,3,1]
+
+输入：root = []
+输出：[]
+```
+
+```java
+class Solution {
+    public TreeNode invertTree(TreeNode root) {
+        invertTrees(root);
+        return root;
+    }
+
+    public void invertTrees(TreeNode cur)
+    {
+        if(cur == null)
+            return;
+        
+        TreeNode tmp = cur.left;
+        cur.left = cur.right;
+        cur.right = tmp;
+
+        invertTrees(cur.left);
+        invertTrees(cur.right);
+    }
+}
+```
+
+递归法。首先定义函数参数以及返回值。参数就是root 当前节点，递归不需要返回，只需要反转。所以递归函数void，只是需要在整体的返回式 return root。终止条件就是当cur 为空时终止。递归逻辑是前序遍历。在cur 时交换左右指针，然后对左右子节点使用递归函数。
+
+```java
+class Solution {
+    public TreeNode invertTree(TreeNode root) {
+
+        Deque<TreeNode> stack = new LinkedList<>();
+
+        if(root != null)
+            stack.push(root);
+        
+        while(!stack.isEmpty())
+        {
+            TreeNode cur = stack.pop();
+            
+            TreeNode tmp = cur.left;
+            cur.left = cur.right;
+            cur.right = tmp;
+
+            if(cur.right != null)
+                stack.push(cur.right);
+            if(cur.left != null)
+                stack.push(cur.left);
+        }
+
+        return root;
+    }
+}
+```
+
+迭代法：这里使用深度优先前序遍历。借助stack 函数模拟深度优先算法。先把root 进栈，然后while stack 不为空，就stack 弹出元素，处理指针交换，然后右左子节点先后入栈。每次入栈前都需要检查节点是否为空。
+
+
+```java
+class Solution {
+    public TreeNode invertTree(TreeNode root) {
+
+        Deque<TreeNode> queue = new LinkedList<>();
+
+        if(root != null)
+            queue.push(root);
+        
+        while(!queue.isEmpty())
+        {
+            int size = queue.size();
+
+            while(size != 0)
+            {
+                TreeNode cur = queue.poll();
+                
+                TreeNode tmp = cur.left;
+                cur.left = cur.right;
+                cur.right = tmp;
+
+                if(cur.left != null)
+                    queue.push(cur.left);   
+                if(cur.right != null)
+                    queue.push(cur.right);
+             
+                size--;
+            }
+        }
+        return root;
+    }
+
+}
+```
+
+层序遍历：借助queue 数据结构完成先进先出的逻辑。先把root 进队。while queue 不为空，获取queue size，然后从队列中取出size 个元素处理。
+
+
+### 对称二叉树
+
+需要我们收集子节点信息，向上一层返回的的时候要使用**后序遍历**
+
+给你一个二叉树的根节点 root ， 检查它是否轴对称。
+
+```
+输入：root = [1,2,2,3,4,4,3]
+输出：true
+
+输入：root = [1,2,2,null,3,null,3]
+输出：false
+```
+
+```java
+class Solution {
+    public boolean isSymmetric(TreeNode root) {
+
+        return compare(root.left, root.right);
+    }
+
+    public boolean compare(TreeNode left, TreeNode right)
+    {
+        if(left==null && right!=null)
+            return false;
+        else if(left!=null && right == null)
+            return false;
+        else if(left==null && right==null)
+            return true;
+        else if(left.val != right.val)
+            return false;
+
+        //后序遍历
+
+        boolean outside = compare(left.left, right.right);
+        boolean inside = compare(left.right, right.left);
+
+        //内外都true
+        return outside && inside;
+    }
+}
+```
+这个题目利用的是递归方法。
+递归三步走：
+1. 定义函数参数和返回值：这里需要返回boolean看两边子树是否相等，所以递归函数返回boolean。参数因为是要对比两个子树，所以要左右节点。
+2. 终止条件：如果在左子树上的左节点为空，而右子树上的右节点不会空，两边不对称，所以false。同理右为空，左不空，也为false。如果两边都不为空，但是数值不相等，也是false。只有两边都为空的情况return true。这里是终止条件。如果左右两边都不为空，数值也相等，这就是继续递归的逻辑，如下
+3. 单层递归的逻辑：outside 递归compare left.left and right.right。这个就是外侧树。 inside 递归 compare left.right and right.left。一棵二叉树只有内外两边，这也就是主要的变化。只有outside 和 inside 都true 才是true
+
+我们使用后序遍历是因为要先把左右子节点信息传入父节点，然后比较。
+
+### 二叉树的最大深度
+
+给定一个二叉树 root ，返回其最大深度。
+
+二叉树的 最大深度 是指从根节点到最远叶子节点的最长路径上的节点数。
+```
+输入：root = [3,9,20,null,null,15,7]
+输出：3
+输入：root = [1,null,2]
+输出：2
+
+```
+```java
+class Solution {
+    public int maxDepth(TreeNode root) {
+
+        return getHight(root);
+    }
+
+    public int getHight(TreeNode root)
+    {
+        if(root == null)
+            return 0;
+        
+        //后序遍历
+        int leftHight = getHight(root.left);
+        int rightHight = getHight(root.right);
+
+        int hight = Math.max(leftHight, rightHight);
+
+        return hight+1;
+    }
+}
+```
+
+深度优先后序遍历。这里计算的其实是树的高度，但高度和深度其实是一样的。计算深度的逻辑使用前序遍历不断地在深度上+1。 题目要求返回一个int，所以计算高度时的递归函数也返回int，参数就一个TreeNode。参数里面不用传int 是因为高度将会作为返回值。终止条件是，当root 为空时返回0，因为这个时候就是叶子节点。 然后就是后序遍历逻辑，左右中。中间部分的处理就是获得最大高度，然后return hight+1
+
+```java
+class Solution {
+
+    public int maxDepth(TreeNode root) {
+        int result=0;
+        Deque<TreeNode> queue = new LinkedList<>();
+
+        if(root != null)
+            queue.add(root);
+        
+        while(!queue.isEmpty())
+        {
+            int size = queue.size();
+            result++;
+            while(size != 0)
+            {
+                TreeNode cur = queue.poll();
+                if(cur.left != null)
+                    queue.add(cur.left);
+                if(cur.right != null)
+                    queue.add(cur.right);
+                size--;
+            }
+        }
+        return result;
+    }
+}
+```
+
+### 二叉树的最小深度
+
+给定一个二叉树，找出其最小深度。
+
+最小深度是从根节点到最近叶子节点的最短路径上的节点数量。
+
+说明：叶子节点是指没有子节点的节点。
+```
+输入：root = [3,9,20,null,null,15,7]
+输出：2
+
+输入：root = [2,null,3,null,4,null,5,null,6]
+输出：5
+```
+```java
+class Solution {
+    public int minDepth(TreeNode root) {
+        
+        return getDepth(root);
+    }
+
+    public int getDepth(TreeNode root)
+    {
+        if(root == null)
+            return 0;
+        
+        int leftDepth = getDepth(root.left);
+        int rightDepth = getDepth(root.right);
+
+        if(root.left == null && root.right != null)
+            return rightDepth+1;
+        if(root.left != null && root.right == null)
+            return leftDepth+1;
+        
+        return Math.min(leftDepth, rightDepth)+1;
+    }
+}
+```
+深度优先，后序遍历法。
+1. 确定返回值和参数：返回int 二叉树最小深度。使用TreeNode 参数
+2. 终止条件是 root==null，也就是达到叶节点 return 0
+3. 单层递归逻辑：后序遍历，先处理左右子树的深度。return 部分的处理。因为有可能是左右子树有一边为空，所以要检查这种情况。如果这个情况属实，就return 另一边子树的深度+1。如果两边都有子树，那么就选择左右最小深度+1。
+
+这个题目因为是使用的后序遍历，实际上会有很多多余的计算，因为是从最深处不断网上递归。因为使用层序遍历就更加快
+
+
+```java
+class Solution {
+    public int minDepth(TreeNode root) {
+        int depth = 0;
+        int size;
+        Deque<TreeNode> queue = new LinkedList<>();
+        if(root != null)
+            queue.add(root);
+    
+        while(!queue.isEmpty())
+        {
+            size = queue.size();
+            depth++;        
+            while(size != 0)
+            {
+                TreeNode cur = queue.poll();
+
+                if(cur.left == null && cur.right == null)
+                    return depth;
+                if(cur.left != null)
+                    queue.add(cur.left);
+                if(cur.right != null)
+                    queue.add(cur.right);
+                size--;
+            }
+        }
+        return depth;
+    }
+}
+```
+
+层序遍历法：维持一个变量depth。使用正常的检查逻辑入队，然后开始while 循环。层序遍历要思考，什么情况下停止算法。这里我们是自顶向下，当我们遍历一层时，要思考怎样达到了最小深度。达到叶子节点就代表，达到最小深度。叶子节点就是没有左右子节点，这就是内while 循环中检查的逻辑。
+
+ ### 完全二叉树的节点个数
+
+给你一棵 完全二叉树 的根节点 root ，求出该树的节点个数。
+
+完全二叉树 的定义如下：在完全二叉树中，除了最底层节点可能没填满外，其余每层节点数都达到最大值，并且最下面一层的节点都集中在该层最左边的若干位置。若最底层为第 h 层，则该层包含 1~ 2h 个节点。
+
+```
+输入：root = [1,2,3,4,5,6]
+输出：6
+
+输入：root = []
+输出：0
+
+输入：root = [1]
+输出：1
+```
+```java
+class Solution {
+    public int countNodes(TreeNode root) {
+        return count(root);
+    }
+
+    public int count(TreeNode root)
+    {
+        //终止条件
+        if(root == null)
+            return 0;
+        
+        TreeNode left = root.left;
+        TreeNode right = root.right;
+
+        int leftDepth = 0;
+        int rightDepth = 0;
+
+        while(left != null)
+        {
+            left = left.left;
+            leftDepth++;
+        }
+        while(right != null)
+        {
+            right = right.right;
+            rightDepth++;
+        }
+        if(leftDepth == rightDepth)
+        {
+            return (2 << leftDepth) -1;
+        }
+
+        //后序遍历
+        int leftCount = count(root.left);
+        int rightCount = count(root.right);
+
+        return leftCount + rightCount + 1;
+    }
+}
+```
+
+本题使用一般二叉树求解同样可以通过，但是线性时间复杂度，远远不如 $(log(n))^2$。我们需要利用完全二叉树的特性，也就是处最后一层外二叉树全满，最后一层从左边开始填充。当我们不断往左右分解子树，就会遇到满二叉树，此时满二叉树节点个数可以通过 $2^k -1$ k 是当前二叉树深度。
+
+那么如何判断是否有满二叉子树？通过不断遍历左指针和右指针。如果左右指针为空时，左右深度相同，那么就会是满二叉树，否则就继续使用正常的后序遍历逻辑。
+
+### 平衡二叉树
+给定一个二叉树，判断它是否是高度平衡的二叉树。
+
+本题中，一棵高度平衡二叉树定义为：
+
+一个二叉树每个节点 的左右两个子树的高度差的绝对值不超过 1 。
+
+```
+输入：root = [3,9,20,null,null,15,7]
+输出：true
+
+输入：root = [1,2,2,3,3,null,null,4,4]
+输出：false
+
+输入：root = []
+输出：true
+```
+```java
+class Solution {
+
+    public boolean isBalanced(TreeNode root) {
+        return check(root) == -1? false : true;
+    }
+
+    public int check(TreeNode root)
+    {
+        if(root == null)
+            return 0;
+
+        //后序遍历
+        int left = check(root.left);
+        if(left == -1)
+            return -1;
+
+        int right = check(root.right);
+        if(right == -1)
+            return -1;
+
+        if(Math.abs(left - right) > 1)
+        {
+            return -1;           
+        }        
+        return Math.max(left, right)+1;
+    }
+}
+
+class Solution {
+
+    boolean balance = true;
+    public boolean isBalanced(TreeNode root) {
+        check(root);
+        return balance;
+    }
+
+    public int check(TreeNode root)
+    {
+        if(root == null)
+            return 0;
+
+        //后序遍历
+        int left = check(root.left);
+        int right = check(root.right);
+
+        if(Math.abs(left - right) > 1)
+        {
+            balance = false;
+            return 1;           
+        }        
+        return Math.max(left, right)+1;
+    }
+}
+```
+
+这个题目的关键在于左右子树高度差不大于1。首先用题目函数返回值需要时boolean，所以做重要做一个true/false 比较。因为我们需要计算左右子树高度，所以使用int 作为递归函数的return。函数参数就是root。
+
+* 终止条件，如果root为空返回0。
+* 递归逻辑：后序遍历。先递归左子树，然后检查return 是否为-1，再递归右子树，检查return 是否为-1。如果是-1 直接return -1。中间的处理是，两边遍历完成了后，检查左右子树的高度如果相差大于1，直接return -1。两边相差小于1，就正常返回左右子树的高度最大值+1。
+
+  
+这里使用-1就是将结果作为比较结果。如果如果高度差大于1，就会返回-1。那么上层递归就会收到-1的返回，再继续返回-1，就会让整体函数的返回为-1。最后比较递归函数的返回是否为-1，如果是就不平衡，否则平衡。
+
+这里我最开始的思路是维持一个变量balance ，如果不平衡就是false，否则就是true。这里的变量与返回的数字形成了冗余效果，因为出现不平衡情况后我们可以直接返回而不需要后续的计算。
+
+
+### 二叉树的所有路径
+
+给你一个二叉树的根节点 root ，按 任意顺序 ，返回所有从根节点到叶子节点的路径。
+
+叶子节点 是指没有子节点的节点。
+
+```
+输入：root = [1,2,3,null,5]
+输出：["1->2->5","1->3"]
+
+输入：root = [1]
+输出：["1"]
+```
+
+```java
+class Solution {
+    public List<String> binaryTreePaths(TreeNode root) {
+        List<String> result = new ArrayList<>();  
+        List<Integer> path = new ArrayList<>();      
+        traversal(path,result, root);
+        return result;
+    }
+
+    public void traversal(List<Integer> path, List<String> result, TreeNode root)
+    {
+        //前序遍历
+        path.add(root.val);     
+
+        if(root.left == null && root.right == null)
+        {
+           StringBuilder sb = new StringBuilder();
+           for(int i=0; i<path.size(); i++)
+           {
+               if(i != path.size()-1)
+               {
+                    sb.append(path.get(i));
+                    sb.append("->");                   
+               }else
+               {
+                   sb.append(path.get(i));
+               }
+           }
+           result.add(sb.toString());
+        }
+        if(root.left != null)
+        {
+            traversal(path, result, root.left);
+            path.remove(path.size()-1); //回溯。 移除最后一个元素            
+        }
+        if(root.right != null)
+        {
+            traversal(path, result, root.right);
+            path.remove(path.size()-1); //回溯。 移除最后一个元素   
+        }
+    }
+}
+```
+快的版本
+
+```java
+class Solution {
+
+
+
+    public List<String> binaryTreePaths(TreeNode root) {
+        String path = "";
+        List<String> paths = new ArrayList<>();        
+        traversal(path,paths, root);
+        return paths;
+    }
+
+    public void traversal(String path, List<String> paths, TreeNode root)
+    {
+
+        //前序遍历
+        path = path + root.val;     
+
+        if(root.left == null && root.right == null)
+        {
+            paths.add(path);
+        }
+
+        if(root.left != null)
+        {
+            traversal(path + "->", paths, root.left);            
+        }
+
+        if(root.right != null)
+        {
+            traversal(path + "->", paths, root.right);            
+        }
+
+    }
+}
+```
+慢的版本
+
+```java
+class Solution {
+    public List<String> binaryTreePaths(TreeNode root) {
+        List<String> result = new ArrayList<>();  
+        Deque<Integer> path = new LinkedList<>();      
+        traversal(path,result, root);
+        return result;
+    }
+
+    public void traversal(Deque<Integer> path, List<String> result, TreeNode root)
+    {
+        //前序遍历
+        path.add(root.val);     
+
+        if(root.left == null && root.right == null)
+        {
+           StringBuilder sb = new StringBuilder();
+           int size = path.size();
+            int i=0;
+           while(i < size)
+           {
+                int tmp = path.pollFirst();               
+               if(i != size-1)
+               {
+                    sb.append(tmp);
+                    sb.append("->");                   
+               }else{
+                   sb.append(tmp);
+               }
+               path.add(tmp);
+               i++;
+           }
+           result.add(sb.toString());
+        }
+        if(root.left != null)
+        {
+            traversal(path, result, root.left);
+            path.pollLast(); //回溯。 移除最后一个元素            
+        }
+        if(root.right != null)
+        {
+            traversal(path, result, root.right);
+            path.pollLast(); //回溯。 移除最后一个元素   
+        }
+    }
+}
+```
+这个版本借助队列实现功能，更加繁琐。
+
+两个版本都是正确的，但是第一个更快，原因在于对字符串的操作都集中在了最后，而第二个版本每一侧递归都会进行字符串操作。
+
+这个题目使用递归解决，它涉及到回溯算法。
+1. 确定函数返回值和参数：calling 函数要返回 List<String>，递归函数可以将那个result list 作为参数，同时使用List<Integer>，然后就是TreeNode
+2. 终止条件：当碰到叶子节点就终止。
+3. 单层递归逻辑：先将root.val 入list，然后检测左右子节点是否会空，否则递归。
+
+函数的最开始把中节点加入path，否则如果放在返回逻辑之后就会导致叶节点不能入list。当碰到叶节点时，使用stringbuilder，然后通过for 循环构造返回的路径字符串，然后加进result。
+然后在完成左右递归后，要进行回溯操作，也就是把下一层递归加入的子节点移除。
+
+
+### 左叶子之和
+
+给定二叉树的根节点 root ，返回所有左叶子之和。
+
+```
+输入: root = [3,9,20,null,null,15,7] 
+输出: 24 
+解释: 在这个二叉树中，有两个左叶子，分别是 9 和 15，所以返回 24
+
+输入: root = [1]
+输出: 0
+```
+
+```java
+class Solution {
+    public int sumOfLeftLeaves(TreeNode root) {
+        return nodeSum(root);
+    }
+    public int nodeSum(TreeNode root)
+    {
+        // 终止条件
+        if(root == null)
+            return 0;
+        if(root.left == null && root.right == null)
+            return 0;
+        
+        int left = nodeSum(root.left);
+        int right = nodeSum(root.right);
+        
+        if(root.left != null && root.left.left == null && root.left.right == null)
+            left =  root.left.val;
+        return left + right;        
+    }
+}
+```
+
+这个题目要判断叶子节点，当我们遍历到底层时，返回0，因为不能判断是否为左叶子。当回溯到父节点时再判断左叶子节点是否为空，如果否，就将左叶子节点的数值赋给left。
+
+这里使用后序遍历，左右中。当我们完成左遍历后，如果左叶子节点不为空，就可以完成上面提到的赋值。中的处理就是当前单层逻辑的处理，没有递归调用。
+
+
+
+
+
+
+
+
+
+
+
+
