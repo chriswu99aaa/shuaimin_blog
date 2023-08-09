@@ -2631,8 +2631,112 @@ class Solution {
 这里使用后序遍历，左右中。当我们完成左遍历后，如果左叶子节点不为空，就可以完成上面提到的赋值。中的处理就是当前单层逻辑的处理，没有递归调用。
 
 
+### 找树左下角的值
+
+给定一个二叉树的 根节点 root，请找出该二叉树的 最底层 最左边 节点的值。
+
+假设二叉树中至少有一个节点。
+
+```
+输入: root = [2,1,3]
+输出: 1
+
+输入: [1,2,3,4,null,5,6,null,null,7]
+输出: 7
+```
+
+```java
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     int val;
+ *     TreeNode left;
+ *     TreeNode right;
+ *     TreeNode() {}
+ *     TreeNode(int val) { this.val = val; }
+ *     TreeNode(int val, TreeNode left, TreeNode right) {
+ *         this.val = val;
+ *         this.left = left;
+ *         this.right = right;
+ *     }
+ * }
+ */
+class Solution {
+    
+    int result = 0;
+    int maxDepth = Integer.MIN_VALUE;
+    public int findBottomLeftValue(TreeNode root) {
+        traversal(root, 0);
+        return result;
+    }
+
+    public void traversal(TreeNode root, int depth)
+    {
+        if(root == null)
+            return;
+        if(root.left == null && root.right == null)
+        {
+            if(depth > maxDepth)
+            {
+                maxDepth = depth;
+                result = root.val;
+            }
+            return;
+        }
+
+        if(root.left != null)
+        {
+            depth++;
+            traversal(root.left, depth);
+            depth--;
+        }
+        if(root.right != null)
+        {
+            depth++;
+            traversal(root.right, depth);
+            depth--;
+        }
+    }
+}
+```
+递归法：
+1. 返回值与参数：我们不返回值，而是维持两个全局变量 result，maxDepth。函数的传入参数，是节点与该节点的深度。题目中要求返回最后一行最左边的数值，那么就需要知道当前节点的depth 以及，从而与最大深度比较。一个叶子节点，但不一定会是最深的，所以要通过记录当前节点的depth 与maxDepth 比较。
+2. 终止条件：遇到叶子节点时返回，处理深度比较，如果更加深，就对maxDepth 和result进行修改。
+3. 单层递归逻辑：处理左右就行了，没有中。因为不需要在中间节点获得信息或处理什么信息。
 
 
+
+```java
+class Solution {
+    public int findBottomLeftValue(TreeNode root) {
+        Deque<TreeNode> queue = new LinkedList<>();
+
+        if(root == null)
+            return 0;
+        else
+            queue.add(root);
+
+        int result = 0;
+        while(!queue.isEmpty())
+        {
+            int size = queue.size();
+            for(int i=0; i<size; i++)
+            {
+                TreeNode cur = queue.poll();
+                if(i==0)
+                    result = cur.val;
+                if(cur.left != null)
+                    queue.add(cur.left);
+                if(cur.right != null)
+                    queue.add(cur.right);
+            }
+        }
+        return result;
+    }
+}
+```
+
+迭代法：层序遍历是最直观的方式。每一层遍历时，就记录当前层第一个元素，直到队列为空。
 
 
 
