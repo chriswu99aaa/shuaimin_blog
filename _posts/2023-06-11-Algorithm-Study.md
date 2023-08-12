@@ -2738,10 +2738,116 @@ class Solution {
 
 迭代法：层序遍历是最直观的方式。每一层遍历时，就记录当前层第一个元素，直到队列为空。
 
+### 路径总和
+
+给你二叉树的根节点 root 和一个表示目标和的整数 targetSum 。判断该树中是否存在 根节点到叶子节点 的路径，这条路径上所有节点值相加等于目标和 targetSum 。如果存在，返回 true ；否则，返回 false 。
+
+叶子节点 是指没有子节点的节点。
+
+```
+输入：root = [5,4,8,11,null,13,4,7,2,null,null,null,1], targetSum = 22
+输出：true
+解释：等于目标和的根节点到叶节点路径如上图所示。
+
+输入：root = [1,2,3], targetSum = 5
+输出：false
+解释：树中存在两条根节点到叶子节点的路径：
+(1 --> 2): 和为 3
+(1 --> 3): 和为 4
+不存在 sum = 5 的根节点到叶子节点的路径。
+```
+
+```java
+class Solution {
+    public boolean hasPathSum(TreeNode root, int targetSum) {
+
+        return traversal(root, targetSum);
+    }
+    public  boolean traversal(TreeNode root, int targetSum)
+    {
+        if(root == null)
+            return false;
+        
+        if(root.left == null && root.right == null)
+            return targetSum == root.val;
+        
+        if(root.left != null)
+        {
+            if(traversal(root.left, targetSum - root.val))
+                return true;
+        }
+        if(root.right != null)
+        {
+            if(traversal(root.right, targetSum - root.val))
+                return true;
+        }
+        return false;
+    }
+}
+```
+
+使用递归法需要同样思考三要素
+
+1. 返回值与函数参数：题目要求返回boolean，所以递归函数也适用boolean。参数使用TreeNode 和targetSum。每一次都递减targetSum，直到结果为0.
+2. 终止条件：如果root为空返回false；如果遇到叶子节点，判断targetSum == root.val。因为如果二者相等，再减去targetSum-root.val 等于0，就是答案。如果不相等，就是返回false，就代表这个路径不行。
+3. 单层递归逻辑：如果使用if 判断traversal 递归调用的结果，因为其返回值是boolean，所以我们要判断在下一层返回上来的是否为true，如果true，那么就继续向上返回true。这样的一个逻辑就确保了中间层收到下层递归答案后继续向上传递信息。如果是false，就不会传递信息，而是继续右子树的遍历。
+
+因为不是每一次路径的寻找都是成功的，所以需要进行回溯。我们在 targetSum-root.val 的递归传导中并没有改变targetSum 的数值，而是在其基础上增加了root.val，当回归到路径寻找失败return false 返回上层后，targetSum 仍然是之前的数值。
+
+整体叙述一遍思路
+
+本题需要判断是否有一个路径的和等于目标值，而并没有要求返回路径是什么，所以并不需要记录路径，而是管理
 
 
 
+### 路径总和2
+
+给你二叉树的根节点 root 和一个整数目标和 targetSum ，找出所有 从根节点到叶子节点 路径总和等于给定目标和的路径。
+
+叶子节点 是指没有子节点的节点。
+
+```
+输入：root = [5,4,8,11,null,13,4,7,2,null,null,5,1], targetSum = 22
+输出：[[5,4,11,2],[5,8,4,5]]
+
+输入：root = [1,2,3], targetSum = 5
+输出：[]
+
+输入：root = [1,2], targetSum = 0
+输出：[]
+```
 
 
+```java
+class Solution {
+ 
+    List<List<Integer>> result = new ArrayList<List<Integer>>();
+    List<Integer> path = new ArrayList<>();
 
+    public List<List<Integer>> pathSum(TreeNode root, int targetSum) {
 
+        traversal(root, targetSum);
+        return result;
+    }
+    public void traversal(TreeNode root, int targetSum)
+    {
+        if(root==null)
+            return;
+        path.add(root.val);
+        targetSum -= root.val;
+
+        if(root.left == null && root.right == null && targetSum == 0)
+            result.add(new ArrayList<>(path));
+        
+        traversal(root.left, targetSum);
+        traversal(root.right, targetSum);
+        path.remove(path.size()-1);
+    }
+}
+```
+
+维持两个全局变量result，path。在参数上只保留root 和 targetSum。
+这个题目令我费解的地方在于，targetSum 不需要回溯在前序遍历中，targetSum 的递减，或许在每一层都是不一样的，虽然是同一个名字。前序遍历的中部分，就是将路径中加入新的节点，然后减去当前的数字。当我们遇到叶子节点，判断targetSum 是否为0，如果是，就是正确的。在这里有些题解会用targetSum==root.val 而不是上文提到的。这是因为在之前的```targetSum -= root.val```
+提前减去了数字。而有些思路会在之后叶子节点判断之后减去数值，这就要用到后者。
+
+当targetSum==0，以及叶子节点为真，那么就将当前的path 新建一个数组放入result
