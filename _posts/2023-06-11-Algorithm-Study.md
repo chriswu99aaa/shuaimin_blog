@@ -2844,10 +2844,233 @@ class Solution {
         path.remove(path.size()-1);
     }
 }
+
+class Solution {
+    ArrayList<List<Integer>> result = new ArrayList<List<Integer>>();
+    List<Integer> path = new ArrayList<>();    
+
+    public List<List<Integer>> pathSum(TreeNode root, int targetSum) {
+
+        traversal(root, targetSum);
+        return result;
+    }
+
+    public void traversal(TreeNode root, int targetSum)
+    {
+        if(root==null)
+            return;
+        path.add(root.val);
+        targetSum -= root.val;
+
+        if(targetSum == 0 && root.left == null && root.right == null)
+            result.add(new ArrayList<>(path));
+        
+        if(root.left != null)
+        {
+            traversal(root.left, targetSum);            
+            path.remove(path.size()-1);
+            targetSum += root.val;
+        }
+        if(root.right != null)
+        {
+            traversal(root.right, targetSum);          
+            path.remove(path.size()-1);
+            targetSum += root.val;
+        }
+
+    }
+}
 ```
 
 维持两个全局变量result，path。在参数上只保留root 和 targetSum。
 这个题目令我费解的地方在于，targetSum 不需要回溯在前序遍历中，targetSum 的递减，或许在每一层都是不一样的，虽然是同一个名字。前序遍历的中部分，就是将路径中加入新的节点，然后减去当前的数字。当我们遇到叶子节点，判断targetSum 是否为0，如果是，就是正确的。在这里有些题解会用targetSum==root.val 而不是上文提到的。这是因为在之前的```targetSum -= root.val```
 提前减去了数字。而有些思路会在之后叶子节点判断之后减去数值，这就要用到后者。
 
-当targetSum==0，以及叶子节点为真，那么就将当前的path 新建一个数组放入result
+当targetSum==0，以及叶子节点为真，那么就将当前的path 新建一个数组放入result。之所以要新建，是因为直接放入path，在后续的删除中会让result 里的path改变，从而失去记录的意义。
+
+在本题中有一个重要的点在于回溯。我们需要在完成一层左右递归后弹出path中最后一个元素。最好是按照第二种写法判断是否为空，然后完成一个递归弹出这次递归中path 的最后一个元素
+
+### 从中序与后序遍历序列构造二叉树
+
+给定两个整数数组 inorder 和 postorder ，其中 inorder 是二叉树的中序遍历， postorder 是同一棵树的后序遍历，请你构造并返回这颗 二叉树 。
+
+```
+输入：inorder = [9,3,15,20,7], postorder = [9,15,7,20,3]
+输出：[3,9,20,null,null,15,7]
+
+输入：inorder = [-1], postorder = [-1]
+输出：[-1]
+```
+
+```java
+class Solution {
+    HashMap<Integer, Integer> map = new HashMap<>();
+    public TreeNode buildTree(int[] inorder, int[] postorder) {
+    
+    for(int i=0; i<inorder.length;i++)
+        map.put(inorder[i], i);
+    
+    TreeNode root = traversal(inorder, 0, inorder.length-1, postorder, 0, postorder.length-1);
+    return root;
+    }
+
+    public TreeNode traversal(int[] inorder, int inBegin, int inEnd, int[] postorder, int postBegin, int postEnd)
+    {
+        //定义左闭右闭区间
+        if(inBegin > inEnd || postBegin > postEnd)
+            return null;
+
+        TreeNode root = new TreeNode(postorder[postEnd]);
+        if(postorder.length==1)
+            return root;
+        
+        int rootIndex = map.get(root.val);
+        int leftLength = rootIndex - inBegin; //计算左中序数组长度
+
+        root.left = traversal(inorder, inBegin, rootIndex-1, postorder, postBegin, postBegin + leftLength-1);
+        root.right = traversal(inorder, rootIndex+1, inEnd, postorder, postBegin + leftLength, postEnd-1);
+
+        return root;
+
+    }
+}
+```
+这个方法定义了左闭右闭区间。
+
+```java
+class Solution {
+    HashMap<Integer, Integer> map = new HashMap<>();
+    public TreeNode buildTree(int[] inorder, int[] postorder) {
+    
+    for(int i=0; i<inorder.length;i++)
+        map.put(inorder[i], i);
+    
+    TreeNode root = traversal(inorder, 0, inorder.length, postorder, 0, postorder.length);
+    return root;
+    }
+
+    public TreeNode traversal(int[] inorder, int inBegin, int inEnd, int[] postorder, int postBegin, int postEnd)
+    {
+        //定义左闭右开区间
+        if(inBegin >= inEnd || postBegin >= postEnd)
+            return null;
+
+        TreeNode root = new TreeNode(postorder[postEnd-1]);
+        if(postorder.length==1)
+            return root;
+        
+        int rootIndex = map.get(root.val);
+        int leftLength = rootIndex - inBegin; //计算左中序数组长度
+
+        root.left = traversal(inorder, inBegin, rootIndex, postorder, postBegin, postBegin + leftLength);
+        root.right = traversal(inorder, rootIndex+1, inEnd, postorder, postBegin + leftLength, postEnd-1);
+
+        return root;
+
+    }
+}
+```
+
+这个题目的核心在于
+
+1. 认识到后序遍历数组的最后一个元素是二叉树的根节点
+2. 在中序数组中找到那个根节点，就可以将数组分为左子树和右子树数组
+3. 中后序遍历的左右子数组的长度是相等的，在计算出左中序数组后，可以根据其长度构建左后序数组
+
+对于左右中后序数组的定义是一个难点。以上给出了左闭右开，和左闭右闭两种定义方式。
+
+如果是左闭右开，在最外面的inEnd 和 postEnd 使用length，但是要注意到在获取postorder 最后一个元素时，要length-1，因为右边是开的。在后面的递归左子树时，需要从inBegin 到rootIndex。因为右开，所以不包含rootIndex。postBegin 到 leftLength，因为长度是偏移的次数，不是index，所以不用减一。
+
+在递归右子树时，需要从rootIndx + 1 开始，到inEnd，因为左闭。postBegin + leftLength 到 postEnd -1。 这里减一是因为后序数组的最后一个元素是root，是要被排除在外的。
+
+最后讨论一下终止条件。在左闭右开时，inBegin 和 inEnd 如果相等就代表数组为空，结束了。如果左边开始的index 大于等于右边的inEnd，因为是右开，这样的情况下就已经越界了。相反如果是左闭右闭，inBegin 和 inEnd 可以相等而不越界，所以左闭右闭就需要大于号。
+
+同样的第一个方法定义了左闭右闭区间。这代表着两端的数字都有效。
+
+在最外层的函数call 中需要将length-1，而让index 可被直接调用。
+所以在递归时就需要rootIndex-1，以及postBegin + leftLength-1。后者是因为加上leftLength会越界到postorder 的右数组中。
+
+
+### 构造二叉树
+
+**构造二叉树类的题目一定要使用前序遍历**
+
+给定一个不重复的整数数组 nums 。 最大二叉树 可以用下面的算法从 nums 递归地构建:
+
+创建一个根节点，其值为 nums 中的最大值。
+递归地在最大值 左边 的 子数组前缀上 构建左子树。
+递归地在最大值 右边 的 子数组后缀上 构建右子树。
+返回 nums 构建的 最大二叉树 。
+
+You are given an integer array nums with no duplicates. A maximum binary tree can be built recursively from nums using the following algorithm:
+
+Create a root node whose value is the maximum value in nums.
+Recursively build the left subtree on the subarray prefix to the left of the maximum value.
+Recursively build the right subtree on the subarray suffix to the right of the maximum value.
+Return the maximum binary tree built from nums.
+
+```
+Input: nums = [3,2,1,6,0,5]
+Output: [6,3,5,null,2,0,null,null,1]
+Explanation: The recursive calls are as follow:
+- The largest value in [3,2,1,6,0,5] is 6. Left prefix is [3,2,1] and right suffix is [0,5].
+    - The largest value in [3,2,1] is 3. Left prefix is [] and right suffix is [2,1].
+        - Empty array, so no child.
+        - The largest value in [2,1] is 2. Left prefix is [] and right suffix is [1].
+            - Empty array, so no child.
+            - Only one element, so child is a node with value 1.
+    - The largest value in [0,5] is 5. Left prefix is [0] and right suffix is [].
+        - Only one element, so child is a node with value 0.
+        - Empty array, so no child.
+
+Input: nums = [3,2,1]
+Output: [3,null,2,null,1]
+```
+
+```java
+class Solution {
+    public TreeNode constructMaximumBinaryTree(int[] nums) {
+        return traversal(nums, 0, nums.length);
+    }
+
+    public TreeNode traversal(int[] nums, int leftIndex, int rightIndex)
+    {
+        //定义左闭右开区间
+
+        //终止条件
+        //检查空数组
+        if(leftIndex >= rightIndex)
+            return null;
+        //检查数组是否为叶子节点
+        if(rightIndex - leftIndex == 1)
+            return new TreeNode(nums[leftIndex]);
+        
+        //寻找最大元素
+        int maxVal = nums[leftIndex];
+        int index = leftIndex;
+        for(int i=leftIndex+1; i<rightIndex; i++)
+        {
+            if(nums[i] > maxVal)
+            {
+                maxVal = nums[i];
+                index = i;
+            }
+        }
+        TreeNode root = new TreeNode(maxVal);
+        root.left = traversal(nums, leftIndex, index);
+        root.right = traversal(nums, index+1, rightIndex);
+        return root;
+    }
+}
+```
+
+递归三部曲：
+
+1. 确定返回值和递归参数：题目需要返回根节点，所以函数也返回根节点。参数是nums 数组，以及数组左右index。左右index 是为了避免在递归中不断的新建数组。
+2. 终止条件：如果数组左边大于等于右边，就代表数组为空，此时返回空节点。如果数组长度为一，也就是$rightIndex - leftIndex == 1$，那么就是叶子节点。此时需要构建TreeNode。
+3. 单层递归逻辑：
+
+* 使用前序遍历构建二叉树
+* 首先寻找到由leftIndex 和 rightIndex 给定数组的最大值及其index。
+* 使用最大值新建一个root节点
+* 递归地使用 traversal 构建root.left 和 root.right。左子树就是用leftIndex 到 index，右子树就是用index+1 到 rightIndex。这里区间选择的逻辑依然保持左闭右开。
