@@ -2699,12 +2699,12 @@ class Solution {
     }
 }
 ```
+
 递归法：
+
 1. 返回值与参数：我们不返回值，而是维持两个全局变量 result，maxDepth。函数的传入参数，是节点与该节点的深度。题目中要求返回最后一行最左边的数值，那么就需要知道当前节点的depth 以及，从而与最大深度比较。一个叶子节点，但不一定会是最深的，所以要通过记录当前节点的depth 与maxDepth 比较。
 2. 终止条件：遇到叶子节点时返回，处理深度比较，如果更加深，就对maxDepth 和result进行修改。
 3. 单层递归逻辑：处理左右就行了，没有中。因为不需要在中间节点获得信息或处理什么信息。
-
-
 
 ```java
 class Solution {
@@ -2786,6 +2786,7 @@ class Solution {
 }
 ```
 
+
 使用递归法需要同样思考三要素
 
 1. 返回值与函数参数：题目要求返回boolean，所以递归函数也适用boolean。参数使用TreeNode 和targetSum。每一次都递减targetSum，直到结果为0.
@@ -2798,7 +2799,30 @@ class Solution {
 
 本题需要判断是否有一个路径的和等于目标值，而并没有要求返回路径是什么，所以并不需要记录路径，而是管理
 
+```java
+class Solution {
+    public boolean hasPathSum(TreeNode root, int targetSum) {
 
+        return traversal(root, targetSum);
+    }
+    public  boolean traversal(TreeNode root, int targetSum)
+    {
+        if(root == null)
+            return false;
+        
+        if(root.left == null && root.right == null)
+            return targetSum == root.val;
+        targetSum -= root.val;
+        if(traversal(root.left, targetSum))
+            return true;                
+        if(traversal(root.right, targetSum))
+            return true;
+        return false;
+    }
+}
+```
+
+第二个版本并没有使用之前提到的回溯技巧，在参数位置做运算，而是在中的位置上做的运算。这与之前的想法不一致，这里没有用到回溯。然而事实是，这里的回溯是隐形的。每一次递归调用函数都会有一套独立的栈，当下层递归完成返回上层栈时，上层栈的本地变量 targetSum 并没有改变。
 
 ### 路径总和2
 
@@ -3074,3 +3098,70 @@ class Solution {
 * 首先寻找到由leftIndex 和 rightIndex 给定数组的最大值及其index。
 * 使用最大值新建一个root节点
 * 递归地使用 traversal 构建root.left 和 root.right。左子树就是用leftIndex 到 index，右子树就是用index+1 到 rightIndex。这里区间选择的逻辑依然保持左闭右开。
+
+### 合并二叉树
+
+给你两棵二叉树： root1 和 root2 。
+
+想象一下，当你将其中一棵覆盖到另一棵之上时，两棵树上的一些节点将会重叠（而另一些不会）。你需要将这两棵树合并成一棵新二叉树。合并的规则是：如果两个节点重叠，那么将这两个节点的值相加作为合并后节点的新值；否则，不为 null 的节点将直接作为新二叉树的节点。
+
+返回合并后的二叉树。
+
+注意: 合并过程必须从两个树的根节点开始。
+
+You are given two binary trees root1 and root2.
+
+Imagine that when you put one of them to cover the other, some nodes of the two trees are overlapped while the others are not. You need to merge the two trees into a new binary tree. The merge rule is that if two nodes overlap, then sum node values up as the new value of the merged node. Otherwise, the NOT null node will be used as the node of the new tree.
+
+Return the merged tree.
+
+Note: The merging process must start from the root nodes of both trees.
+
+```
+Input: root1 = [1,3,2,5], root2 = [2,1,3,null,4,null,7]
+Output: [3,4,5,5,4,null,7]
+
+Input: root1 = [1], root2 = [1,2]
+Output: [2,2]
+```
+
+```java
+class Solution {
+    public TreeNode mergeTrees(TreeNode root1, TreeNode root2) {
+        return merge(root1, root2);
+    }
+
+    public TreeNode merge(TreeNode root1, TreeNode root2)
+    {
+        //终止条件
+        if(root1==null && root2==null)
+            return null;
+        if(root1 == null)
+            return root2;
+        if(root2 == null)
+            return root1;
+
+        root1.val += root2.val;
+
+        root1.left = merge(root1.left, root2.left);
+        root1.right = merge(root1.right, root2.right);
+        return root1;
+
+    }
+}
+```
+
+递归三部曲：
+
+1. 函数返回值与参数
+
+题目要求返回TreeNode 所以这里也返回TreeNode。同样两个TreeNode 作为参数。这个题目的不同之处就在于两颗二叉树的传导。
+
+2. 终止条件
+
+当两个TreeNode 都为 空时，返回null，如果有一边不为空，一边为空，就返回不为空的那边。
+
+3. 单层递归逻辑
+
+修改tree1 的结构，将两个节点想加。对root1 左右节点递归合并。最后返回root1。
+
