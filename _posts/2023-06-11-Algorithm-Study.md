@@ -3165,3 +3165,460 @@ class Solution {
 
 修改tree1 的结构，将两个节点想加。对root1 左右节点递归合并。最后返回root1。
 
+### 二叉搜索树中的搜索
+
+给定二叉搜索树（BST）的根节点 root 和一个整数值 val。
+
+你需要在 BST 中找到节点值等于 val 的节点。 返回以该节点为根的子树。 如果节点不存在，则返回 null 。
+
+You are given the root of a binary search tree (BST) and an integer val.
+
+Find the node in the BST that the node's value equals val and return the subtree rooted with that node. If such a node does not exist, return null.
+
+```
+输入：root = [4,2,7,1,3], val = 2
+输出：[2,1,3]
+
+输入：root = [4,2,7,1,3], val = 5
+输出：[]
+```
+
+```java
+class Solution {
+    public TreeNode searchBST(TreeNode root, int val) {
+        return bst(root, val);
+    }
+
+    public TreeNode bst(TreeNode root, int val)
+    {
+        if(root == null || root.val == val)
+            return root;
+
+        if(root.val > val)
+            return bst(root.left, val);
+        else
+            return bst(root.right, val);     
+    }
+}
+```
+
+递归法：
+
+递归法我们也是要利用bst 的特性，根据数字大小选择左右子树遍历。如果root.val 大于val，就遍历左树，如果root.val 小于val 就遍历右树。如果相等就直接返回root。
+
+递归三部曲
+
+1. 函数返回值和参数
+
+返回TreeNode，参数就是TreeNode 和 val。
+
+2. 终止条件
+
+如果root 为空，或者root.val == val 就返回root。前者与return null 没有区别，后者返回所需要的值
+
+3. 单层递归逻辑
+
+如果root.va 大于 val，就遍历左子树，否则就遍历右子树。直接return 函数的返回值。
+
+```java
+class Solution {
+    public TreeNode searchBST(TreeNode root, int val) {
+
+        while(root != null)
+        {
+            if(root.val > val)
+            {
+                root = root.left;
+            }else if(root.val < val)
+                root = root.right;
+            else    
+                return root;
+        }
+        return null;
+    }
+}
+```
+
+迭代法：
+
+迭代法利用while 循环不断的利用bst 数值的特性选择性的遍历左右子树，直到找到数值，或者root 为空。
+
+### 验证二叉搜索树
+
+给你一个二叉树的根节点 root ，判断其是否是一个有效的二叉搜索树。
+
+有效 二叉搜索树定义如下：
+
+节点的左子树只包含 小于 当前节点的数。
+节点的右子树只包含 大于 当前节点的数。
+所有左子树和右子树自身必须也是二叉搜索树。
+
+Given the root of a binary tree, determine if it is a valid binary search tree (BST).
+
+A valid BST is defined as follows:
+
+The left 
+subtree
+ of a node contains only nodes with keys less than the node's key.
+The right subtree of a node contains only nodes with keys greater than the node's key.
+Both the left and right subtrees must also be binary search trees.
+
+```
+Input: root = [2,1,3]
+Output: true
+
+Input: root = [5,1,4,null,null,3,6]
+Output: false
+Explanation: The root node's value is 5 but its right child's value is 4.
+```
+
+**遇到二叉搜索树，或者判断一棵二叉搜索树，都需要想到中序遍历。** 中序遍历会给出bst 的有序排列
+
+```java
+class Solution {
+    long maxVal = Long.MIN_VALUE;
+
+    public boolean isValidBST(TreeNode root) {
+        
+        return traversal(root);
+    }
+
+    public boolean traversal(TreeNode root)
+    {
+        if(root == null)
+            return true;
+
+        //中序遍历
+        boolean left = traversal(root.left);
+
+        if(maxVal < root.val)
+            maxVal = root.val;
+        else
+            return false;
+
+        boolean right = traversal(root.right);
+
+        return left && right;
+    }
+}
+```
+
+递归法
+
+当我们递归到底层时，只需要返回，不需要对树进行操作。当root 为空时，返回true。递归使用中序遍历
+
+递归三部曲
+
+1. 函数返回值与参数：题目要求返回boolean，所以递归函数也返回boolean。参数上，就记录一个TreeNode
+2. 终止条件：root=null。之前我错误的认为在叶子节点需要做一些事，比如将数值放入list，在直观解法中。我们只需要在空节点时return true。空节点是有效的二叉搜索树
+3. 单层递归逻辑：使用中序遍历，左中右。左子树遍历，返回boolean。检查root是否大于maxVal，也就是当前最大值。如果是，就就把root.val 赋给maxVal。
+
+
+
+```java
+class Solution {
+    List<Integer> list = new ArrayList<>();
+
+    public boolean isValidBST(TreeNode root) {
+        traversal(root);
+        for(int i=1; i<list.size(); i++)
+        {
+            if(list.get(i-1) >= list.get(i))
+                return false;
+        }
+        return true;
+    }
+
+    public void traversal(TreeNode root)
+    {
+        if(root == null)
+            return;
+
+        //中序遍历
+        traversal(root.left);
+        list.add(root.val);
+        traversal(root.right);
+    }
+}
+```
+
+直观解法
+
+### 二叉搜索树的最小绝对差
+
+给你一个二叉搜索树的根节点 root ，返回 树中任意两不同节点值之间的最小差值 。
+
+差值是一个正数，其数值等于两值之差的绝对值。
+
+Given the root of a Binary Search Tree (BST), return the minimum absolute difference between the values of any two different nodes in the tree.
+
+
+```
+Input: root = [4,2,6,1,3]
+Output: 1
+
+Input: root = [1,0,48,null,null,12,49]
+Output: 1
+```
+
+```java
+class Solution {
+    int diff = Integer.MAX_VALUE;
+    TreeNode prev = null;
+    
+    public int getMinimumDifference(TreeNode root) {
+        traversal(root);
+        return diff;
+    }
+    public void traversal(TreeNode root)
+    {
+        if(root == null) return;       
+
+        traversal(root.left);
+
+        if(prev !=null && root.val - prev.val < diff)
+            diff = root.val - prev.val;
+        prev = root;
+
+        traversal(root.right);
+    }
+}
+```
+
+递归三部曲
+
+1. 函数返回值与参数：我们维持一个最小绝对差的全局变量，所以在递归函数中，不返回任何东西。参数就是TreeNode
+2. 终止条件：如果root 为空直接返回。这确保了base case
+3. 单层递归逻辑：
+
+* 中序遍历，左中右。中的逻辑是，维持一个prev 节点，如果prev 不为空，同时prev.val > root.val 这就代表着二叉搜索树不合理。直接return false
+* 之后让prev = root，然后右子树遍历。
+
+### 二叉搜索树中的众数
+
+给你一个含重复值的二叉搜索树（BST）的根节点 root ，找出并返回 BST 中的所有 众数（即，出现频率最高的元素）。
+
+如果树中有不止一个众数，可以按 任意顺序 返回。
+
+假定 BST 满足如下定义：
+
+结点左子树中所含节点的值 小于等于 当前节点的值
+结点右子树中所含节点的值 大于等于 当前节点的值
+左子树和右子树都是二叉搜索树
+
+Given the root of a binary search tree (BST) with duplicates, return all the mode(s) (i.e., the most frequently occurred element) in it.
+
+If the tree has more than one mode, return them in any order.
+
+Assume a BST is defined as follows:
+
+The left subtree of a node contains only nodes with keys less than or equal to the node's key.
+The right subtree of a node contains only nodes with keys greater than or equal to the node's key.
+Both the left and right subtrees must also be binary search trees.
+
+```
+输入：root = [1,null,2,2]
+输出：[2]
+
+输入：root = [0]
+输出：[0]
+```
+
+```java
+class Solution {
+
+    int maxCount = 0;
+    int count = 0;
+    TreeNode prev;
+    List<Integer> list = new ArrayList<>();
+
+    public int[] findMode(TreeNode root) {
+        traversal(root);
+        int[] result = new int[list.size()];
+        for(int i=0; i<result.length; i++)
+        {
+            result[i] = list.get(i);
+        }
+        return result;
+    }
+    public void traversal(TreeNode root)
+    {
+        if(root == null) return;
+
+        traversal(root.left);
+
+        if(prev==null || prev.val != root.val)
+            count=1;
+        if(prev!=null && prev.val == root.val)
+            count++;
+        prev = root;
+
+        if(count == maxCount)
+            list.add(root.val);
+        if(count > maxCount)
+        {
+            maxCount = count;
+            list.clear();
+            list.add(root.val);
+        }
+
+        traversal(root.right);
+        return;
+    }
+}
+```
+
+递归三部曲
+
+1. 函数返回值与参数：要遍历整棵树，所以不需要返回值，参数就是TreeNode。
+2. 终止条件：root==null 作为base case。不需要更多，在最下面保证递归的回弹就行
+3. 单层递归逻辑：
+
+* 维持三个全局变量，maxCount，count， prev (前驱节点)， list (存众数)。
+* 使用中序遍历。主要讲中的逻辑。首先如果如果prev 为空或者 prev.val 不等于 root.val，前者意味着遍历刚开始到第一个元素，后者意味着遇到了一个新元素，所以root.val 不等于prev.val。在这两种情况count 都设为1
+* 如果prev 不为空，同时root.val 与prev.val 相等，这就代表着遇到了相同的元素，此时count 加一
+* 下一步做双指针交换，prev = root
+* 接着如果count(当前元素的频率) == maxCount (最大频率)，那么就将root.val 存入list。如果count > maxCount，就清空list再放入root.val。此时list 中包含新的众数，最后再更新maxCount。
+
+这里维持的count 和 maxCount 都是为了计数。如果按照最直观的方式，遍历二叉树，然后存入map。将map 转成数组再排序，就用了更多的空间和时间。这里通过双指针思路，在一次遍历的情况下完成了任务
+
+### 二叉树的最近公共祖先
+
+给定一个二叉树, 找到该树中两个指定节点的最近公共祖先。
+
+百度百科中最近公共祖先的定义为：“对于有根树 T 的两个节点 p、q，最近公共祖先表示为一个节点 x，满足 x 是 p、q 的祖先且 x 的深度尽可能大（一个节点也可以是它自己的祖先）。”
+
+Given a binary tree, find the lowest common ancestor (LCA) of two given nodes in the tree.
+
+According to the definition of LCA on Wikipedia: “The lowest common ancestor is defined between two nodes p and q as the lowest node in T that has both p and q as descendants (where we allow a node to be a descendant of itself).”
+
+```
+Input: root = [3,5,1,6,2,0,8,null,null,7,4], p = 5, q = 1
+Output: 3
+Explanation: The LCA of nodes 5 and 1 is 3.
+
+Input: root = [3,5,1,6,2,0,8,null,null,7,4], p = 5, q = 4
+Output: 5
+Explanation: The LCA of nodes 5 and 4 is 5, since a node can be a descendant of itself according to the LCA definition.
+
+Input: root = [1,2], p = 1, q = 2
+Output: 1
+```
+
+```java
+lass Solution {
+    public TreeNode lowestCommonAncestor(TreeNode root, TreeNode p, TreeNode q) {
+        return traversal(root, p, q);
+    }
+
+    public TreeNode traversal(TreeNode root, TreeNode p, TreeNode q)
+    {
+        if(root==null) return null;
+        if(root==p || root==q)  return root;
+
+        TreeNode left = traversal(root.left, p, q);
+        TreeNode right = traversal(root.right, p, q);
+
+        if(left!=null && right!= null)
+            return root;
+        if(left != null && right == null)
+            return left;
+        if(left == null && right != null)
+            return right;
+        return null;
+    }
+}
+```
+
+递归三部曲
+
+1. 函数参数与返回值：返回TreeNode，因为问题需要返回TreeNode。参数是三个TreeNode，root，p，q。 后两者不变，在每次递归中放入
+2. 终止条件：root==null，返回null，如果root 等于p或q中的一个就返回root
+3. 单层递归逻辑
+
+* 后序遍历：因为要自底向上传递信息，最后左右中的顺序可以帮算法更便捷的提取信息。
+* 递归遍历左右子树，获取left 和 right
+* 如果left 和 right 都不为空，直接返回root，因为当左右都不会空时，这就是第一次遇到了公共祖先。
+* 如果left 或 right 为空，这代表有一边的子树找到了p 或 q，返回不为空的那个
+* 最后返回null，这代表左右都为空，直接返回null。
+
+### 二叉搜索树的最近公共祖先
+
+给定一个二叉搜索树, 找到该树中两个指定节点的最近公共祖先。
+
+百度百科中最近公共祖先的定义为：“对于有根树 T 的两个结点 p、q，最近公共祖先表示为一个结点 x，满足 x 是 p、q 的祖先且 x 的深度尽可能大（一个节点也可以是它自己的祖先）。”
+
+例如，给定如下二叉搜索树:  root = [6,2,8,0,4,7,9,null,null,3,5]
+
+Given a binary search tree (BST), find the lowest common ancestor (LCA) node of two given nodes in the BST.
+
+According to the definition of LCA on Wikipedia: “The lowest common ancestor is defined between two nodes p and q as the lowest node in T that has both p and q as descendants (where we allow a node to be a descendant of itself)
+
+```
+输入: root = [6,2,8,0,4,7,9,null,null,3,5], p = 2, q = 8
+输出: 6 
+解释: 节点 2 和节点 8 的最近公共祖先是 6。
+
+输入: root = [6,2,8,0,4,7,9,null,null,3,5], p = 2, q = 4
+输出: 2
+解释: 节点 2 和节点 4 的最近公共祖先是 2, 因为根据定义最近公共祖先节点可以为节点本身。
+```
+
+```java
+class Solution {
+    public TreeNode lowestCommonAncestor(TreeNode root, TreeNode p, TreeNode q) {
+        return traversal(root, p, q);
+    }
+
+    public TreeNode traversal(TreeNode root, TreeNode p, TreeNode q)
+    {
+        if(root == null) return null;
+
+        if(root.val == p.val || root.val == q.val) return root;
+
+        if(root.val > p.val && root.val > q.val)
+        {
+             TreeNode left = traversal(root.left, p, q);
+             if(left != null)   
+                return left;
+        }   
+        else if(root.val < p.val && root.val < q.val)
+        {
+            TreeNode right = traversal(root.right, p, q);
+            if(right != null)
+            {
+                return right;
+            } 
+        }
+        return root;
+    }
+}
+```
+
+递归法
+
+递归三部曲
+1. 函数参数与返回值 ：题目要求返回TreeNode 所以递归函数返回值也是TreeNode。参数上也是三个TreeNode， root，p，q。p q 是目标值，需要在每次递归中携带，以方便base case 返回
+2. 终止条件：root==null 返回null。 如果root 的值与p q中的任何一个相等，就返回root，这代表我们寻找到了一个目标值。这里要再次强调，终止条件大多数情况下只讨论什么时候返回，也就是我们 
+
+
+
+
+```java
+class Solution {
+    public TreeNode lowestCommonAncestor(TreeNode root, TreeNode p, TreeNode q) {
+        while(root != null)
+        {
+            if(root.val > p.val && root.val > q.val)
+                root = root.left;
+            else if(root.val < p.val && root.val < q.val)
+                root = root.right;
+            else    
+                return root;
+        }
+        return null;
+    }
+}
+```
+
+迭代法
