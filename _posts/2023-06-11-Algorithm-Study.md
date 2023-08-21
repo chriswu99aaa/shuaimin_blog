@@ -3641,3 +3641,125 @@ class Solution {
 ```
 
 迭代法的逻辑也是一样，要寻找区间。
+
+二叉搜索树的最近祖先问题比普通二叉树的公共祖先问题更容易，因为搜索树自带方向性，这就将问题简化成了寻找特定区间
+
+
+###  删除二叉搜索树中的节点
+
+给定一个二叉搜索树的根节点 root 和一个值 key，删除二叉搜索树中的 key 对应的节点，并保证二叉搜索树的性质不变。返回二叉搜索树（有可能被更新）的根节点的引用。
+
+一般来说，删除节点可分为两个步骤：
+
+首先找到需要删除的节点；
+如果找到了，删除它。
+
+Given a root node reference of a BST and a key, delete the node with the given key in the BST. Return the root node reference (possibly updated) of the BST.
+
+Basically, the deletion can be divided into two stages:
+
+Search for a node to remove.
+If the node is found, delete the node.
+
+```java
+class Solution {
+    public TreeNode deleteNode(TreeNode root, int key) {
+        return delete(root, key);
+    }
+
+    public TreeNode delete(TreeNode root, int key)
+    {
+        if(root == null) return null;
+
+        if(root.val == key)
+        {
+            if(root.left == null && root.right == null)
+                return null;
+            else if(root.left != null && root.right == null)
+                return root.left;
+            else if(root.left == null && root.right != null)
+                return root.right;
+            else if(root.left != null && root.right != null)
+            {
+                TreeNode cur = root.right;
+                while(cur.left != null)
+                {
+                    cur = cur.left;
+                }
+                cur.left = root.left;
+                root = root.right;
+            }
+        }
+
+        if(key < root.val)
+            root.left = delete(root.left, key);
+        if(key > root.val)
+            root.right = delete(root.right, key);
+        return root;
+    }
+}
+```
+
+递归三部曲
+
+1. 函数返回值与参数：返回TreeNode 参数包括TreeNode 以及key。
+2. 终止条件：
+
+* 当root==null 返回null
+* 当root.val == key，我们有以下四种情况
+    * root 为叶子节点，我们可以直接删除该节点而不需要改变二叉搜索树的结果。直接返回null
+    * root 左为空而右不为空，返回右子节点
+    * root 左不为空右为空，返回左子节点
+    * root 左右都不为空，利用一个cur，它初始化为root.right，然后不断遍历cur 的左子节点直到为空。此时将让cur.left = root.left。然后root = root.right
+
+3. 单层递归逻辑：如果key 小于 root.val，就递归遍左子树。让root.left 接住递归函数的返回值。这里接住的就是下层递归传上来的null，left 或 right。同理，如果key 大于root.val 就遍历右子树。
+
+这个题目的关键在于终止条件的处理，要全部考虑到几种情况，然后处理。最后一种情况是最难的。要考虑到把root 左子树插入到root 右子树的最左边，然后用 root.right 替换root。
+
+### 修剪二叉搜索树
+
+给你二叉搜索树的根节点 root ，同时给定最小边界low 和最大边界 high。通过修剪二叉搜索树，使得所有节点的值在[low, high]中。修剪树 不应该 改变保留在树中的元素的相对结构 (即，如果没有被移除，原有的父代子代关系都应当保留)。 可以证明，存在 唯一的答案 。
+
+所以结果应当返回修剪好的二叉搜索树的新的根节点。注意，根节点可能会根据给定的边界发生改变。
+
+Given the root of a binary search tree and the lowest and highest boundaries as low and high, trim the tree so that all its elements lies in [low, high]. Trimming the tree should not change the relative structure of the elements that will remain in the tree (i.e., any node's descendant should remain a descendant). It can be proven that there is a unique answer.
+
+Return the root of the trimmed binary search tree. Note that the root may change depending on the given bounds.
+
+```java
+class Solution {
+    public TreeNode trimBST(TreeNode root, int low, int high) {
+        return trim(root, low, high);
+    }
+
+    public TreeNode trim(TreeNode root, int low, int high)
+    {
+        if(root==null) return null;
+
+        if(root.val < low)
+            return trim(root.right, low, high);
+        else if(root.val > high)
+            return trim(root.left, low, high);
+
+        root.left = trim(root.left, low, high);
+        root.right = trim(root.right, low, high);
+
+        return root;
+    }
+}
+```
+
+本题的一个核心就是，在root.val 小于 low 时，遍历root.val 右子树。因为根据二叉搜索树的特性，左子树一定是小于root，那么就可以直接放弃，而右子树还可能在区间之内。但不是所有右子树的值都在区间之内，所以需要递归的调用trim 对右子树进行调整。同理root.val 大于 high，函数遍历root.left，而放弃右子树。每一次递归函数都有返回值，在单层逻辑中，使用root.left 接住递归函数的返回值，从而对改变搜索树的父子关系。
+
+
+### 二叉树纲领总结
+
+一个二叉树问题可以有两种思路
+
+1. 通过遍历traversal 一遍和维持一个全局变量来寻找到答案。也就是维持一个全局深度。
+2. 通过分解问题，使用子问题的答案来推导最终问题，这里就要利用好递归函数的返回值。例如在二叉树的最大深度问题上。
+
+无论采取怎样的思路，都需要清楚在每个节点需要做什么，用什么顺序做。
+
+如果发现问题与子树相关，那么就需要精确定义函数以及返回值了，在后序位置写代码。
+
