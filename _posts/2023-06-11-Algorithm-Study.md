@@ -2142,6 +2142,8 @@ class Solution {
 
 我们使用后序遍历是因为要先把左右子节点信息传入父节点，然后比较。
 
+这个题目要比较的不是左右节点，而是左右子树。明白了这一点才是题目的核心。一棵二叉树，有外侧和内侧，只有内外都相等了才能算对城。
+
 ### 二叉树的最大深度
 
 给定一个二叉树 root ，返回其最大深度。
@@ -2251,8 +2253,9 @@ class Solution {
 2. 终止条件是 root==null，也就是达到叶节点 return 0
 3. 单层递归逻辑：后序遍历，先处理左右子树的深度。return 部分的处理。因为有可能是左右子树有一边为空，所以要检查这种情况。如果这个情况属实，就return 另一边子树的深度+1。如果两边都有子树，那么就选择左右最小深度+1。
 
-这个题目因为是使用的后序遍历，实际上会有很多多余的计算，因为是从最深处不断网上递归。因为使用层序遍历就更加快
+这个题目因为是使用的后序遍历，实际上会有很多多余的计算，因为是从最深处不断往上递归。因为使用层序遍历就更加快
 
+二叉树的最大深度和最小深度的区别在于处理左右子树不为空的逻辑。最小深度要判断一个左右子树是否为空，如果左子树为空，那么要返回右子树的最小深度，而不是直接返回左子树为0的深度。
 
 ```java
 class Solution {
@@ -2584,7 +2587,7 @@ class Solution {
 这个题目使用递归解决，它涉及到回溯算法。
 1. 确定函数返回值和参数：calling 函数要返回 List<String>，递归函数可以将那个result list 作为参数，同时使用List<Integer>，然后就是TreeNode
 2. 终止条件：当碰到叶子节点就终止。
-3. 单层递归逻辑：先将root.val 入list，然后检测左右子节点是否会空，否则递归。
+3. 单层递归逻辑：先将root.val 入list，然后检测左右子节点是否会空，然后再递归。
 
 函数的最开始把中节点加入path，否则如果放在返回逻辑之后就会导致叶节点不能入list。当碰到叶节点时，使用stringbuilder，然后通过for 循环构造返回的路径字符串，然后加进result。
 然后在完成左右递归后，要进行回溯操作，也就是把下一层递归加入的子节点移除。
@@ -2629,6 +2632,8 @@ class Solution {
 这个题目要判断叶子节点，当我们遍历到底层时，返回0，因为不能判断是否为左叶子。当回溯到父节点时再判断左叶子节点是否为空，如果否，就将左叶子节点的数值赋给left。
 
 这里使用后序遍历，左右中。当我们完成左遍历后，如果左叶子节点不为空，就可以完成上面提到的赋值。中的处理就是当前单层逻辑的处理，没有递归调用。
+
+我们需要判断root的左孩子是否为叶子节点，如果不是，证明我们是在中间层，此时继续左右返回值相加。如果是左叶子，那么左边递归返回值将会是0，此时将leftValue 赋为left.val。
 
 
 ### 找树左下角的值
@@ -2797,7 +2802,9 @@ class Solution {
 
 整体叙述一遍思路
 
-本题需要判断是否有一个路径的和等于目标值，而并没有要求返回路径是什么，所以并不需要记录路径，而是管理
+本题需要判断是否有一个路径的和等于目标值，而并没有要求返回路径是什么，所以并不需要记录路径，而是管理targetSum。 targetSum 减去root.val 在代码不同的位置会有不同效果，具体实现也会有不同的方法。上面的那个版本，因为root.val 是在递归函数里面减去的，所以在base case 时，最后一个root.val 没有被剪去，所以判断的条件是targetSum==root.val。 如果targetSum -= root.val 写在叶子节点判断句上面，此时在叶子节点中就要写成 targetSum == 0 ，同时在递归函数中就不剪去root.val。
+
+还需要注意的是root == null 的判断是不能少的，因为这是对空指针的排除。
 
 ```java
 class Solution {
@@ -3273,6 +3280,8 @@ Explanation: The root node's value is 5 but its right child's value is 4.
 ```
 
 **遇到二叉搜索树，或者判断一棵二叉搜索树，都需要想到中序遍历。** 中序遍历会给出bst 的有序排列
+
+对二叉搜索树的遍历都需要想到中序遍历，就像数组的遍历一样，bst 在中序遍历下就会得出一个有序数组。我们对于bst 的遍历处理，不一定要转换成数组，也可以利用双指针的思路再一次遍历中完成。主要的思路就是利用bst 节点中的大小比较。
 
 ```java
 class Solution {
@@ -3752,6 +3761,60 @@ class Solution {
 本题的一个核心就是，在root.val 小于 low 时，遍历root.val 右子树。因为根据二叉搜索树的特性，左子树一定是小于root，那么就可以直接放弃，而右子树还可能在区间之内。但不是所有右子树的值都在区间之内，所以需要递归的调用trim 对右子树进行调整。同理root.val 大于 high，函数遍历root.left，而放弃右子树。每一次递归函数都有返回值，在单层逻辑中，使用root.left 接住递归函数的返回值，从而对改变搜索树的父子关系。
 
 
+###  将有序数组转换为二叉搜索树
+
+给你一个整数数组 nums ，其中元素已经按 升序 排列，请你将其转换为一棵 高度平衡 二叉搜索树。
+
+高度平衡 二叉树是一棵满足「每个节点的左右两个子树的高度差的绝对值不超过 1 」的二叉树。
+
+Given an integer array nums where the elements are sorted in ascending order, convert it to a 
+height-balanced
+ binary search tree.
+
+```
+Input: nums = [-10,-3,0,5,9]
+Output: [0,-3,9,-10,null,5]
+Explanation: [0,-10,5,null,-3,null,9] is also accepted:
+```
+
+```java
+class Solution {
+    public TreeNode sortedArrayToBST(int[] nums) {
+        return sort(nums, 0, nums.length-1);
+    }
+
+    public TreeNode sort(int[] nums, int left, int right)
+    {
+        //左闭右闭区间
+
+        if(left > right) return null;
+
+        int mid = left + ((right - left)/2);
+        TreeNode root = new TreeNode(nums[mid]);
+
+        root.left = sort(nums, left, mid-1);
+        root.right = sort(nums, mid+1, right);
+
+        return root;
+    }
+}
+```
+
+本题的思路与构造二叉树相似，但是更加容易。我们不断的维持left right 两个变量，从而不断引用数组。
+
+递归三部曲
+
+1. 函数返回值与参数：nums，left， right
+2. 终止条件：因为这里维持的是左闭右闭区间，所以我们需要当left>right 就返回null
+3. 单层递归逻辑：
+
+* 在数组中获取mid，然后使用这个值构建根节点。
+* 对根节点的左右子树，递归的调用sort
+* 注意区间的标注，需要维持左闭右闭。所以左子树 left=left， right=mid-1。右子树left=mid+1，right=right
+
+
+
+
 ### 二叉树纲领总结
 
 一个二叉树问题可以有两种思路
@@ -3762,4 +3825,100 @@ class Solution {
 无论采取怎样的思路，都需要清楚在每个节点需要做什么，用什么顺序做。
 
 如果发现问题与子树相关，那么就需要精确定义函数以及返回值了，在后序位置写代码。
+
+
+
+## 回溯算法
+
+回溯伏算法适合的问题类型
+
+* 组合: N 个数里面按一定规则找出k个数的集合
+* 切割：一个字符串按一定规则有几种切割方式
+* 子集： 一个N个数的集合里有多少符合条件的子集
+* 排列：N个数按一定规则全排列，有几种排列方式
+* 棋盘：N 皇后，解数独
+
+所有的回溯算法都可以抽象为树形结构。回溯算法都是在集合中递归查找自己，集合的大小就构成了树的宽度，递归的深度，都成了树的深度。
+
+![image](../pictures/backtrack.png)
+
+```
+回溯算法模版
+
+void backtrackintg(参数)
+{
+    if(终止条件)
+    {
+        存放结果
+        return;
+    }
+    for(选择：本层集合中元素（树中节点孩子的数量就是集合的大小)
+    {
+        处理节点；
+        backtracking（路径，选择列表）；//递归
+        回溯，撤销处理结果
+    }
+}
+
+```
+
+### 组合
+
+给定两个整数 n 和 k，返回范围 [1, n] 中所有可能的 k 个数的组合。
+
+你可以按 任何顺序 返回答案。
+
+Given two integers n and k, return all possible combinations of k numbers chosen from the range [1, n].
+
+You may return the answer in any order.
+
+```
+Input: n = 4, k = 2
+Output: [[1,2],[1,3],[1,4],[2,3],[2,4],[3,4]]
+Explanation: There are 4 choose 2 = 6 total combinations.
+Note that combinations are unordered, i.e., [1,2] and [2,1] are considered to be the same combination.
+
+Input: n = 1, k = 1
+Output: [[1]]
+Explanation: There is 1 choose 1 = 1 total combination.
+```
+
+```java
+class Solution {
+
+    ArrayList<List<Integer>> result = new ArrayList<List<Integer>>();
+    ArrayList<Integer> path = new ArrayList<>();
+
+    public List<List<Integer>> combine(int n, int k) {
+        backtrack(n, k, 1);
+        return result;
+    }
+
+    public void backtrack(int n, int k, int startIndex)
+    {
+        if(path.size()==k)
+        {
+            result.add(new ArrayList<>(path));
+            return;
+        }
+
+        for(int i=startIndex; i<= n-(k-path.size())+1; i++)
+        {
+            path.add(i);
+            backtrack(n, k, i+1);
+            path.remove(path.size()-1);
+        }
+    }
+}
+```
+
+这是一个剪枝优化版。在for loop中，原本是i<=n， 而现在给出了一个更加精确的upper bound。我们要选择k 个元素，已经选了path.size 个，还需要选x 个。n-x +1就是搜索的上限位置，超过这个上限，剩余的元素不足以满足搜索的数量要求。这就是剪枝。
+
+回溯三部曲
+
+1. 函数返回值与参数：返回void 因为要遍历全部，参数是n, k, startIndex。startIndex 记录在本层递归中，集合从哪里开始遍历。每一次递归调用，都是在集合里面选取一个元素，收缩选择范围，而这个范围的控制，就是通过startIndex。
+2. 终止条件：当选取的值的数量达到所需要的，就加入result，然后return
+3. 单层递归逻辑：for 循环横向遍历，递归函数纵向遍历。运行的逻辑是在for 循环中选取一个元素，然后进行纵向递归调用。在下一层的递归中，也会有一层for 循环，但是因为遍历数量有限，而且startIndex 不断递增，这导致最终for 循环会停下来。
+
+* 每一层for 循环都需要将数字加入数组，然后递归调用backtrack，然后进行回溯操作把数组最后一个元素弹出。
 
