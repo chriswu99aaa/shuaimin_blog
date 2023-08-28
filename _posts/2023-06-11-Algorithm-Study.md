@@ -3922,3 +3922,251 @@ class Solution {
 
 * 每一层for 循环都需要将数字加入数组，然后递归调用backtrack，然后进行回溯操作把数组最后一个元素弹出。
 
+### 组合总和 III
+
+找出所有相加之和为 n 的 k 个数的组合，且满足下列条件：
+
+只使用数字1到9
+每个数字 最多使用一次 
+返回 所有可能的有效组合的列表 。该列表不能包含相同的组合两次，组合可以以任何顺序返回。
+
+Find all valid combinations of k numbers that sum up to n such that the following conditions are true:
+
+Only numbers 1 through 9 are used.
+Each number is used at most once.
+Return a list of all possible valid combinations. The list must not contain the same combination twice, and the combinations may be returned in any order.
+
+```
+Input: k = 3, n = 7
+Output: [[1,2,4]]
+Explanation:
+1 + 2 + 4 = 7
+There are no other valid combinations.
+
+Input: k = 3, n = 9
+Output: [[1,2,6],[1,3,5],[2,3,4]]
+Explanation:
+1 + 2 + 6 = 9
+1 + 3 + 5 = 9
+2 + 3 + 4 = 9
+There are no other valid combinations.
+
+Input: k = 4, n = 1
+Output: []
+Explanation: There are no valid combinations.
+Using 4 different numbers in the range [1,9], the smallest sum we can get is 1+2+3+4 = 10 and since 10 > 1, there are no valid combination.
+```
+
+```java
+class Solution {
+    List<Integer> path = new ArrayList<>();
+    List<List<Integer>> result = new ArrayList<List<Integer>>();
+    
+    public List<List<Integer>> combinationSum3(int k, int n) {
+        backtrack(k, n, 0, 1);
+        return result;
+    }
+
+    public void backtrack(int k, int n, int sum, int startIndex)
+    {
+        if(sum > n)
+            return;
+        if(path.size() == k)
+        {
+            if(n == sum)
+                result.add(new ArrayList<>(path));
+            return;
+        }
+
+        for(int i=startIndex; i<= 9-(k-path.size())+1; i++)
+        {
+            sum += i;
+            path.add(i);
+            backtrack(k, n, sum, i+1);
+            sum -= i;
+            path.remove(path.size()-1);
+
+        }
+        return;
+    }
+}
+```
+
+这个问题和之前的组合问题是相似的。都是选k个数，但是现在n是targetSum。大体的逻辑是相似的，只是在具体的细节上有区别。
+
+回溯三部曲
+
+1. 函数参数与返回值：不需要返回值，参数就是 n，k，startIndex，sum。n 就是目标和，k 是选取的数量，startIndex 就是for 循环起始位置，这样保证了元素不重复。
+2. 终止条件：当path.size == k，然后判断和是否为n，如果是就加入result，不是就直接返回
+3. 单层回溯逻辑：
+
+* for 循环从startIndex 开始，然后遍历到 9
+* 每次层把当前的 i 加入path，sum 加上 i，然后递归调用backtrack。接下来从sum 中 减去 i，再将path 中的最后一个元素移除。
+
+4. 剪植操作
+
+* 如果当前的sum 已经大于n 了，也就是说不管选什么数字都会得到n，那么此时就直接返回，因此就不用向下继续递归。
+* 如果当前i 的位置，不满足元选去k 个元素，也无法完成k的指标，所以 i 最多遍历到 9-(k-path.size())+1 的位置。
+* 这两个剪植操作是在纵向和横向上分别剪植。
+
+### 电话号码的字母组合
+
+给定一个仅包含数字 2-9 的字符串，返回所有它能表示的字母组合。答案可以按 任意顺序 返回。
+
+给出数字到字母的映射如下（与电话按键相同）。注意 1 不对应任何字母。
+
+Given a string containing digits from 2-9 inclusive, return all possible letter combinations that the number could represent. Return the answer in any order.
+
+A mapping of digits to letters (just like on the telephone buttons) is given below. Note that 1 does not map to any letters.
+
+```java
+class Solution {
+    List<String> result = new ArrayList<>();
+    StringBuilder sb = new StringBuilder();
+    String[] map = {
+        "",
+        "",
+        "abc",
+        "def",
+        "ghi",
+        "jkl",
+        "mno",
+        "pqrs",
+        "tuv",
+        "wxyz"
+    };
+    public List<String> letterCombinations(String digits) {
+        if(digits.equals("")) return result;
+        backtrack(digits, 0);
+        return result;
+    }
+
+    public void backtrack(String digits, int index)
+    {
+        if(index == digits.length())  
+        {
+            result.add(new String(sb.toString()));
+            return;
+        }
+        int digit = digits.charAt(index) - '0';
+        String str = map[digit];
+
+        for(int i=0; i<str.length(); i++)
+        {
+            sb.append(str.charAt(i));
+            backtrack(digits, index+1);
+            sb.deleteCharAt(sb.length()-1);
+        }
+        return;
+    }
+}
+```
+
+这个题目的思路是，首先有一个映射，将输入的数字，映射到对应的字母集合上，这里我用的是一个String 数组，也可以用hashmap。将这map 定义为一个全局变量。然后因为是操作String，所以定一个StringBuilder 全局变量，最后定义一个result list。
+
+1. 函数参数与返回值：没有返回值。参数包含digits，也就是输入的所有数字。外加一个index，它指示当前digits 遍历到了哪一个数字。这里我们不用startIndex 是因为之前的问题都是在一个集合里进行操作，所以需要知道之前已经获取了什么元素。这里的index 控制的是递归的深度，当递归至index 等于digits 长度后就将结果加入result 中。
+2. 终止条件：当index 等于digits 长度
+3. 单层回溯逻辑
+
+* 获取digits 当前数字，通过减去“0”，来获取对应的数字，因为数字的asscci value有字母表现形式，但是减去0，就会回到原始值。
+* 在map中获得数字对应的字母串
+* for 循环遍历这个字母串，每次循环中将该字母加入sb，然后递归调用backtrack。最后回溯删除sb 中最后加入的字母。
+
+这个题目的for 循环不是从startIndex 开始，反而是从0开始。原因在于，之前是在同一个集合里，而
+
+### 一周总结
+
+回溯算法的本质是暴力算法，在某一单一设置下，问题可以用for 循环暴力求解，但是在很多问题中可能要写n 个for 循环。这就无法掌控，此时就需要我们使用回溯算法。回溯算法递归的调用backtrack函数，这就让我们可以往深度探索。在递归调用的时候，需要有一个参数或者性质来控制递归深度。在前两题中，就是 path.size 而在电话号码问题中就是index。
+
+### 组合总和3
+
+给你一个 无重复元素 的整数数组 candidates 和一个目标整数 target ，找出 candidates 中可以使数字和为目标数 target 的 所有 不同组合 ，并以列表形式返回。你可以按 任意顺序 返回这些组合。
+
+candidates 中的 同一个 数字可以 无限制重复被选取 。如果至少一个数字的被选数量不同，则两种组合是不同的。 
+
+对于给定的输入，保证和为 target 的不同组合数少于 150 个。
+
+Given an array of distinct integers candidates and a target integer target, return a list of all unique combinations of candidates where the chosen numbers sum to target. You may return the combinations in any order.
+
+The same number may be chosen from candidates an unlimited number of times. Two combinations are unique if the 
+frequency
+ of at least one of the chosen numbers is different.
+
+The test cases are generated such that the number of unique combinations that sum up to target is less than 150 combinations for the given input.
+
+
+```
+Input: candidates = [2,3,6,7], target = 7
+Output: [[2,2,3],[7]]
+Explanation:
+2 and 3 are candidates, and 2 + 2 + 3 = 7. Note that 2 can be used multiple times.
+7 is a candidate, and 7 = 7.
+These are the only two combinations.
+
+Input: candidates = [2,3,5], target = 8
+Output: [[2,2,2,2],[2,3,3],[3,5]]
+
+
+```
+
+
+当可以重复使用集合内元素时，startIndex 就设置成i 而不是i+1。原因在于，如果是i+1，那么在横向上就少了一个元素遍历，也就是上一个递归用到的元素。如果是i，那每次递归都拥有上一层递归相同的可选元素。
+
+关于组合问题startIndex 是否设置的问题
+
+* 如果是向这个组合求和问题，在同一个集合内寻找元素，就需要使用startIndex 控制选素选择起始位置
+* 如果是电话号码问题，在两个不相关的集合内进行组合，所以就不需要startIndex。
+
+如果是排列问题就是不同的思考路径
+
+![image](../pictures/combination_sum3.png)
+
+```java
+class Solution {
+    List<List<Integer>> result = new ArrayList<List<Integer>>();
+    List<Integer> path = new ArrayList<>();
+
+    public List<List<Integer>> combinationSum(int[] candidates, int target) {
+        Arrays.sort(candidates);
+        backtrack(candidates, target, 0, 0);
+        return result;
+    }
+
+    public void backtrack(int[] candidates, int target, int sum, int startIndex)
+    {
+        if(sum > target) return;
+
+        if(sum == target)
+        {
+            result.add(new ArrayList<>(path));
+            return;
+        }
+
+        for(int i=startIndex; i<candidates.length && sum + candidates[i] <= target; i++)
+        {
+
+            int tmp = candidates[i];
+            sum += tmp;
+            path.add(tmp);
+            backtrack(candidates, target, sum, i);
+            sum -= tmp;
+            path.remove(path.size()-1);
+        }
+
+        return;
+    }
+}
+```
+
+回溯三部曲
+
+1. 函数参数与返回值：没有返回值，参数使用 candidates，target，sum （记录当前和的数量）, startIndex （控制下层遍历开始的位置）
+2. 终止条件：当sum == target 把当前路径加入result 中。 当 sum > target 直接返回
+3. 单层回溯逻辑：
+
+* for 循环 控制横向遍历，i 从 startIndex 开始
+* 将本次candidates 中 i 所对应的元素加给sum，将当前元素加入path
+* 递归调用backtrack，除了startIndex 外其他参数都一样。startIndex 不会与其他问题一样+1，而是保持i。原因在于下层递归依然可以原则相同的元素集合，而不是更小的元素集合。这么做的原因在于，本题是允许重复选择相同的元素的。
+* 回溯操作
+
+4. 剪植操作：本题的剪植操作，可以通将candidates 数组排序。此时如果当前sum 大于 target，就代表剩下的任何数字都不会得到target，因为数组单调递增。这个剪植操作，可以用在for 循环中的判断条件。如果 sum += candidates <= target，循环继续。否则停止。这里为什么是小于等于而不是小于？因为如果是小于就排除了 二者相加等于target 的情况。而两者相等正是我们需要寻找的。所以保持小于等于。
