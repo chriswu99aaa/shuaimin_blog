@@ -4170,3 +4170,515 @@ class Solution {
 * 回溯操作
 
 4. 剪植操作：本题的剪植操作，可以通将candidates 数组排序。此时如果当前sum 大于 target，就代表剩下的任何数字都不会得到target，因为数组单调递增。这个剪植操作，可以用在for 循环中的判断条件。如果 sum += candidates <= target，循环继续。否则停止。这里为什么是小于等于而不是小于？因为如果是小于就排除了 二者相加等于target 的情况。而两者相等正是我们需要寻找的。所以保持小于等于。
+
+
+### 组合总和2
+
+给定一个候选人编号的集合 candidates 和一个目标数 target ，找出 candidates 中所有可以使数字和为 target 的组合。
+
+candidates 中的每个数字在每个组合中只能使用 一次 。
+
+注意：解集不能包含重复的组合。 
+
+Given a collection of candidate numbers (candidates) and a target number (target), find all unique combinations in candidates where the candidate numbers sum to target.
+
+Each number in candidates may only be used once in the combination.
+
+Note: The solution set must not contain duplicate combinations.
+
+
+```
+Input: candidates = [10,1,2,7,6,1,5], target = 8
+Output: 
+[
+[1,1,6],
+[1,2,5],
+[1,7],
+[2,6]
+]
+```
+
+```java
+class Solution {
+    List<List<Integer>> result = new ArrayList<List<Integer>>();
+    List<Integer> path = new ArrayList<>();
+
+    public List<List<Integer>> combinationSum2(int[] candidates, int target) {
+        Arrays.sort(candidates);
+        boolean[] used = new boolean[candidates.length];
+
+        backtrack(candidates, used, target, 0, 0);
+        return result;
+    }
+
+    public void backtrack(int[] candidates, boolean[] used, int target, int sum, int startIndex)
+    {
+        if(sum > target) return;
+
+        if(sum == target)
+        {
+            result.add(new ArrayList<>(path));
+            return;
+        }
+
+        for(int i=startIndex; i<candidates.length && sum+candidates[i] <= target; i++)
+        {
+            if(i>0 && candidates[i] == candidates[i-1] && used[i-1] == false)
+                continue;
+
+            int tmp = candidates[i];
+            path.add(tmp);
+            sum += tmp;
+            used[i] = true;
+            backtrack(candidates,used, target, sum, i+1);
+            sum -= tmp;
+            path.remove(path.size()-1);
+            used[i] = false;
+        }
+        return;
+    }
+}
+```
+
+本题的难点在于，一个有重复数组的元素要输出没有重复组合的集合。去重是这个的难点。
+
+首先将数组进行排序，然后构建一个used 数组其大小与candidates 数组一样。used 数组记录一个元素是否被使用在组合中。
+
+![image](../pictures/quchong.png)
+
+在树枝上的重复，也就是纵向重复是可以的，这代表着选去不同的元素，只不过元素的值一样。这个情况在used 数组就会体现在 used[i-1] == true。这代表着纵向上选取元素。 相反如果used[i-1] == false. 这代表此时是树层重复，这是需要去除的。因为如果 在i-1元素纵向遍历时，已经把后面的元素全部使用过了，如果现在 i 上的元素与i-1 相等，那么后面的元素在之前已经被i-1 的元素组合过了。所以要设置一个树层去重。
+
+为什么used[i-1]==false 代表当前i所在的位置是从上一个for 循环中回溯上来的。因为每次递归完成后，都会有一个回溯的操作。
+
+这个去重就是这个题目的重点逻辑。其他都可以参照上一提combination 3。
+
+### 分割回文串
+
+给你一个字符串 s，请你将 s 分割成一些子串，使每个子串都是 回文串 。返回 s 所有可能的分割方案。
+
+回文串 是正着读和反着读都一样的字符串。
+
+Given a string s, partition s such that every 
+substring
+ of the partition is a 
+palindrome
+. Return all possible palindrome partitioning of s.
+
+
+```
+Input: s = "aab"
+Output: [["a","a","b"],["aa","b"]]
+
+Input: s = "a"
+Output: [["a"]]
+```
+
+```java
+class Solution {
+    List<List<String>> result = new ArrayList<List<String>>();
+    List<String> path = new ArrayList<>();
+
+    public List<List<String>> partition(String s) {
+        backtrack(s,0);
+        return result;
+    }
+
+    public void backtrack(String s, int startIndex)
+    {
+        if(startIndex >= s.length())
+        {
+            result.add(new ArrayList<>(path));
+            return;
+        }
+
+        for(int i=startIndex; i<s.length(); i++)
+        {
+            if(palindrom(s, startIndex, i))
+            {
+                String str = s.substring(startIndex, i+1);
+                path.add(str);
+            }else
+                continue;
+            backtrack(s, i+1);
+            path.remove(path.size()-1);
+        }
+    }
+
+    public boolean palindrom(String s, int start, int end)
+    {
+        for(int i=start, j=end; i<=j; i++, j--)
+        {
+            if(s.charAt(i) != s.charAt(j))
+                return false;
+        }
+        return true;
+    }
+}
+```
+
+回溯三部曲
+
+1. 函数返回值与参数：没需要返回值，参数就是 string 以及startIndex。因为这里处理的是同一集合（同一个string）所以用startIndex。
+2. 终止条件：在这里我们使用startIndex 进行切割，所以当startIndex 大于等于string 的长度时就是终止的时刻。把path 加入result
+3. 单层回溯逻辑
+
+* 利用for 循环从左到右遍历字符串。使用 一个palindrom 函数检查从startIndex 到 i 是否是回文串。
+* palindrom 函数有三个参数，string start end。string 就是处理的字符串。[start, end] 定义了一个左闭右闭的区间。不断检查左右两边字母是否相等。
+* 如果palindrom 返回true 就代表当前部分是回文串。然后截取substring startIndex 至 i+1 的部分。因为subtring 是左闭右开，所以需要+1 来包括最后一个元素。最后将其加入path
+* 如果palindrom 返回false 就跳过。这代表当前字符串不是回文串就没有必要继续处理
+* 递归调用 backtrack startIndex 为 i+1，最后就是回溯过程
+
+这个题目我们使用startIndex 作为分割线，如果[startIndex, i] 是回文串，就会被加入path 。最后由回文串组成的字符串也是回文串。
+
+![image](../pictures/qiege.png)
+
+根据图中第一个切割位置a，在下一个地点就是在剩余ab 中选择。再一次切割a，就会剩余b，最后在b上切割就会生成三个长度为1的回文串。然后递归返回至第二层，在ab 中在b后面切割，此时不是回文串，所以跳过。第二层for 循环结束，返回第一层for 循环。进入第二个树枝startIndex 移动至 aa，剩余b。此时的切割也是回文串。返回至第一层for 循环，此时aab 不是回文串，所以跳过。最后循环结束。
+
+在不断的递归调用中，backtrack 是在根据已选择的字母，在更深层选择可能的回文串切割方式。在每一层for 循环中都会检查是否当前 startIndex 到 i 是否构成回文串。这个回文串的长度可能是1 也可能更多。
+
+本题有以下几个难点
+
+1. 如何将切割问题抽象为树的结构
+2. 如何设置终止条件。这里startIndex 可以是大于等于，也可以是等于 s.length。因为startIndex 但以递增不会有增加2的情况，所以不会跳过s.length
+3. 如何使用palindrom 函数，以及字符串检查的区间如何设置？这里使用的是左闭右闭。
+3. 当palindrome 函数返回true 时，需要怎样截取子串？这里就涉及到substring 的实现是左闭右开的方式，所以需要+1
+
+
+### 复原 IP 地址
+
+有效 IP 地址 正好由四个整数（每个整数位于 0 到 255 之间组成，且不能含有前导 0），整数之间用 '.' 分隔。
+
+例如："0.1.2.201" 和 "192.168.1.1" 是 有效 IP 地址，但是 "0.011.255.245"、"192.168.1.312" 和 "192.168@1.1" 是 无效 IP 地址。
+给定一个只包含数字的字符串 s ，用以表示一个 IP 地址，返回所有可能的有效 IP 地址，这些地址可以通过在 s 中插入 '.' 来形成。你 不能 重新排序或删除 s 中的任何数字。你可以按 任何 顺序返回答案。
+
+A valid IP address consists of exactly four integers separated by single dots. Each integer is between 0 and 255 (inclusive) and cannot have leading zeros.
+
+For example, "0.1.2.201" and "192.168.1.1" are valid IP addresses, but "0.011.255.245", "192.168.1.312" and "192.168@1.1" are invalid IP addresses.
+Given a string s containing only digits, return all possible valid IP addresses that can be formed by inserting dots into s. You are not allowed to reorder or remove any digits in s. You may return the valid IP addresses in any order.
+
+```
+Input: s = "25525511135"
+Output: ["255.255.11.135","255.255.111.35"]
+
+Input: s = "0000"
+Output: ["0.0.0.0"]
+
+Input: s = "101023"
+Output: ["1.0.10.23","1.0.102.3","10.1.0.23","10.10.2.3","101.0.2.3"]
+```
+
+```java
+class Solution {
+    List<String> result = new ArrayList<>();
+
+    public List<String> restoreIpAddresses(String s) {
+        StringBuilder sb = new StringBuilder(s);
+        backtrack(sb, 0, 0);
+        return result;
+    }
+
+    public void backtrack(StringBuilder sb, int startIndex, int pointNum)
+    {
+        if(pointNum == 3)
+        {
+            if(isValid(sb, startIndex, sb.length()-1))
+            {
+                result.add(sb.toString());
+            }
+            return;
+        }
+
+        for(int i=startIndex; i<sb.length(); i++)
+        {
+            if(isValid(sb, startIndex, i))
+            {
+                sb.insert(i+1, ".");
+                backtrack(sb, i+2, pointNum+1);
+                sb.deleteCharAt(i+1);
+            }else
+                break;
+        }
+        return;
+    }
+
+    public boolean isValid(StringBuilder sb, int start, int end)
+    {
+    // initiate a left right closed interval
+        if(start > end) return false;
+
+        if(sb.charAt(start)== '0' && start != end) return false; //0 开头不合法
+
+        int num = 0;
+        for(int i=start; i<= end; i++)
+        {
+            if(sb.charAt(i) > '9' || sb.charAt(i) < '0') //遇到非数字不合法，直接返回
+                return false;
+
+            num = num * 10 + (sb.charAt(i)- '0');
+            if(num > 255)
+                return false;
+        }
+        return true;
+
+    }
+}
+```
+
+回溯三部曲
+
+1. 函数参数与返回值：回溯算法没有返回值，参数使用Stringbuilder，startIndex，以及 pointNum。 第三个参数用来记录切割了几次。pointNum 也控制递归深度
+2. 终止条件：当pointNum == 3 时，检查最后一段是否符合[startIndex, sb.length()-1] 是否合法，如果合法就加入result
+3. 单层回溯逻辑
+
+* 使用for 循环从startIndex 遍历到字符串结尾
+* 每一层for 循环都使用 isValid 函数 判断此时[startIndex, i] 这个子串是否合法。
+* 如果合法就在i+1 位置上插入'.'， 然后 pointNum++
+* 递归调用backtrack 但是startIndex 应该是i+2，因为插入了'.'
+* isValid 函数使用三个参数，stringbuilder， start， end
+    * 如果start > end false
+    * 开头是0，而且start 不等于end。二者不想等，代表子串长度大于1
+    * 使用for 循环遍历子串。如果数字大于255就代表不合法。
+    * 将字符串转化为数字也是一个难点。具体做法就是用当前字母减去'0'，计算机会使用ascci value 进行计算，从而得到一个十进制的数字。在下一层for 循环中num * 10，原先的数字就会去到十位上，在用前文提到的减法操作得到新的个位数，最后二者相加。下一层for 循环使用同样的逻辑。
+
+这个题目有多个难点
+
+1. 不能使用startIndex 作为递归结束的判断，而是要根据条件使用切割数作为终止条件。分成四段，也就是切割三次。
+2. 过去都是在终止条件下直接把结果加入result 数组，但是因为采用的是切割计数，第四段没有被检查过。所以在终止条件里，还需要调用isValid 函数进行检查。最后一段的长度就是[startindex, sb.length()-1]
+3. 意识到将string 转化成stringbuilder 从而避免对整个string 进行复制操作。这也是一个效率提高的点
+4. isValid 函数 在使用位置以及接受参数的数量和参数类型上都是与之前回文串问题中的palindrom 函数相似的，但是二者在函数内部的细节不同。在参数上start end 两个参数定义了一个左闭右闭区间。进一步isValid 要达到的检查的要求是什么，这需要对什么是inValid 有所思考
+
+* 不能有字符
+* 数字在[0,255] 之间
+* 字符开头不能是0
+* 对区间进行操作就需要判断 start>end，避免区间越界
+
+5. char 类型转化成数字的操作也是需要明白的。这就需要对ascci value 有所理解。在ascci 值48-57 之间分别对应 0-9，大于或小于这个区间的都是字符或者字母，而不是数字。
+
+
+### 子集1
+
+给你一个整数数组 nums ，数组中的元素 互不相同 。返回该数组所有可能的子集（幂集）。
+
+解集 不能 包含重复的子集。你可以按 任意顺序 返回解集。
+
+
+Given an integer array nums of unique elements, return all possible 
+subsets
+ (the power set).
+
+The solution set must not contain duplicate subsets. Return the solution in any order.
+
+```java
+class Solution {
+    List<List<Integer>> result = new ArrayList<>();
+    List<Integer> path = new ArrayList<>();
+
+    public List<List<Integer>> subsets(int[] nums) {
+        backtrack(nums, 0);
+        return result;
+    }
+    void backtrack(int[] nums, int startIndex)
+    {
+        result.add(new ArrayList<>(path));
+        //终止条件
+        if(startIndex >= nums.length) return;
+
+        //单层逻辑
+        for(int i=startIndex; i<nums.length; i++)
+        {
+            path.add(nums[i]);
+            backtrack(nums, i+1);
+            path.remove(path.size()-1);
+        }
+        return;
+    }
+}
+```
+
+本题与之前遇到的回溯问题的区别在于，我们需要搜索到所有的节点，并且收集结果的时间不是在终止条件内，而是在每一层for 循环内。所以每个单层递归都会把path 加入result 里面。
+
+自己在第一次尝试这个问题时，我没又想到怎样处理单层逻辑。将nums[i] 加入path 然后进行递归backtrack 就可以了。下一层递归时，就会吧上一层for 循环加入path 的元素加入result 数组里。
+
+![image](../pictures/subset1.png)
+
+自己在接下来做回溯算法时，要首先尝试自己解题，独立完成树形结构的抽象。
+
+在独立解题时，就不会使用递归思维，而是更加依赖于直觉中的for 循环迭代法。
+
+### 回溯周总结
+
+在求和问题中，排序之后加剪植是常见的套路。
+
+### 子集2
+
+给你一个整数数组 nums ，其中可能包含重复元素，请你返回该数组所有可能的子集（幂集）。
+
+解集 不能 包含重复的子集。返回的解集中，子集可以按 任意顺序 排列。
+
+Given an integer array nums that may contain duplicates, return all possible 
+subsets
+ (the power set).
+
+The solution set must not contain duplicate subsets. Return the solution in any order.
+
+```
+Input: nums = [1,2,2]
+Output: [[],[1],[1,2],[1,2,2],[2],[2,2]]
+
+Input: nums = [0]
+Output: [[],[0]]
+
+```
+
+```java
+class Solution {
+    List<List<Integer>> result = new ArrayList<>();
+    List<Integer> path = new ArrayList<>();
+
+
+    public List<List<Integer>> subsetsWithDup(int[] nums) {
+        boolean[] used = new boolean[nums.length];
+        Arrays.sort(nums);
+        backtrack(nums, used, 0);
+        return result;
+    }
+
+    public void backtrack(int[] nums, boolean[] used, int startIndex)
+    {
+        result.add(new ArrayList<>(path));
+
+        if(startIndex >= nums.length) return;
+
+        for(int i=startIndex; i<nums.length; i++)
+        {
+            if(i>0 && nums[i]==nums[i-1] && used[i-1]==false)
+                continue;
+            path.add(nums[i]);
+            used[i] = true;
+            backtrack(nums, used, i+1);
+            path.remove(path.size()-1);
+            used[i] = false;
+        }
+        return;
+    }
+}
+```
+
+本题是子集1 和 组合总和2的一个结合体。首先是要求所有子集，然后要在有重复元素的结合里面给出不重复的组合。这就要去重。所以就要回想起树层去重，以及子集组合问题的解法。
+
+这里求的是所有子集，就要把求子集的思路应用上来。
+
+1. 在每一层递归都收集结果。 result.add 这个操作放在backtrack 第一行 
+2. for 循环中path 加入nums[i]，然后递归调用backtrack，最后回溯
+
+去重操作
+
+1. 首先将nums 排序
+2. 然后建立used 数组，记录当前nums 中第i 个元素是否被使用
+3. 在for 循环中，进行一个判断 当i大于0，nums[i] 等于 nums[i-1]， 同时used[i-1] 为false，此时就是树层重复，这里就需要跳过这层for 循环，横向的进入下一层for 循环。**树层重复的判断，以及树枝重复的判断在组合总和2中已经讨论过了。** 总的来说就是i used[i-1] 为false 就代表这个i 是从上一层递归回溯来的，这就形成了树层重复
+
+### 递增子序列
+
+给你一个整数数组 nums ，找出并返回所有该数组中不同的递增子序列，递增子序列中 至少有两个元素 。你可以按 任意顺序 返回答案。
+
+数组中可能含有重复元素，如出现两个整数相等，也可以视作递增序列的一种特殊情况。
+
+Given an integer array nums, return all the different possible non-decreasing subsequences of the given array with at least two elements. You may return the answer in any order.
+
+```
+Input: nums = [4,6,7,7]
+Output: [[4,6],[4,6,7],[4,6,7,7],[4,7],[4,7,7],[6,7],[6,7,7],[7,7]]
+
+Input: nums = [4,4,3,2,1]
+Output: [[4,4]]
+```
+
+```java
+class Solution {
+    List<List<Integer>> result = new ArrayList<>();
+    List<Integer> path = new ArrayList<>();
+
+    public List<List<Integer>> findSubsequences(int[] nums) {
+        backtrack(nums, 0);
+        return result;
+    }
+
+    public void backtrack(int[] nums, int startIndex)
+    {
+        if(path.size()>1)
+            result.add(new ArrayList<>(path));
+        
+        boolean[] used = new boolean[201]; //[-100, 100] 包含0
+
+        for(int i=startIndex; i<nums.length; i++)
+        {
+            if((path.size() != 0 && nums[i] < path.get(path.size()-1)))
+                continue;
+            if(used[nums[i]+100]==true)
+                continue;
+            path.add(nums[i]);
+            used[nums[i] + 100] = true;
+            backtrack(nums, i+1);
+            path.remove(path.size()-1);
+
+            //used 不用回溯，因为每层递归新建一个hashset
+        }
+        return;
+    }
+}
+```
+
+这里的代码是使用数组去重
+
+```java
+class Solution {
+    List<List<Integer>> result = new ArrayList<>();
+    List<Integer> path = new ArrayList<>();
+
+    public List<List<Integer>> findSubsequences(int[] nums) {
+        backtrack(nums, 0);
+        return result;
+    }
+
+    public void backtrack(int[] nums, int startIndex)
+    {
+        if(path.size()>1)
+            result.add(new ArrayList<>(path));
+        
+        HashSet<Integer> used = new HashSet<>();
+
+        for(int i=startIndex; i<nums.length; i++)
+        {
+            if((path.size() != 0 && nums[i] < path.get(path.size()-1)))
+                continue;
+            if(used.contains(nums[i]))
+                continue;
+            
+            path.add(nums[i]);
+            used.add(nums[i]);
+            backtrack(nums, i+1);
+            path.remove(path.size()-1);
+
+            //used 不用回溯，因为每层递归新建一个hashset
+        }
+        return;
+    }
+}
+```
+
+这里的代码是使用HashSet 去重
+
+
+两个不同的版本都是使用了相同的逻辑去重，就是在一层递归中新建一个used 数据结构，避免树层重复。因为在一层重复使用一个元素是要避免的。 去重的逻辑在这一道题里面是重点。根据原本的去重思路，首先要对数组进行排序，但是这里不能对数组排序，因为这会改变原有的顺序。 那么之前的那种建立used 全局数组的思路，在循环中回溯的操作是不行的。所以引入了一种新的去重方式，在每一层的递归中都新建一个数据结构，set 或 数组来记录元素的使用情况。
+
+回溯三部曲
+
+1. 函数参数与返回值：返回值是void。参数是nums 和 startIndex
+2. 终止条件：这里没有终止条件，而只有收集条件。也就是当path.size > 1 时，在每层递归手机path 里的元素
+3. 单层回溯逻辑
+
+* 当path 不为空，同时nums[i] 小于 path 中最后一个元素，也就是无法形成递增数组。所以不选择这个元素，而是continue
+* 如果used 数据结构中有nums[i] 就代表这里有树层重复，所以选择continue
+* 接下来就是正常的回溯逻辑
+
+当使用数组作为used 数据结构时，我们要申请一个长度为201的数组，而nums[i] + 100 上所对应的值就是这个元素是否出现过。如果要知道元素是否出现过，就使用array or set，如果还要知道它的坐标，或其他信息，就需要使用map。
