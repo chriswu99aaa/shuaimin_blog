@@ -4682,3 +4682,874 @@ class Solution {
 * 接下来就是正常的回溯逻辑
 
 当使用数组作为used 数据结构时，我们要申请一个长度为201的数组，而nums[i] + 100 上所对应的值就是这个元素是否出现过。如果要知道元素是否出现过，就使用array or set，如果还要知道它的坐标，或其他信息，就需要使用map。
+
+
+###  全排列
+
+给定一个不含重复数字的数组 nums ，返回其 所有可能的全排列 。你可以 按任意顺序 返回答案。
+
+Given an array nums of distinct integers, return all the possible permutations. You can return the answer in any order.
+
+```
+Input: nums = [1,2,3]
+Output: [[1,2,3],[1,3,2],[2,1,3],[2,3,1],[3,1,2],[3,2,1]]
+
+Input: nums = [0,1]
+Output: [[0,1],[1,0]]
+```
+
+```java
+class Solution {
+    List<List<Integer>> result = new ArrayList<>();
+    List<Integer> path = new ArrayList<>();
+    
+    public List<List<Integer>> permute(int[] nums) {
+        boolean[] used = new boolean[nums.length];
+
+        backtrack(nums, used);
+        return result;
+    }
+
+    public void backtrack(int[] nums, boolean[] used)
+    {
+        if(path.size() == nums.length)
+        {
+            result.add(new ArrayList<>(path));
+            return;
+        }
+
+        for(int i=0; i<nums.length; i++)
+        {
+            if(used[i] == true)
+                continue;
+            used[i] = true;
+            path.add(nums[i]);
+            backtrack(nums, used);
+            used[i]= false;
+            path.remove(path.size()-1);
+        }
+        return;
+    }
+}
+```
+
+排列问题与之前的组合问题，以及切割问题都不一样，这里每一个不同的组合都要被考虑。所以我们不使用startIndex 这个参数控制重复组合
+
+回溯三部曲
+
+1. 函数参数与返回值：递归函数没有返回值。参数上用nums，used。后者是一个与nums 相同长度的布尔数组。这个数组会用来记录每一个元素是否被使用过。如果used[i] 被使用过，就进入下一层for 循环
+2. 终止条件：每一次收集元素都是在叶子节点，也就是path 长度等于nums 数组长度时，所以就是path.size == nums.length
+3. 单层回溯逻辑
+
+* for 循环从0开始遍历。这一点与其他组合问题不同，其他都是从startIndex 开始遍历。从0开始的原因在于，这里不同的顺序是不同的排列，而在组合问题中，不同的顺序是相同的组合。
+* 判断used[i] 是否为 true。如果是true 就代表当前元素已经在递归的上层被使用过了，所以continue。这里不能使用break，因为当前元素不可用，但是后面的其他元素还可以考虑
+* 把used[i] 设为true，path 加上当前元素。递归调用backtrack，进行回溯操作。
+
+![iamge](../pictures/permutation.png)
+
+
+### 全排列2
+
+给定一个可包含重复数字的序列 nums ，按任意顺序 返回所有不重复的全排列。
+
+Given a collection of numbers, nums, that might contain duplicates, return all possible unique permutations in any order.
+
+```
+Input: nums = [1,1,2]
+Output:
+[[1,1,2],
+ [1,2,1],
+ [2,1,1]]
+```
+
+```java
+class Solution {
+
+    List<List<Integer>> result = new ArrayList<>();
+    List<Integer> path = new ArrayList<>();
+
+    public List<List<Integer>> permuteUnique(int[] nums) {
+        Arrays.sort(nums);
+        boolean[] used = new boolean[nums.length];
+        backtrack(nums, used);
+        return result;
+    }
+
+    public void backtrack(int[] nums, boolean[] used)
+    {
+        if(path.size() == nums.length)
+        {
+            result.add(new ArrayList<>(path));
+            return;
+        }
+
+        for(int i=0; i<nums.length; i++)
+        {
+            if(i>0 && nums[i] == nums[i-1] && used[i-1] == false)
+                continue;           
+            if(used[i] == true)
+                continue;
+            used[i] = true;
+            path.add(nums[i]);
+            backtrack(nums, used);
+            used[i] = false;
+            path.remove(path.size()-1);
+        }
+        return;
+    }
+}
+```
+
+这个题目的关键在于排列问题的去重。说到去重，首先想到used 数组的方法，然后结合排列问题的特性。
+
+如果nums[i]==nums[i-1],同时used[i-1]为false，跳过。这里是树层去重。然后如果used[i]为true，也跳过，因为这代表当前元素在树枝上被用过。
+
+### N 皇后
+
+按照国际象棋的规则，皇后可以攻击与之处在同一行或同一列或同一斜线上的棋子。
+
+n 皇后问题 研究的是如何将 n 个皇后放置在 n×n 的棋盘上，并且使皇后彼此之间不能相互攻击。
+
+给你一个整数 n ，返回所有不同的 n 皇后问题 的解决方案。
+
+每一种解法包含一个不同的 n 皇后问题 的棋子放置方案，该方案中 'Q' 和 '.' 分别代表了皇后和空位。
+
+```
+输入：n = 4
+输出：[[".Q..","...Q","Q...","..Q."],["..Q.","Q...","...Q",".Q.."]]
+解释：如上图所示，4 皇后问题存在两个不同的解法。
+```
+
+```java
+class Solution {
+    List<List<String>> res = new ArrayList<>();
+
+    public List<List<String>> solveNQueens(int n) {
+        char[][] chessboard = new char[n][n];
+        for (char[] c : chessboard) {
+            Arrays.fill(c, '.');
+        }
+        backTrack(n, 0, chessboard);
+        return res;
+    }
+
+
+    public void backTrack(int n, int row, char[][] chessboard) {
+        if (row == n) {
+            res.add(Array2List(chessboard));
+            return;
+        }
+
+        for (int col = 0;col < n; ++col) {
+            if (isValid (row, col, n, chessboard)) {
+                chessboard[row][col] = 'Q';
+                backTrack(n, row+1, chessboard);
+                chessboard[row][col] = '.';
+            }
+        }
+
+    }
+
+
+    public List Array2List(char[][] chessboard) {
+        List<String> list = new ArrayList<>();
+
+        for (char[] c : chessboard) {
+            list.add(String.copyValueOf(c));
+        }
+        return list;
+    }
+
+
+    public boolean isValid(int row, int col, int n, char[][] chessboard) {
+        // 检查列
+        for (int i=0; i<row; ++i) { // 相当于剪枝
+            if (chessboard[i][col] == 'Q') {
+                return false;
+            }
+        }
+
+        // 检查45度对角线
+        for (int i=row-1, j=col-1; i>=0 && j>=0; i--, j--) {
+            if (chessboard[i][j] == 'Q') {
+                return false;
+            }
+        }
+
+        // 检查135度对角线
+        for (int i=row-1, j=col+1; i>=0 && j<=n-1; i--, j++) {
+            if (chessboard[i][j] == 'Q') {
+                return false;
+            }
+        }
+        return true;
+    }
+}
+```
+
+这个题目要把N皇后问题抽象为树形结构。因为棋盘大小为n，所以不能用for 循环控制循环规模，所以要使用回溯算法。
+
+本题难点
+
+1. 生成一个棋盘，然后最终通过棋盘内条件。 通过将棋盘char[][] 每一层的情况转换为string，然后加入list 中，最后再加入result 中。
+2. 对于棋盘的检查，只需要检查之前的棋盘，而不用扫描为处理的棋盘。
+3. 使用row 控制递归深度，然后使用for 循环横向遍历列。
+
+### 解数独
+
+编写一个程序，通过填充空格来解决数独问题。
+
+数独的解法需 遵循如下规则：
+
+数字 1-9 在每一行只能出现一次。
+数字 1-9 在每一列只能出现一次。
+数字 1-9 在每一个以粗实线分隔的 3x3 宫内只能出现一次。（请参考示例图）
+数独部分空格内已填入了数字，空白格用 '.' 表示。
+
+```java
+class Solution {
+    public void solveSudoku(char[][] board) {
+         backtrack(board);
+    }
+
+    boolean backtrack(char[][] board)
+    {
+        for(int i=0; i<9; i++)
+        {
+            for(int j=0; j<9; j++)
+            {
+                if(board[i][j] != '.') 
+                    continue;                
+                
+                for(char k='1'; k<='9'; k++)
+                {
+                    if(validBoard(board, i, j, k))
+                    {
+                        board[i][j] = k;
+                        if(backtrack(board)){
+                            return true;                            
+                        }
+                        board[i][j] = '.';
+                    }
+                }
+                return false;
+            }
+        }
+        return true;
+    }
+
+    boolean validBoard(char[][] board, int row, int col, char k)
+    {
+        for(int i=0; i<9; i++)
+        {
+            if(board[row][i] == k) 
+                return false;
+        }
+
+        for(int j=0; j<9; j++)
+        {
+            if(board[j][col] == k) 
+                return false;            
+        }
+
+
+        int startRow = (row/3) * 3;
+        int startCol = (col/3) * 3;
+
+        for(int i=startRow; i<startRow+3; i++)
+        {
+            for(int j=startCol; j<startCol+3; j++)
+            {
+                if(board[i][j] == k)
+                    return false;
+            }
+        }
+
+        return true;
+    }
+}
+```
+
+## 贪心算法
+
+### 贪心算法理论基础
+
+贪心算法解题步骤
+
+1. 将问题分解为若干个子问题
+2. 找出适合的贪心策略
+3. 求解每一个字问题的最优解
+4. 将局部最优解堆叠成全局最优解
+
+
+### 分发饼干
+
+假设你是一位很棒的家长，想要给你的孩子们一些小饼干。但是，每个孩子最多只能给一块饼干。
+
+对每个孩子 i，都有一个胃口值 g[i]，这是能让孩子们满足胃口的饼干的最小尺寸；并且每块饼干 j，都有一个尺寸 s[j] 。如果 s[j] >= g[i]，我们可以将这个饼干 j 分配给孩子 i ，这个孩子会得到满足。你的目标是尽可能满足越多数量的孩子，并输出这个最大数值。
+
+```
+输入: g = [1,2,3], s = [1,1]
+输出: 1
+解释: 
+你有三个孩子和两块小饼干，3个孩子的胃口值分别是：1,2,3。
+虽然你有两块小饼干，由于他们的尺寸都是1，你只能让胃口值是1的孩子满足。
+所以你应该输出1。
+
+```
+
+```java
+class Solution {
+    public int findContentChildren(int[] g, int[] s) {
+        Arrays.sort(g);
+        Arrays.sort(s);
+
+        int result = 0;
+        int index = s.length-1;
+
+        for(int i=g.length-1; i>=0; i--)
+        {
+            if(index>=0 && g[i] <= s[index])
+            {
+                index--;
+                result++;
+            }
+        }
+        return result;
+    }
+}
+```
+
+首先将g，s 数组进行排序。 维持index 指针，有条件的遍历 s 数组。
+使用一个for 循环遍历g 数组，也就是为每一个胃口的小孩分配合适的饼干，由大到小。
+
+如果是for loop遍历g 数组，最大饼干不能满足最大的胃口，for 循环就会递减寻找更小的胃口，并尝试用最大的饼干满足第二大的胃口。
+
+```java
+class Solution {
+    public int findContentChildren(int[] g, int[] s) {
+        Arrays.sort(g);
+        Arrays.sort(s);
+
+        int result = 0;
+        int index = 0;
+
+        for(int i=0; i<s.length && index<g.length; i++)
+        {
+            if(g[index] <= s[i])
+            {
+                index++;
+                result++;
+            }
+        }
+        return result;
+    }
+}
+```
+由小到大满足胃口。
+
+两种思路标志着，两种不同的思想。前者是为每一个胃口寻找适合大小的饼干，后者是给每一个饼干寻找适合的胃口。主体不一样，但是中心思想都是当条件不满足时，下一个选择可能会满足条件。如果第一个代码，是由大到小遍历饼干数组，那么当最大的饼干无法满足最大的胃口时，代码会进一步去选择更小的一个饼干，这不符合逻辑。应该是不满足时，选择更小的胃口。
+
+时间复杂度 O(nlogn)
+空间复杂度 O(1)
+
+### 摆动序列
+
+如果连续数字之间的差严格地在正数和负数之间交替，则数字序列称为 摆动序列 。第一个差（如果存在的话）可能是正数或负数。仅有一个元素或者含两个不等元素的序列也视作摆动序列。
+
+例如， [1, 7, 4, 9, 2, 5] 是一个 摆动序列 ，因为差值 (6, -3, 5, -7, 3) 是正负交替出现的。
+
+相反，[1, 4, 7, 2, 5] 和 [1, 7, 4, 5, 5] 不是摆动序列，第一个序列是因为它的前两个差值都是正数，第二个序列是因为它的最后一个差值为零。
+子序列 可以通过从原始序列中删除一些（也可以不删除）元素来获得，剩下的元素保持其原始顺序。
+
+给你一个整数数组 nums ，返回 nums 中作为 摆动序列 的 最长子序列的长度 。
+
+ A wiggle sequence is a sequence where the differences between successive numbers strictly alternate between positive and negative. The first difference (if one exists) may be either positive or negative. A sequence with one element and a sequence with two non-equal elements are trivially wiggle sequences.
+
+For example, [1, 7, 4, 9, 2, 5] is a wiggle sequence because the differences (6, -3, 5, -7, 3) alternate between positive and negative.
+In contrast, [1, 4, 7, 2, 5] and [1, 7, 4, 5, 5] are not wiggle sequences. The first is not because its first two differences are positive, and the second is not because its last difference is zero.
+A subsequence is obtained by deleting some elements (possibly zero) from the original sequence, leaving the remaining elements in their original order.
+
+Given an integer array nums, return the length of the longest wiggle subsequence of nums.
+
+```
+输入：nums = [1,7,4,9,2,5]
+输出：6
+解释：整个序列均为摆动序列，各元素之间的差值为 (6, -3, 5, -7, 3) 。
+
+输入：nums = [1,17,5,10,13,15,10,5,16,8]
+输出：7
+解释：这个序列包含几个长度为 7 摆动序列。
+其中一个是 [1, 17, 10, 13, 10, 16, 8] ，各元素之间的差值为 (16, -7, 3, -3, 6, -8) 。
+
+输入：nums = [1,2,3,4,5,6,7,8,9]
+输出：2
+```
+
+```java
+class Solution {
+    public int wiggleMaxLength(int[] nums) {
+        if(nums.length <= 1)
+            return nums.length;
+        int result = 1;
+        int curDiff = 0;
+        int preDiff = 0;
+
+        for(int i=1; i<nums.length; i++)
+        {
+            curDiff = nums[i] - nums[i-1];
+            if((preDiff >= 0 && curDiff < 0) || (preDiff <= 0 && curDiff > 0))
+            {
+                result++;
+                preDiff = curDiff;
+            }
+        }
+        return result;
+    }
+}
+```
+
+局部的峰值最大化，可以推导出全局的峰值最大化。这里就可以使用贪心的思路。
+
+上下差值一正一负，就算是波动。我们就需要统计有多少个波动。 
+
+本题的难点在于
+
+1. 怎样统计波动
+2. 数组长度为2时，如何计算出峰值数量
+3. 如何处理平坡的情况，也就是{1,2,2,2,1}。这里平坡要怎样处理
+4. 如何处理上下平坡的情况, {1,2,4,2}。这里的上升平坡要怎样处理。
+
+#### 怎样统计波动
+
+使用两个差preDif, curDiff。如果一个大于零，另一个小于零，就将结果加1.
+
+#### 数组长度为2时，如何处理
+
+如果长度为2，也被视为摆动序列，直接返回数组长度。但如果要使用代码灵活的计算就需要，把result 初始化为1 。也就是当数组长度为2时，我们需要把result 初始化为1。
+
+#### 平坡的情况
+
+通过忽略左边平坡上的数值，允许preDiff == 0 的情况，就是前一个的差是0。这也就是在for 循环中preDiff >= 0 和 preDiff <=0 出现的原因。举例而言，preDiff >= 0 && curDiff < 0，可能的情况就是{2,2,1}。但如果是在中间{2,2,2,1} preDiff == 0 && curDiff == 0 。 
+
+#### 上下平坡情况
+
+{1,2,2,3,4,1} 此时如果preDiff = curDiff 不是放在if 里面，而是放在for 循环下，就代表着每一次循环都会交换值。preDiff 只记录坡度变化时的初始方向。就不会在平坡的时候改变preDiff 的值。只有在出现摆动时，才会改变preDiff 的值。 
+
+
+### 最大子序和
+
+给你一个整数数组 nums ，请你找出一个具有最大和的连续子数组（子数组最少包含一个元素），返回其最大和。
+
+子数组 是数组中的一个连续部分。
+
+Given an integer array nums, find the 
+subarray
+ with the largest sum, and return its sum.
+
+ ```java
+ class Solution {
+    public int maxSubArray(int[] nums) {
+        if(nums.length == 1)
+            return nums[0];
+        int count = 0;
+        int result = Integer.MIN_VALUE;
+
+        for(int i=0; i<nums.length; i++)
+        {
+            count += nums[i];
+            if(count > result)
+                result = count;
+            
+            if(count < 0)
+            {
+                count = 0;
+            }
+        }
+        return result;
+    }
+}
+ ```
+
+本题是贪心算法。 就是要寻找最长的子序列，要寻找到序列和最大。如果发现序列和为负数，就将计数归零。用result记录返回最大值，如果当前count 大于 result，就更新result。
+
+### 买卖股票的最佳时机 II
+
+给你一个整数数组 prices ，其中 prices[i] 表示某支股票第 i 天的价格。
+
+在每一天，你可以决定是否购买和/或出售股票。你在任何时候 最多 只能持有 一股 股票。你也可以先购买，然后在 同一天 出售。
+
+返回 你能获得的 最大 利润 。
+
+You are given an integer array prices where prices[i] is the price of a given stock on the ith day.
+
+On each day, you may decide to buy and/or sell the stock. You can only hold at most one share of the stock at any time. However, you can buy it then immediately sell it on the same day.
+
+Find and return the maximum profit you can achieve.
+
+```
+输入：prices = [7,1,5,3,6,4]
+输出：7
+解释：在第 2 天（股票价格 = 1）的时候买入，在第 3 天（股票价格 = 5）的时候卖出, 这笔交易所能获得利润 = 5 - 1 = 4 。
+     随后，在第 4 天（股票价格 = 3）的时候买入，在第 5 天（股票价格 = 6）的时候卖出, 这笔交易所能获得利润 = 6 - 3 = 3 。
+     总利润为 4 + 3 = 7 。
+
+输入：prices = [1,2,3,4,5]
+输出：4
+解释：在第 1 天（股票价格 = 1）的时候买入，在第 5 天 （股票价格 = 5）的时候卖出, 这笔交易所能获得利润 = 5 - 1 = 4 。
+     总利润为 4 。
+
+输入：prices = [7,6,4,3,1]
+输出：0
+解释：在这种情况下, 交易无法获得正利润，所以不参与交易可以获得最大利润，最大利润为 0 。
+```
+
+```java
+class Solution {
+    public int maxProfit(int[] prices) {
+        int result = 0;
+        for(int i=1; i<prices.length; i++)
+        {
+            result += Math.max(prices[i]-prices[i-1], 0);
+        }
+        return result;
+    }
+}
+```
+
+本题要寻找买卖股票的最大收益。要寻找正收益，也就是第二天的股价，减去第一天的股价，差为正数。这就需要我们找到所有正收益。这里不需要找到哪一天买卖，只需要找到最大收益。如果每一笔交易都是正数，也就是 prices[i] - prices[i-1] > 0 。我们就计入总和中。然后不断累加总和。
+
+这里贪心的思想在于，如果每单笔交易都是正数，那么累积起来，也会得到全局正数。我们这里避免了负收益，和之前最大子序和很相似。
+
+### 跳跃游戏
+
+给你一个非负整数数组 nums ，你最初位于数组的 第一个下标 。数组中的每个元素代表你在该位置可以跳跃的最大长度。
+
+判断你是否能够到达最后一个下标，如果可以，返回 true ；否则，返回 false 。
+
+You are given an integer array nums. You are initially positioned at the array's first index, and each element in the array represents your maximum jump length at that position.
+
+Return true if you can reach the last index, or false otherwise.
+
+```
+输入：nums = [2,3,1,1,4]
+输出：true
+解释：可以先跳 1 步，从下标 0 到达下标 1, 然后再从下标 1 跳 3 步到达最后一个下标。
+
+输入：nums = [3,2,1,0,4]
+输出：false
+解释：无论怎样，总会到达下标为 3 的位置。但该下标的最大跳跃长度是 0 ， 所以永远不可能到达最后一个下标。
+```
+
+```java
+class Solution {
+    public boolean canJump(int[] nums) {
+        
+        int cover = 0;
+        if(nums.length == 1)
+            return true;
+        for(int i=0; i<=cover; i++)
+        {
+            cover = Math.max(i+nums[i], cover);
+            if(cover >= nums.length-1)
+                return true;
+        }
+        return false;
+    }
+}
+```
+
+本题的核心思想是观念的转变。从寻找最优步幅，到寻找最长覆盖范围。不需要管怎样到一个位置，只需要知道能够到达一个位置。此时问题就成了覆盖范围最大化，如果覆盖范围能够碰到最后一个位置就返回true
+
+
+### 跳跃游戏2
+
+给定一个长度为 n 的 0 索引整数数组 nums。初始位置为 nums[0]。
+
+每个元素 nums[i] 表示从索引 i 向前跳转的最大长度。换句话说，如果你在 nums[i] 处，你可以跳转到任意 nums[i + j] 处:
+
+0 <= j <= nums[i] 
+i + j < n
+返回到达 nums[n - 1] 的最小跳跃次数。生成的测试用例可以到达 nums[n - 1]。
+
+```
+输入: nums = [2,3,1,1,4]
+输出: 2
+解释: 跳到最后一个位置的最小跳跃数是 2。
+     从下标为 0 跳到下标为 1 的位置，跳 1 步，然后跳 3 步到达数组的最后一个位置。
+
+输入: nums = [2,3,0,1,4]
+输出: 2
+```
+
+```java
+class Solution {
+    public int jump(int[] nums) {
+        int nextCover = 0;
+        int curCover = 0;
+        int steps = 0;
+        if(nums.length==1)
+            return 0;
+        for(int i=0; i<nums.length; i++)
+        {
+            nextCover = Math.max(i+nums[i], nextCover);
+            if(i==curCover)
+            {
+                //i 走到当前覆盖范围尽头
+                curCover = nextCover;
+                steps++;
+                if(curCover >= nums.length-1)
+                    break;
+            }
+        }
+        return steps;
+    }
+}
+```
+
+本题的思路与跳跃游戏1相似，都是要最大化覆盖范围，不同之处在于记录最小步数。贪心算法在于用最小步数，最大化覆盖范围。
+
+我们使用curCover 记录当前的覆盖范围，nextCover，记录下一步最大可能的覆盖范围。当i遍历到curCover，也就是当前覆盖范围尽头时，步数加一。然后nextCover 赋给curCover。如果此时curCover 大于等于数组最后一个下标，直接停止for 循环。
+
+代码细节上的一个难点在于，使用nextCover不断的在 i+num[i] 与nextCover当前值之前选择最大值。这个最大值，就会在i走到curCover时，更新curCover。
+
+
+### k 次取翻后最大化数组和
+
+给你一个整数数组 nums 和一个整数 k ，按以下方法修改该数组：
+
+选择某个下标 i 并将 nums[i] 替换为 -nums[i] 。
+重复这个过程恰好 k 次。可以多次选择同一个下标 i 。
+
+以这种方式修改数组后，返回数组 可能的最大和 。
+
+Given an integer array nums and an integer k, modify the array in the following way:
+
+choose an index i and replace nums[i] with -nums[i].
+You should apply this process exactly k times. You may choose the same index i multiple times.
+
+Return the largest possible sum of the array after modifying it in this way.
+
+```
+输入：nums = [4,2,3], k = 1
+输出：5
+解释：选择下标 1 ，nums 变为 [4,-2,3] 。
+
+输入：nums = [3,-1,0,2], k = 3
+输出：6
+解释：选择下标 (1, 2, 2) ，nums 变为 [3,1,0,2] 。
+
+输入：nums = [2,-3,-1,5,-4], k = 2
+输出：13
+解释：选择下标 (1, 4) ，nums 变为 [2,3,-1,5,4] 。
+
+```
+
+```java
+class Solution {
+    public int largestSumAfterKNegations(int[] nums, int k) {
+        List<Integer> list = new ArrayList<>();
+        for(int i=0; i<nums.length; i++)
+        {
+            list.add(nums[i]);
+        }
+        list.sort((o1, o2) -> Math.abs(o2) - Math.abs(o1)); //用绝对值排序，由大到小
+        
+        int sum=0;
+        for(int i=0; i<nums.length; i++)
+        {
+            int num = list.get(i);
+            if(k > 0 && num < 0)
+            {
+                //从前往后，遇到负数变为正数
+                list.set(i, -num);
+                k--;
+            }
+        }
+        // 如果k在遍历后仍不为0，意味着原本数组里不足k个负数
+        if(k%2 == 1)
+        {
+            int tmp = list.get(list.size()-1);
+            list.set(list.size()-1, -tmp);
+            
+            // System.out.println(list.get();
+        }
+        for(int i=0; i<list.size(); i++)
+        {
+            int num = list.get(i);
+            // System.out.println(num);
+            sum += list.get(i);
+        }
+
+        return sum;
+    }
+}
+```
+
+这里的思路是，
+
+1. array 传入list，然后对list根据绝对值大小，降序排序。b
+2. 从前到后，把负数变成正数，在k 大于 0 的情况下
+3. 如果循环结束，k不为0，也就是 取模数为1，就把list 最后一个元素取翻。注意list 是由绝对值由大到小排序。
+4. 最后遍历数组求和。
+
+这个思路是非常直接的。难点在于
+
+1. 不清楚如何对array 自定义排序：答案是转化成list 进行自定义排序。
+2. 自定义排序中，compare 函数怎样定义顺序。o1 - o2 这个是升序， o2 - o1 这个是降序。
+3. 最后取模操作，如果模数不为0，就对绝对值最小的数取反。
+
+```java
+class Solution {
+    public int largestSumAfterKNegations(int[] nums, int K) {
+    // 将数组按照绝对值大小从大到小排序，注意要按照绝对值的大小
+	Arrays.sort(nums);
+    int sum = 0;
+	int len = nums.length;	 
+    int min = Integer.MAX_VALUE;   
+	for (int i = 0; i < len; i++) {
+	    //从前向后遍历，遇到负数将其变为正数，同时K--
+	    if (nums[i] < 0 && K > 0) {
+	    	nums[i] = -nums[i];
+	    	K--;
+	    }
+        sum += nums[i];
+        min = nums[i] < min ? nums[i] : min;
+	}
+	// 如果K还大于0，那么反复转变数值最小的元素，将K用完
+
+	if (K % 2 == 1) 
+    {
+        sum -= 2*min;
+    }
+	return sum;
+
+    }
+}
+```
+
+这个思路只进行一次排序，由小到大。如果遇到负数就取反，然后sum 加上这个正数，同时记录一下最小值min。如果遍历结束 k 为基数，那么就需要减去一个数。因为是最大化，就要减去最小的数，这里就减去两个min。 因为在之前已经加上了一个min。
+
+为什么min 值一定会被加上？因为前面的判断逻辑，如果nums[i] 小于0，就取反，如果大于零直接 加上sum。无论那个结果，都是正数相加。
+
+### 加油站
+
+在一条环路上有 n 个加油站，其中第 i 个加油站有汽油 gas[i] 升。
+
+你有一辆油箱容量无限的的汽车，从第 i 个加油站开往第 i+1 个加油站需要消耗汽油 cost[i] 升。你从其中的一个加油站出发，开始时油箱为空。
+
+给定两个整数数组 gas 和 cost ，如果你可以按顺序绕环路行驶一周，则返回出发时加油站的编号，否则返回 -1 。如果存在解，则 保证 它是 唯一 的。
+
+```
+输入: gas = [1,2,3,4,5], cost = [3,4,5,1,2]
+输出: 3
+解释:
+从 3 号加油站(索引为 3 处)出发，可获得 4 升汽油。此时油箱有 = 0 + 4 = 4 升汽油
+开往 4 号加油站，此时油箱有 4 - 1 + 5 = 8 升汽油
+开往 0 号加油站，此时油箱有 8 - 2 + 1 = 7 升汽油
+开往 1 号加油站，此时油箱有 7 - 3 + 2 = 6 升汽油
+开往 2 号加油站，此时油箱有 6 - 4 + 3 = 5 升汽油
+开往 3 号加油站，你需要消耗 5 升汽油，正好足够你返回到 3 号加油站。
+因此，3 可为起始索引。
+```
+
+```java
+class Solution {
+    public int canCompleteCircuit(int[] gas, int[] cost) {
+        int curSum = 0;
+        int index = 0;
+        int totalSum = 0;
+        for(int i=0; i<cost.length; i++)
+        {
+            curSum += gas[i] - cost[i];
+            totalSum += gas[i] - cost[i];
+            if(curSum < 0)
+            {
+                curSum = 0;
+                index = (i+1) % cost.length;
+            }
+        }
+        if(totalSum < 0)
+        {
+            return -1;
+        }
+        return index;
+    }
+}
+```
+
+贪心算法思路，不断的寻找油箱剩余为正数的区间。 由 [0,i] 所构成的curSum 如果小于0，就代表目前区间有负数的油箱剩余，此时新起点从 i+1 处开始。
+
+
+我们不断像 curSum 累加 gas[i] - cost[i] 之间的差，给totalSum 做同样的操作。如果碰到curSum 为负数，就代表[0,i]之间有一个节点的油箱剩余为负数，开销过于大。此时充值curSum，让后将 i+1作为新的起点。如果for 循环结束后，totalsum 为负数，就代表整体开销大于整体油量。此时返回-1 。
+
+### 分发糖果
+
+n 个孩子站成一排。给你一个整数数组 ratings 表示每个孩子的评分。
+
+你需要按照以下要求，给这些孩子分发糖果：
+
+每个孩子至少分配到 1 个糖果。
+相邻两个孩子评分更高的孩子会获得更多的糖果。
+请你给每个孩子分发糖果，计算并返回需要准备的 最少糖果数目 。
+
+```
+输入：ratings = [1,0,2]
+输出：5
+解释：你可以分别给第一个、第二个、第三个孩子分发 2、1、2 颗糖果。
+
+输入：ratings = [1,2,2]
+输出：4
+解释：你可以分别给第一个、第二个、第三个孩子分发 1、2、1 颗糖果。
+     第三个孩子只得到 1 颗糖果，这满足题面中的两个条件。
+```
+
+```java
+class Solution {
+    public int candy(int[] ratings) {
+        int[] candy = new int[ratings.length];
+        Arrays.fill(candy, 1);
+        for(int i=1; i<candy.length; i++)
+        {
+            if(ratings[i] > ratings[i-1])
+            {
+                candy[i] = candy[i-1]+1;
+            }
+        }
+
+        for(int i=ratings.length-2; i>=0; i--)
+        {
+            if(ratings[i] > ratings[i+1])
+            {
+                candy[i] = Math.max(candy[i+1]+1, candy[i]);
+            }
+        }
+        int sum = 0;
+        for(int i=0; i<ratings.length; i++)
+        {
+            sum += candy[i];
+        }
+        return sum;
+    }
+}
+```
+
+本题需要两个方向的检查。从左到右，从右到左。
+
+candy 数组被初始化为1 。 从左到右的检查，处理的是所有节点左边的关系，但是有些情况，右边的评分更高，而那些孩子应该得到更多的糖果。
+
+举个例子
+
+```
+[3,2,1,4,3,2,1]
+```
+
+从左到右的分发糖果会是
+```
+[1,1,1,2,1,1,1]
+```
+
+这里评分为3的孩子就应该得到更多的糖果，评分2 也应该获得比评分1 多的糖果。 这就是需要使用从右到左遍历的原因。
+
+第二次遍历考虑的是所有坐标右边的关系。当 candy[i] > candy[i+1] 时，我们可以有两种选择: max(candy[i+1]+1, candy[i]) 。取 比右边一个孩子加一的数量，或从左到右遍历时记录的candy[i] 数量的最大值。这样的一种考虑，就确保了局部所有孩子都活的比自己评分更低的孩子更多的糖果。维持这样的一个原则，从而得到全局最优。
+
