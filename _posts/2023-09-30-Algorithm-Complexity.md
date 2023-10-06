@@ -131,14 +131,62 @@ A function f: N -> N is k-tubly exponentially bounded exponentially bounded if f
 
 ![image](../pictures/k-tubly.png)
 
+Defind L_k to be the class of function N -> N that can be defined by programs in LOOP featuring at most k-tuples.
+
+![image](../pictures/alber_meyer.png)
+
+* Any function defined in L_2 is primitive
+* Any function in the collection $\cup_{i=1}^{\infty}L_i = \cup_{i=1}^{\infty}\epsilon_i$ is primitive recursive
+
+**Note**: primitive recursive functions are a class of functions that can be computed by a formal system of computation with particularly simple and well-defined rules. The concept of primitive recursive functions is essential in the study of computability and complexity theory. 
+
+*A function f:Nk→Nf:Nk→N (where NN represents the natural numbers, including zero) is primitive recursive if it can be obtained from some basic functions using a few simple rules. The basic functions are:
+  * Constant functions: Functions like z(x1,x2,…,xk)=cz(x1​,x2​,…,xk​)=c for some constant cc.
+  * Successor function: S(x)=x+1S(x)=x+1.
+  * Projection functions: Functions like πik(x1,x2,…,xk)=xiπik​(x1​,x2​,…,xk​)=xi​ for 1≤i≤k1≤i≤k. 
+
+**Note**: elementary functions are functions of a single variable (typically real or complex) that is defined as taking sums, products, roots and compositions of finitely many polynomial, rational, trigonometric, hyperbolic, and exponential functions, including possibly their inverse functions.
+
+#### Ackerman function
+
+Ackerman function is an extremly fast growing function. it's a useful tools to make comparison in computationality theory.
+
+
+A(m,n)
+- n+1, if m=0
+- A(m-1,1), if m>0 and n=0
+- A(m-1, A(m,n-1)), otherwise
+
+![image](../pictures/ackerman.png)
 
 #### Tree Implementation of Union-Find
 
-**Theorem**
+**Theorem**: Using the tree implementation, the algorithm union-find(G=(V,E)) runs in $$O((n+m)\alpha(n))$$ time, where n=|V| and m=|E|
 
-Using the tree implementation, the algorithm union-find(G=(V,E)) runs in $$O((n+m)\alpha(n))$$ time, where n=|V| and m=|E|
+**Proof**: 
+Define n(v) to be the number of nodes in the tree rooted at v, assuming no path compression
+$$r(v) = \lfloor{log(n(v))}\rfloor + 2$$
+
+call r(v) the rank of vertex v. Denote parent of v by p(v)
+1. $$r(v)\leq \lfloor{log n}\rfloor + 2 $$
+2. if p(v)=2, then r(v) < r(w)
+3. the number of vertices with rank s is at most $\frac{n}{2^{s-2}}$
+
+Suppose we carry out m makeSet, union and find operations on a collection of n vetices. Each call to makeSet or union requires a constant number of operations. We need only worry about the work done by the calls to find.
+
+the tree-structure changes as we modify the pointers(path compression) let the parent of v after t pointer modifications be denoted $p^t(v)$
+
+We give each vertex v a lable during the evolving computation:
+
+$$L^t(v) = the\space largest\space i \space s.t. \space r(p^t(v)) \geq A_i(r(v))$$
+
+the equation above is subtle. It says that the mapping function for v is the largest i which satisfies the inequality. LHS of the inquality give the rank of the parent of v after t tree modification, and the RHS of the inequality gives the i iterations of the Ackerman function $A^x(s)$, where the rank of vertex v is the taken as the parameter for A(x).
+
+**Note**: if i=2, the function will computed as two iterations for A(x), and i=100, the function will give 100 multiplications for A(x)
+
 
 Union-by-size: Store with each node v the size of the subtree rooed at v, denoted by n(v). In a union, weow make the tree of the smaller set a subtree of the other tree, and update the size field of the root of the resulting tree.
+
 
 Path Compression: In a find operaion, for each node v that the fid visits, reset the parent pointer from v to point to the root.
 
