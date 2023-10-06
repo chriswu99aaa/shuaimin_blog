@@ -85,6 +85,7 @@ we need annotation for training and evaluation.
 
 **Tokenisation:** is the step, in which a sentence is broken down into small chunks of words.
 
+Tokenisation is to know where to split *not* where to combine.
 
 #### Normalisation
 
@@ -140,6 +141,13 @@ Byte-Pair Encoding
 * token learner: takes a row training corpus and induces a vocabulary
 * token segmenter: takes a row test, input sentence and tokenizes it according to that vocabulary.
 
+Repeat
+* choose the two symbols that are most frequently adjacent in he training corpus (say 'A', 'B')
+* ad a new merged symbol 'AB' to the vocabulary
+* replace every adacent 'A' 'B' in the corpus with 'AB'
+
+Split every word into individual character, and based on the frequency of co-occurance we merge these characters.
+
 ### N-Gram Language Models and Representations
 
 **Model:** an abstract representation of sth. in computational form.
@@ -160,4 +168,114 @@ Byte-Pair Encoding
 **Zipf's Law**: frequency of any word in a given collection is inversely proportional to its rank in the frequency table.
 
 ![image](../pictures/zipf.png)
+
+##### Luhn's hypothesis
+
+![image](../pictures/luhn.png)
+
+The words excedding the upper cut-off ar econsidered to be common.
+
+Those below the lower cut-off rare, and therefore not contributig significantly to the content of the article.
+
+#### Removing stop words
+
+Highly frequently occuring words have low distingguishing power for representing documents
+
+* i.e the ,and , of, it
+* these words could be filtered.
+
+#### Vector Representation
+
+Vector representation is a way to implement the BoW model.
+
+* Each document is represented |V| dimensional vector
+
+![image](../pictures/vec.png)
+
+#### Term-Document Matrix
+
+![image](../pictures/term_d.png)
+
+#### Inverse Document Frequency
+
+$$idf_t = log_{10}(\frac{N}{df_t})$$
+
+df_t is the number of documents tht contain term t
+
+**tf.idf**: the weight of a term is the product of its tf weight and its idf weight
+
+$$tf.idf_{t,d} = (1+log_{10})\times(log_{10}(\frac{N}{df_t}))$$
+
+![image](../pictures/tf_idf.png)
+
+**Question**: how to get more dense models? Now we only have sparse models.
+
+#### Probabilistic Language Models
+
+A *language model*(LM) meansures the probability of natural langauge utterances, giving higher scores to those that are more common, more grammatical, more "natural"
+
+#### Unigram Language Model
+
+consider the sequence
+
+$$S = w_1 w_2 ... w_n$$
+
+We assume independently and identically distributed (iid) of each other.
+
+![image](../pictures/uni_gram.png)
+
+
+#### Chain Rule in Probability Theory
+
+$$p(S)=p(the)\times p(cat|the)\times p(in|the, cat) \times p(the | the,cat, in) \times p(hat| the, cat, in the) $$
+
+$$p(w_1, w_2, ... w_L) = p(w_1) \times p(w_2|w_1) ... p(w_L| w_1,w_2,..., w_{L-1}) = \prod_{k=1}^L p(w_k|w_1,w_2,...,w_{k-1})$$
+
+![image](../pictures/uni_bigram.png)
+
+$$p(w_{1:L}) = \prod_{k=1}^L p (w_k|w_{k-N+1:k-1}) = \prod_{k=1}^L p(w_k|w_{k-1})$$
+
+For example
+
+![image](../pictures/bigram_example.png)
+
+
+Bigram model corresponds to Markov chain. It assumes that a state depends only on its previous state not on the other events that occurred before it.
+
+A **Tri-gram** model takes care of previous two states, and a **N-gram** model takes care of previous N-1 states.
+
+How to estimate the N-gram conditional probabilityusing a training corpus
+
+* using statistical models such as hidden markov model
+* using a ML model
+
+
+##### Count based estimation
+
+![image](../pictures/count_based_est.png)
+
+here we count the count the co-occurance of word w_k with w_k-1 over the occurance of word w_k-1. This proportion can estimate the N-gram probability.
+
+
+N-gram model is generative. 
+
+#### Evaluation: How good is our model
+
+* extrinsic evaluation of LM
+    * put each model in a task: pelling corrector, speech rcognizer
+    * run the task, get an accuracy for A and B models
+    * ocmpare accuracy for A and B
+    * not easy and time consuming
+
+* intrinsic evaluation of LMs
+    * the best language model is one that best predicts an unseen test set.
+    * gives best probabilityies for test set
+    * *But* it doesn't tell us how usefulthe model is
+    
+#### Smoothing
+
+Laplace smoothing
+
+![image](../pictures/laplace.png)
+
 

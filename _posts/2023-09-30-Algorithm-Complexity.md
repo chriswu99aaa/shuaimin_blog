@@ -193,3 +193,158 @@ In summary, this algorithm finds the root of the set to which element x belongs 
 **Theorem:** Performing a sequence of m union and find operations, starting fom n singleton sets, using the above tree based implementation of a union find structure, takes **O(n + mlog(n))** time
 
 
+### Searching Strings
+
+
+#### Rabin-Karp Algorithm
+
+* n = |T| and m = |P|
+* P is the numbe $P[0].b^{m-1} + ... + P[m-1].b^0$
+* T[i, ..., i+m-1] is $T[i].b^{m-1}+...+T[i+m-1].b^0 $
+* to calculate T[i+1, ..., i+m ] from T[i ,...,i+m-1], write $$T[i+1,..., i+m] = (T[i,...,i+m-1] - T[i].b^{m-1}).b+T[i+m] (mod q) $$
+
+the mod q is to avoid the number get too large, where q is a prime
+
+if T[i, ..., i+m-1] not equal to P mod q, then we know that there is no match at shift i
+
+Wost case: Time complexity: O(|T| |P|)
+Averae case: O(n+,+m(n/q)) -> O(n+m). since q>m
+
+Rabin-Karp Algorithm
+
+```
+Rabin-Karp(T,Pq,b)
+    m <- |P|
+    t <- T[0].b^(m-1) + ... + T[m-1].b^0 mod q
+    p <- P[0].b^(m-1) + ... + P[m-1].b^0 mod q
+    i ->0
+    while i<= |T| - m
+        if p=t
+            j <- 0
+            while P[j]=T[i+j] and j < |P|
+                j++
+            if j=|P|
+                return i
+        t <- (t-T[i].b^(m-1).b + T[i+m] mod q)
+        i++
+    return "NO Match"
+end
+
+```
+
+**Question**: where it tells you there is a match
+**Answer** the return i tells you the starting position of the match.
+
+Details of Rabin-Karp is not clear. We know how to calculate it, but don't know why.
+
+### The Knuth-Morris-Pratt algorithm
+
+![image](../pictures/kmp.png)
+
+
+KMP Algorithm
+
+```
+KMP(T,P)
+    compute pi(P)
+    i <- 0, j <- 0
+    while i<|T|
+        if P[j]= T[i]
+            if j = |P|-1
+                return i-|P|+1 //return the start index of the matched string
+            else
+                i++, j++ //increment i and j to continue matching
+        else if j>0
+            j <- pi[j]
+        else
+            i++
+    return "Not found"
+end
+```
+
+```java
+public int strStr(String haystack, String needle) {
+        int j=-1; //j指向模式串起始位置，i指向文本出串起始位置。j 是-1，因为next从-1开始
+        int[] next = new int[needle.length()];
+        
+        char[] haystackArray = haystack.toCharArray();
+        char[] needleArray = needle.toCharArray();
+        
+        //构建next 数组
+        getNext(next, needleArray);
+        
+        for(int i=0; i<haystackArray.length; i++)
+        {
+            while(j>=0 && haystackArray[i] != needleArray[j+1])
+            {
+                j = next[j];
+            }
+
+            if(haystackArray[i] == needleArray[j+1])
+            {
+                j++;
+            }
+
+            if(j == needleArray.length-1)
+            {
+                return i-needleArray.length+1; //
+            }
+        }
+        return -1;
+    }
+```
+computing pi()
+```
+compute-pi(P)
+    pi(o) <- 0
+    i <- 1
+    j <- 0
+    while i+j <- |P|
+        while i+j <-|P| and P[i+j] = P[j]
+            pi(i+j) <- j+1
+            j <- j+1
+        if j>0
+            i <- i+j-pi(j-1); j <- pi(j-1)
+        else
+            pi(i) <- 0;i <- i+1
+```
+
+java implementation
+
+```java
+    public void getNext(int[] next, char[] s )
+    {
+        //前缀表统一减一实现
+        int j=-1; //j 指向前缀末尾
+        next[0] = j;
+
+        //i 指向后缀末尾
+
+        for(int i=1; i<s.length; i++)
+        {
+            // i and j+1指向不同的字母
+            while(j >= 0 && s[i] != s[j+1])
+            {
+                j = next[j]; //向前回退
+            }
+            //j+1 and i 指向相同的字母
+            if(s[i] == s[j+1])
+            {
+                j++;
+            }
+            next[i] = j; //next 纪录最长前后缀的长度后缀的末端记录前缀末端的长度。这是最长前后缀子串相等的长度          
+        }
+    }
+```
+
+### Walking
+
+If m and n are positive integers (m <=n), a walk is a surjection 
+
+$$f:[1,n] -> [1,m]\space s.t\space |f(i+1)-f(i)| <=1 for\space all\space i(1<=i<n)$$
+
+If u = a1 ···am and w = c1 ···cn, say u generates v if there exists a walk
+
+$$f:[1,n]→[1,m]suchthatci =af(i) foralli (1≤i ≤n)$$
+
+there is no jumps
