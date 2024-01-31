@@ -6109,6 +6109,28 @@ Return the minimum cost to reach the top of the floor.
 总花费为 6 。
 ```
 
+```java
+class Solution{
+    public int climbStars(n, int[] cost)
+    {
+        int[] dp = new int[n+1];
+        dp[0] = 0;
+        dp[1] = 0;
+
+        if n<=1 return n;
+
+        for(int i=2; i<=dp.length; i++)
+        {
+            //The minimum cost is the min between the i-1 stars + cost at i-1 and
+            // i-2 stars + cost at i-2 
+            dp[i] = Math.min(dp[i-1]+cost[i-1], dp[i-2]+cost[i-2])
+        }
+        return dp[n];
+        
+    }
+}
+```
+
 动规五部曲
 
 1. 确定dp数组以及下标定义：dp[i] 代表到达台阶i所需要的最小体力
@@ -6119,3 +6141,211 @@ Return the minimum cost to reach the top of the floor.
 
 时间复杂度：O(N)
 空间复杂度: O(N)
+
+
+### 不同路径
+
+一个机器人位于一个 m x n 网格的左上角 （起始点在下图中标记为 “Start” ）。
+
+机器人每次只能向下或者向右移动一步。机器人试图达到网格的右下角（在下图中标记为 “Finish” ）。
+
+问总共有多少条不同的路径?
+
+
+```java
+class Solution {
+    public int uniquePaths(int m, int n) {
+        int[][] dp = new int[n][m];
+        for(int i = 0; i<m; i++) 
+            dp[0][i] = 1;
+
+        for(int j = 0; j<n; j++) 
+            dp[j][0] = 1;
+
+        for(int i=1; i<n; i++)
+        {
+            for(int j=1; j<m; j++)
+            {
+                dp[i][j] = dp[i-1][j]+ dp[i][j-1];
+            }
+        }
+        return dp[n-1][m-1];
+
+    }
+}
+```
+
+动归五部曲：
+1. 定义dp 数组下标：dp[i][j] 代表到达这个（i，j）位置的途径的数量
+2. 确定递推公式：dp[i][j] = dp[i-1][j] + dp[i][j-1]。因为机器人只能选择往下或者往右走。
+3. dp 数组初始化：dp[i][0] = 1, dp[0][j] = 1 。第一行和第一列都是1，因为到达他们位置的只有一条路径。
+4. 确定遍历顺序：从左到右一层层遍历
+5. 
+
+
+
+### 不同路径2
+
+一个机器人位于一个 m x n 网格的左上角 （起始点在下图中标记为“Start” ）。
+
+机器人每次只能向下或者向右移动一步。机器人试图达到网格的右下角（在下图中标记为“Finish”）。
+
+现在考虑网格中有障碍物。那么从左上角到右下角将会有多少条不同的路径？
+
+
+```
+Input: obstacleGrid = [[0,0,0],[0,1,0],[0,0,0]]
+Output: 2
+Explanation: There is one obstacle in the middle of the 3x3 grid above.
+There are two ways to reach the bottom-right corner:
+1. Right -> Right -> Down -> Down
+2. Down -> Down -> Right -> Right
+
+Input: obstacleGrid = [[0,1],[0,0]]
+Output: 1
+```
+
+
+```java
+class Solution {
+    public int uniquePathsWithObstacles(int[][] obstacleGrid) {
+        int n = obstacleGrid.length;
+        int m = obstacleGrid[0].length;
+
+        int[][] dp = new int[n][m];
+
+        for(int i=0;i<m && obstacleGrid[0][i] == 0; i++)
+            dp[0][i] = 1;
+        for(int j=0; j<n && obstacleGrid[j][0] == 0; j++)
+        {
+            dp[j][0] = 1;
+        }
+
+        for(int i=1; i<n; i++)
+        {
+            for(int j=1; j<m; j++)
+            {
+                if(obstacleGrid[i][j] == 1) continue;
+                dp[i][j] = dp[i-1][j] + dp[i][j-1];
+            }
+        }
+        return dp[n-1][m-1];
+    }
+}
+```
+
+动归五部曲
+
+1. dp 数组以及下标定义：dp[i][j] 代表到当前i j 位置上有多少条路径。
+2. dp 数组初始化：第一排，以及第一列都是1，因为到达那里的路径只有一条。但是如果有障碍，后续就无法到达，所以就是0
+3. 确定递推公式：dp[i][j] = dp[i-1][j] + dp[i][j-1]， 如果i j 有障碍就continue 跳过
+4. 遍历顺序：从左到右遍历
+5. 举例推导公式
+
+
+```java
+class Solution {
+    public int uniquePathsWithObstacles(int[][] obstacleGrid) {
+    int n = obstacleGrid.length;
+    int m = obstackleGrid[0].length;
+    int[] dp = new int[n+1][m+1];
+
+    for(int i=0; i<n; i++)
+    {
+        if(obstacleGrid[i][0] != 1)
+            dp[i][0] = 1;
+        else
+            break;
+    }
+    for(int j=0; j<m; j++)
+    {
+        if obstacleGrid[0][j] != 1
+            dp[0][j] = 1;
+        else
+            break;
+    }
+
+    for(int i=1; i<=n; i++)
+    {
+        for(int j=1; j<=m; j++)
+        {
+            if(obstacleGrid[i][j] != 1)
+                dp[i][j] = dp[i-1][j] + dp[i][j-1];
+            else
+                continue;
+        }
+    }
+    return dp[n][m];
+    }
+}
+```
+
+### 整数拆分
+
+```java
+class Solution {
+    public int integerBreak(n) {
+        int[] dp = new int[n+1];
+
+        dp[2] = 1;
+
+        for(int i=3; i<=n; i++)
+        {
+            for(int j=1; j<i; j++)
+            {
+                dp[i] = Math.max(dp[i], j*i-j, j*dp[i-j]);
+            }
+        }
+        return dp[n][m]
+    }
+}
+```
+
+动归五部曲
+1. 确定dp 数组定义：dp[i] 代表拆分i所得最大乘积
+2. 确定递推公式：dp[i] = max(dp[i], j * (i-j), j * dp[i-j])
+
+* i-j 代表选择j 数字时，不拆分i-j，得到积为 j * (i-j)
+* dp[i-j] 代表拆分i-j，j * dp[i-j] 代表j 乘以拆分 i-j 所得最大积
+* 加上 dp[i] 是因为每一层遍历j 时都要找到当前i 的最大值，如果这一次拆分没有让i更大，那就保留原有数字
+3. dp 初始化：这里不初始化 dp[0] dp[1], 而直接从dp[2] 开始。因为 对0 和 1进行拆分都是有争议的，也无法整数拆分。dp[2]=1没有争议
+4. 确定遍历顺序: 遍历i (2<=<=n), j (1<=j<=i/2)
+    * j 过了i 一半以后都是重复计算
+
+
+### 96不同的二叉搜索树
+
+```
+给定一个整数 n，求以 1 ... n 为节点组成的二叉搜索树有多少种？
+
+```
+
+动归五部曲
+1. 定义dp 下标：dp[i] 代表以数字i为根结点的二叉搜索树数量总和
+2. 递推公式：dp[i] += dp[j-1] * dp[i-j] 从j=1 遍历到i。这个思路是，假设i=3，那么从j=1 为根结点bst 数量之和算起，不断地累加bst 数量。dp[j-1] 是以j为根结点左子树的节点数量，dp[i-j]就是以j为根结点右子树节点数量。
+3. dp 数组初始化：dp[0]=1，空节点也是一颗bst
+4. 从小到大遍历。
+
+```java
+class Solution {
+    public int numTrees(int n) {
+        int[] dp = new int[n+1];
+
+        dp[0]=1;
+
+        for(int i=1; i<=n;i++)
+        {
+            for(int j=1; j<=i; j++)
+            {
+                dp[i] += dp[j-1] * dp[i-j];
+            }
+        }
+        return dp[n];
+    }
+}
+```
+
+### 背包问题理论
+
+![image](../pictures/bag.png)
+
