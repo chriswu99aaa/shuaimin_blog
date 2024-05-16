@@ -258,12 +258,35 @@ Because labelling is performed at the token level, the model fails to capture th
 The model cannot capture nested/embedded entities.
 
 IO sheme can't identify relation inside a named entity
+
+
 ## Week2
 
+### Embeddings
+Learned representations of the 
+meaning of words
+Based on vector semantics neighbouring words, tend to have  similar meanings
 
+**tf-idf**
+$tf-idf = tf * idf$
+$$ 
+tf_{c,d} = log_{10}(C(c,d)+1)
+$$
+$$
+idf_{c,d} = log_{10}\frac{N}{df}
+$$
 
+N is the total number of documents in the corpus
 
+df: document frequency, the number of documents contains the word c
 
+**PPMI**
+
+$$
+PPMI(w,c) = max(log_2 \frac{p(w,c)}{p(w)p(c)},0)
+$$
+
+### MLE
 
 
 
