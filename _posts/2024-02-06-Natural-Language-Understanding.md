@@ -288,6 +288,16 @@ $$
 
 ### Exercise
 
+Q1 	
+Select all that hold true in relation to fastText embeddings.
+
+In fastText, the sum of subword embeddings is used to obtain a representation for an unknown word.
+
+fastText is trained in a similar way to word2vec (i.e., using a skip gram or continuous bag-of-words model).
+
+As with any vectors, cosine similarity can be used to assess similarity between fastText vectors.
+
+
 Q2
 
 In fastText, the sum of subword embeddings is used to obtain a representation for an unknown word.
