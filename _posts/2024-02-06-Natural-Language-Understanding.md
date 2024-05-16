@@ -286,7 +286,21 @@ $$
 PPMI(w,c) = max(log_2 \frac{p(w,c)}{p(w)p(c)},0)
 $$
 
-### MLE
+### Exercise
+
+Q2
+
+In fastText, the sum of subword embeddings is used to obtain a representation for an unknown word.
+
+fastText is trained in a similar way to word2vec (i.e., using a skip gram or continuous bag-of-words model).
+
+As with any vectors, cosine similarity can be used to assess similarity between fastText vectors.
+
+Q4 Advantage of RNN compared to N-Gram models
+
+A hidden state in an RNN-based language model can incorporate information from all preceding words in a sequence (and in principle, the size of a sequence can be set to any number). In contrast, n-gram language models can incorporate information only from n-1 preceding tokens.
+
+Additional information:  In n-gram language models, we cannot set n to a very large value because it is unlikely that the exact same history (preceding n-1 tokens) would appear often enough in a corpus. This means that in practice, n is usually set to a value no bigger than 5, which means that an n-gram language model usually can incorporate information only from 4 preceding tokens or less.
 
 
 
