@@ -234,6 +234,30 @@ Detect which span tiggers the event, and what type of event it is.
 
 Detect the relationship between spans. We want to know the type of relationsihp hold betweeen named entities
 
+### Week1 Exercise
+
+Q1: Suppose that a task is concerned with identifying discourse segments, as shown. Which NLU task formulation(s) is/are suitable?
+
+detect the segment in the example. This requires the specific part of the sentence, so we need to use sequence labelling or span-based identification
+
+Q2: Suppose a task is focussed on categorisation according to types of figurative language, as shown. Which task formulation is most suitable? 
+classification at the sequence level. Whether a sequence belong to a certain class. In fact multi-class sequence classification problem
+
+Q3: Suppose a task assigns either of the labels "Not the A******" and "You're the A******" to a narration of a conflict (as shown). Which task formulation suits?
+
+sequence classification problem for binary classification
+
+Q4: The goal of temporal relation extraction is to create a graph representing Before/Overlap/After relations between mentions, as shown. 
+
+Every pair of spans are classified according to before/after/overlap
+
+Q8: Based on the output of a sequence labelling model shown below, what do you think are the limitations of the said model?
+
+Because labelling is performed at the token level, the model fails to capture the relationship between tokens belonging to the same entity.
+
+The model cannot capture nested/embedded entities.
+
+IO sheme can't identify relation inside a named entity
 ## Week2
 
 
