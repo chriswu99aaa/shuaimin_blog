@@ -313,6 +313,35 @@ A hidden state in an RNN-based language model can incorporate information from a
 Additional information:  In n-gram language models, we cannot set n to a very large value because it is unlikely that the exact same history (preceding n-1 tokens) would appear often enough in a corpus. This means that in practice, n is usually set to a value no bigger than 5, which means that an n-gram language model usually can incorporate information only from 4 preceding tokens or less.
 
 
+## Week3 Transformer
+
+RNN has information bottleneck between the last hidden layer in encoder to the hidden states in decoder.
+
+We use attention mechanism to attend the part that is most relevant states in the encoder to what is predicting for the current hidden state in decoder
+
+### Attention Mechanism
+
+Dot-product attention: 
+$$
+score(h_{i-1}^d, h_j^e) = h_{i-1}^d \dot h_j^e
+$$
+
+calculate this score for all encoder states, resulting in a vector showing the relevance of each encoder state $h_j^e$ to what is currently being decoded.
+
+### Transformer
+
+A shotcoming of sequence-based architecture such as RNN is that computation can't perform in parallel
+
+Transformer can perform computation in parallel
+
+* self-attention
+
+
+
+
+
+
+
 
 
 
