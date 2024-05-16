@@ -151,6 +151,15 @@ output:
 	* span-based classification (aspect)
 	* span-based relation classification
 
+predefined set of aspect: for example cleanliness, service time, price etc
+
+predefined set of target: room, food etc
+
+The task is broken down to three NLU task:
+1. span-based classification (target)
+2. span-based classification (aspect)
+3. span-based relation classification: Know the relation between target and aspect.
+
 ### Fact Verification
 
 * Given: a piece of text
@@ -171,6 +180,11 @@ output:
 * Problem: determine if a piece fo text contains information that is supported or refuetd by proided pieces of evidence
 * Underlying NLU Task: pairwise sequence classification
 
+First identify all the claims, by using sequence classification or span-based identification.
+
+Second retrive evidence for the claims. It checks whether the claim and detected evidence are relevant, by using pairwise sequence classification
+
+Third verify if the evidence support or refuse the claim. This is pairwise sequence classification problem
 ### Argument Mining
 
 * Given: a piece of text or multiple pieces of text
@@ -186,11 +200,16 @@ Subtasks
 * Problem: classify whetehr a premise supports a claim (whether the relationship between them is supported or oppose)
 * Underlying NLU task: span-based relation classification
 
+In the argument component identification, we need identify whether a span is a premise, claim or none of the above.
+Given the premises and claims, check whether premise support the claim or refuse the claim
+
 ### Question Answering (Extractive)
 
 * Given: two pieces of text, a passage and a question
 * Problem: to identify the span of text that answers the question
 * Underlying NLU task: pairwise, span-based identification
+
+Which detected spans answers the question. We detect the spans of interest and verify whether it answers the question
 
 ### Event Extraction
 
@@ -206,10 +225,14 @@ Subtask
 * Problem: to idenify the word that denotes the event and its type
 * Underlying NLU task: span-based classification
 
+Detect which span tiggers the event, and what type of event it is.
+
 2. Event Participant Identification
 
 * Problem: to determine the relationship that holds between a named entity and the event trigger
 * Underlying NLU task: span-based relation classification
+
+Detect the relationship between spans. We want to know the type of relationsihp hold betweeen named entities
 
 ## Week2
 
