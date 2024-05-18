@@ -343,11 +343,443 @@ Transformer can perform computation in parallel
 
 
 
+## Week3
+
+### Transformer
+
+* Causal backward looking (left to right) transformer
+
+![image](../pictures/transformer-attention.png)
+
+The architecture allows computation done in parallel
+
+### BERT
+ 
+**Pretraining**
+
+* leanring a representation of meaning of words or sentences
+* usually done on huge amounts of textt
+* results in pretrained language models
+
+**Fine-tuning**
+
+* taking a pretrained language model
+* further training the model to perform a downstream task
+
+
+**Transfer Learning**
+
+* acquiring knoledge by learning on one task and hten applying it to a new task
+* a pretrained BERT language model acquires knowledge about the language, which makes it easier to learn a new downstream NLU task.
+
+
+#### Pretraining BERT
+
+* BERT model learns a cloze task: filling in the blanks, inteading of predicting the next word
+
+**Masked Language Modelling**: (MLM) first learning objective for BERT
+
+* model is presented with a series of sentences from the training corpus
+	* replaced with [mask]
+	* replace by another token (randomly sampled based on unigram)
+	* left unchanged
+
+**Next Sentence Prediction (NSP)**: second learning objective for BERT
+
+Model is presented with pairs of sentences
+
+* 50% of pairs are adjaent sentences
+* 50% of paris are unrelated (randomly selected) sentences
+
+### Contextual Embedding
+
+Vectors representing the meaning of a token within a context
+
+Hw do we obtain them from the BERT language models?
+
+* assume we have a sequence of input tokens $x_1,...,x_n$ and we are interested in the contextual embedings for token $x_i$
+
+We can take the input vector $y_i$ from the final layer of the model
+
+## Week 4
+
+### Evaluation
+
+Types of evaluation
+
+1. Manual vs Automatic
+2. Formative vs Summative
+3. Intrinsic vs Extrinsic
+4. Component vs End-to-End
+
+#### Automatic vs Manual
+
+Manual evaluation: involves human assessment
+
+Limitation:
+* inconsistencies
+* hard to control for external factors
+* time consuming and laborious
+
+Automatic evaluation:
+
+* Data Driven
+* requries algorithms mmicking human assessors.
+
+#### Formative Evaluation vs Summative
+
+Formative eval: 
+
+* occurs during development
+* inform the developer system performance
+* automatic and lightweight
+
+Summative eval:
+
+* conducted after system completion; involves human judges
+* assess if system's goal is achived
+
+#### Intrinsic vs Extrinsic
+
+Intrinsic evaluation: assessment in terms of the system's underlying/internal task
+
+Extrinsic evaluaiton: assessment in terms of impact of the system to an external task
+
+Example:  hate speech detection
+
+* intrinsic: how well does the sequence classiication model perform?
+* extrinsic: how much faster is a human able to carry out content moderation?
+
+
+#### Component vs End-to-End
+
+component evaluation: 
+
+* asessing each component comprising a pipeline
+* allows or isolating errors and identifying problematic components
+
+end-to-end evaluation
+
+* assssign all components at once
+* provides an indication of a system's effectiveness under real-world conditions
+
+### Preparing data for Evaluation
+
+**Fixed Partition**
+* training set: the bulk of the entire data
+* held out set: divided into
+	* development/validation set
+* test set: for summative evaluation after system development
+* 70/20/10 (training/dev/test)
+
+**Consideration**
+
+* disjointness of the subsets
+* if test data and training data is from the same data distribution
+
+Limitation:
+
+* lukcy partition?
+ if the entire data set is smal, there might not be enough samples for training
+
+**K-fold corss validation**
+
+* data is split into k folds
+* for each round i in k rounds: all folds except fold i are used for training, and fold i for testing
+* if parameter tuning is needed, a small part of the training folds is held out
 
 
 
+**Watch out for: Sampling bias**
+
+Stratified random sampling
+* a representative number of instances are randomly drawn from each class (strata)
+* ensrues each class is sufficiently represented (in the test set)
+
+**Watch out for: Imabalanced Data**
+
+Datasets where some classes are over-represented (majority class) whiel others are under-represented (minority) class.
+
+Example: hate speech detection data
+
+**Mitigation**:
+
+1. random under sampling: 
+	* randomly selecting what to remove or keep from the majority class
+	* can lead to loss in information
+2. under sampling using Tomek Links
+	* removes Tomek links: pairs of instances from opposite classes which are very similar to each other
+
+![image](../pictures/tomek-link.png)
+
+3. random over sampling
+	* copies randomly selected isntances from the minority class
+	* can lead to over-fitting
+4. Synthetic minorrrrrrrity over sampling technique (SMOTE): creates new instancesfrom the minoriy class
+	* randomly selects an instance m and finds the k (5) nearest neighbour (NNs) to it one NN n is chosen
+	* a synthetic instance is generated by taking the convex combination of m and n
+
+![image](../pictures/smote.png)
+
+### Data Reliability
+
+**Annotator agreement**: measured to help us decide whether we can trust the labels
+
+* intra-annotator agreement: wheter the same human consistently annoates the same item when presented at *different* times
+* inter-annotator ageement: whether *mulitple* humans consisetntly annotate the same item even when working independently.
+
+**InterAnnotator Agreement** (IAA)
+
+* the agreement between human annotator (labelers/coders)
+* serves as the difficulty level of the task
+* serves as an upper bound on the performance of automated methods
+
+Simplistic approach: observed agrreement
+
+* ratio of the number of items on which annotaors agree, to total number of items
+* does not take into account agreement by chance (random agreement)
+
+### Cohen's Kappa coefficient
+
+$$
+K = \frac{P(a) - P(e)}{1-P(e)}
+$$
+
+$P(a)$ is the observed agreement, proportion of times annotators agreed
+
+$P(e)$ is the expected agreement, proportion of times annotators expected to agree by chance
+
+$P(a) = P(A1=yes,A2=yes) + P(A1=No,A2=No)$
+
+$P(e) = P(A1=yes) * P(A2=yes) + P(A1=No) * P(A2=No) $
 
 
+Interpretation of Kappa Coefficient
+
+1. negative value: disagreement
+2. >0.6 is acceptable
 
 
+### NER Task
 
+Fscore is reported
+
+* annotation from one annotator is gold standard
+* annotations from another annotator is considered as response, whose F score is measured against the standard
+
+$$
+F = \frac{2PR}{P+R}
+$$
+
+
+### Evaluation Metrics
+![iamge](../pictures/confusion.png)
+
+* Accuracy:
+	* limitation: suitable only for balanced data
+* Precision: $$P= \frac{TP}{TP+FP} $$
+* Recal: $$R = \frac{TP}{TP+FN} $$
+8 F socre: $$F = \frac{2PR}{P+R} $$
+
+**Macro Averaging**: average of in certain category: precision, recall, f score
+
+**Weighted Macro Averaging**: sum up the per-category product of metric value and weight $ n_{support}/n_{total_support}$
+
+![image](../pictures/support.png)
+
+**Micro Averaging**: pool togather the TPs, FPs, FNs across all categorties
+
+#### Recommendation
+
+* macro averaging: all classes are equally important
+* weighted macro averaging: majority class is more important
+* micro averaging: minority class is more important
+
+
+#### Suitable area for F score
+
+* sequence classification
+* pairsewise sequence classification task
+* span based classification, span based relation classification
+* inter annotator agreement
+* sequence labelling
+* span based identification
+
+![image](../pictures/eval-task.png)
+
+#### Perplexity for language model
+
+A language model should not be perplexed (suprised) by a correct sequence of tokens and should assign a high probablity to such a correct sequence 
+
+Given a test sequence $W=w_1w_2w_3...w_n$
+
+$$
+PP(W) = P(w_1w_2...w_n)^{\frac{-1}{N}}
+$$
+
+The lower the value of PP (the higher probability), the better
+
+
+## Week 4
+
+### Text Classification
+
+Text classification is defined as the taskof assigning a class from a fixed collection of K classes to a piece of text
+
+$$
+MCC = \frac{TP \times TN - FP \times FN}{\sqrt{(TP + FP)(TP + FN)(TN + FP)(TN + FN)}}
+$$
+
+### Text Classification Traditional Approach
+
+**Naive Bayes**
+
+$$
+P(x_1,...,x_n,C_k) = P(C_k) \prod_{i=}^n P(x_i \mid C_k)
+$$
+
+
+### Depp Learning Approach
+
+DL approaches rely on embeddings and neural network to encode the text and to obtain a distributed and contextualised representation.
+
+The encoder is based on
+
+* averaging of embeddings
+* CNN/RNN over embeddings
+* Pre-trained lanugauge model, i.e. BERT
+
+```python
+class RobertaClasificationHead(nn.Module):
+	def __init__(self,config):
+		super().__init__()
+		self.dense = nn.Linear(config.hidden_size, config.hidden_size)
+		self.dropout = nn.Dropout(dropout_prob)
+		self.out_proj = nn.Linear(config.hidden_size, config.num_labels)
+
+	def forward(self, roberta_output):
+		x = roberta_output[:, 0, :] 
+		x = self.dropout(x)
+		x = self.dense(x)
+		x = torch.tanh(x)
+		x = self.dropout(x)
+		x = self.out_proj(x)
+		return x
+```
+
+### Multi Label Multi Class
+
+We don't use Softmax for this task, but we model the probability of each label independently, usign element wise sigmoid and then reduce them to a single scalar
+
+
+### Long Document Classification
+
+We can use 
+* Truncation
+* Hierachical approaches
+* Dedicated architecture: the LongFormer
+
+![image](../pictures/attention-computation.png)
+
+## Week 5
+
+### Sequence Labelling
+
+* POS Tagging
+* NER
+* Semantic Role Labelling (SRL)
+
+
+#### Part of Speech Tagging
+
+* word classes defined based on 
+	* their grammatical relationsihp with neighbouring words
+	* morphological properties
+* closed class: new words unlikely added
+* open class:  new words likely to be added
+
+POS annotation tags comes from
+
+* Penn Treebank
+* Universal Scheme
+
+
+**POS Tagging**
+
+* Task: to assign pos tag to each word in a sequence
+* Input: a sequence $x_1,x_2,...,x_n$ of words and a tagset
+* Ouput: a sequence $y_1,y_2,...,y_n$ of tags
+
+![image](../pictures/pos-tagging.png)
+
+#### Semantic Role Labelling (SRL)
+
+Identifying predicate-argument structures: who did what to whom where and when
+
+![image](../pictures/srl.png)
+
+![image](../pictures/srl-ex.png)
+
+
+* Predicate: words expressing the event (the what) 行为
+* Argument: the participants in the event (the who, whom, where, and when) 时间，地点，人物
+* Semantic Role: the role that each argument (predicates) takes
+
+common schemes
+
+* Proposition Bank (propbank): roles are specific for a verb and named with numbers
+* Framenet
+
+PropBank
+1. Arg0: initiator of the action
+2. Arg1: the reciveer of an action
+3. Arg2: so on
+
+Framenet: roels are specific to frame
+
+Frame: a set of related concepts that together comprise background knowledge on some event--which can be expressed by verbs, nouns, adjectives, etc
+
+#### NER
+
+Named Entity: anything that can be referred to using a proper name, and can also include expression like dates, time, amounts/prices
+
+
+Schemes: IO, BIO, BIOSE
+
+### Sequence Labelling Traditional Approach
+
+#### Stochastic Approach HMM
+
+
+$$
+t = argmax P(t_1^n \mid w_1^n) \approx argmax \prod_{i=1}^n P(t_i\mid t_{i-1})P(w_i\mid t_i)
+$$
+
+
+**Issues of HMM**: it's hard to include our own features that can help discriminate between different tags
+
+#### Conditional Random Field
+
+CRF: model that discriminates among all possible tag sequences
+
+$$
+\hat{Y} = argmax P(Y \mid X)
+$$
+
+It assigns a probability to an entire sequence Y for every possible sequence in y, given the input sequence X
+
+
+$$
+P(Y \mid X) = \frac{1}{Z(X)} \exp{\sum_{k=1}^K w_k \times F_K(X,Y)}
+$$
+
+* Global Feature: property of the entire sequences X and Y, which is a sum of local features at each position i in Y
+* Local Feature: makes use of current output token y_i, previous output token $y_{i-1}$, any part of the input sequence X, and the current position
+* $Z(X)$: normalisation factor
+* K number of eatures
+* $w_k$ feature weight
+
+#### Deep Learning Approach
+
+BERT 
+* local approach. it does not take into account dependencies between tags
