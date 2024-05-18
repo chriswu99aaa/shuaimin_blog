@@ -783,3 +783,85 @@ $$
 
 BERT 
 * local approach. it does not take into account dependencies between tags
+
+## Week 6
+
+### Span Extraction
+
+* Open class document categorisation: keyword extraction
+* relation classification without entity mention
+* relation extraction without relations: open information extraction
+* query-conditioned information extraction: machine reading comprehension (or question answering)
+
+**Span Extraction**: extracting $0...n$ contiguous spans from a piece of text
+
+**Keywords**: are contiguous spans of words in a document which represent and summarise the essential content of the document
+
+**Relation Extraction**: usually concerns the extraction of entities that are related by a fixed set of relations
+
+**Open Information Extraction**: was defined as domain independent discovery of relations extracted from text and readily scale to the diversity and size of the web corpus.
+
+Relation extraction targeted on the constrained set of relations, whereas the open information extraction explore the relations available in the corpus.
+
+**Extractive Machine Reading Comprehension**: is sually defined as finding that span in a passage, that best answers a question referring to that passage
+
+Open information extraction allows to convert information that is conveyed in textual unstructured form in a machine readable format. This allows to perform search, linking, aggregation.
+
+#### Evaluation Metrics for Span Extraction
+
+Usual evaluation metrics are precision, recall and f1-score
+
+Token level f1 score gradualy discounts for missing/superfluous tokens in the prediction by calculating precision and recall at token level.
+
+### Traditional Approach to Information Extraction
+
+* keyword extraction: which terms are central to a document? what does a corpus talk about?
+* relation extraction: which entities are related other by a certain relation? how is this expressed in text?
+* Open information extraction: what if we want to know everything?
+
+#### RAKE Unsupervised Keyword Extraction
+
+intuition:
+
+* keywords usually appear between stopwords
+* keywords are mentioned more often in text
+
+algorithm
+
+1. identify continuous spans between stop words
+2. rank and retrieve top-k
+3. join stop-word delimted spans if they co-appear often enough
+
+stopwords: and, or, about, after etc
+
+word degrees: Word graph
+
+$$
+freq(i) = A_{i,i} \\
+deg(i) = sum(A_i)
+$$
+
+![image](../pictures/word-graph.png)
+
+$$
+freq('cakes') = 3 \\
+deg('cakes') = 7 \\
+deg('cakes')/freq('cakes') \approx 2.33
+$$
+
+The last equation gives a measure of generality
+
+#### Keyword Extraction for Document Graph Generation
+
+We can characterise the collection in terms of the extracted keywords
+
+* central/exlusive keywords: which keywords ar eextracted often in a single document
+* essential keywords: which central keywords are coverred by many documents
+* general keywords: which keywords are referenced in many document but extracted by only few docuents
+
+#### Pattern Based RElation Extraction
+
+We can define high-precision/low-recall patterns to extract relations of our interest
+
+
+These patterns can be syntactic, rely on lexical semantics (using meaning of words) or additional knowledge
