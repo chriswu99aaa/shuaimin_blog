@@ -557,7 +557,7 @@ $P(e) = P(A1=yes) * P(A2=yes) + P(A1=No) * P(A2=No) $
 Interpretation of Kappa Coefficient
 
 1. negative value: disagreement
-2. >0.6 is acceptable
+2. larger than 0.6 is acceptable
 
 
 ### NER Task
@@ -579,7 +579,7 @@ $$
 	* limitation: suitable only for balanced data
 * Precision: $$P= \frac{TP}{TP+FP} $$
 * Recal: $$R = \frac{TP}{TP+FN} $$
-8 F socre: $$F = \frac{2PR}{P+R} $$
+* F socre: $$F = \frac{2PR}{P+R} $$
 
 **Macro Averaging**: average of in certain category: precision, recall, f score
 
@@ -620,7 +620,7 @@ $$
 The lower the value of PP (the higher probability), the better
 
 
-## Week 4
+## Week 5
 
 ### Text Classification
 
@@ -681,7 +681,7 @@ We can use
 
 ![image](../pictures/attention-computation.png)
 
-## Week 5
+## Week 6
 
 ### Sequence Labelling
 
@@ -784,7 +784,7 @@ $$
 BERT 
 * local approach. it does not take into account dependencies between tags
 
-## Week 6
+## Week 7
 
 ### Span Extraction
 
@@ -865,3 +865,524 @@ We can define high-precision/low-recall patterns to extract relations of our int
 
 
 These patterns can be syntactic, rely on lexical semantics (using meaning of words) or additional knowledge
+
+##### Boostrapping: Relation Extraction Edition
+
+1. Find new expression for know tripels
+2. Extract pattern and add top-K as new
+3. Apply new patterns to corpus to extract new triples
+
+#### Open Information Extraction
+
+OpenIE: Domain independent discovery of relations extracted from text and readily scale to the diversity and size of Web corpus
+
+Given a corpus of documents the exptected output is a set of extracted relation
+
+Requirement for OpenIE System
+
+* must be applicable to a lot of heterogeneous documents
+* cannot resort to a specific domain knowledge
+* cannot take ages for a single domain knowledge
+
+##### Reverb: Algorithm
+
+```
+For an input sentence:
+	For each verb in sentence:
+		Find the longest candidate word sequence r that satisfies two consraints
+		Merge adjacent candidates
+		For eac hrelation candidate r:
+			Find the nearest Noun Phrase left and right of r
+			Assign confidence score with a classifer
+
+```
+
+
+##### OLLIE: OpenIE boostrapping
+
+* take high confidence extraction from ReVerb
+* map to a large corpus of sentences (that contains extraction's words)
+* generate patterns (paths in dependency parse) by generalising from observed co-occurrences
+* apply patterns to corpus to extract new triples
+
+
+##### End-to-End Neural Open Information Extraction
+
+OpenIE can be modelled as a sequence labelling task
+
+```
+For an input sentence
+	For each verb
+		Expand predicate (P) (rule based, similar to ReVerb)
+		For each word
+			label as Argument (ARG) or non-participating (O)
+```
+
+
+### Deep Learning Approaches for Span Extraction
+
+DL based approahces to span extraction relh on embeddings to produce a distributed and contextualised representation of question and passage.
+
+This representation is used to predict the probability distribution of a token being beginning/end of span
+
+We look the simplest one: fine-tuning pre-trained language models
+
+![image](../pictures/mrc.png)
+
+1. Concatenate question and passage as input to the langauge model, multiplying the final layer with two vectors to obtain probability distribution over all tokens
+2. minimising the cross entropy loss between the predicted probability distribution over the sequence and the ground truth start and end positions
+
+#### MRC with BERT using SQuAD
+
+Procedure to find the span
+```
+For all combinations P_is , P_je for all i in j, and j from 1 to len(input)
+	- Discard all special tokens (P_[CLS], P_[SEP])
+	- Discard all spans where i>j
+	- Discard all spans where j-i > k
+	- Rank based on P_i + P_j
+	- Pick best
+```
+
+We aim to use the DL models to predict the best position of s and e which answer the quesiton
+
+```python
+class RobertaForQuestionAnswering(RobertaPreTrainedModel):
+
+	def __init__(self, config):
+		super().__init__(config)
+
+		self.roberta = RobertaModel(config, add_pooling_layer=False)
+		self.qa_outputs = nn.Linear(config.hidden_size, 2)
+
+	def forward(self, input_ids, ...):
+		outputs = self.roberta(input_ids,...)
+
+		sequence_output = outputs[0]
+
+		logits = self.qa_outputs(sequence_output)
+		start_logits, end_logits = logits.split(1,dim=-1)
+		start_logits = start_logits.squeeze(-1).contiguous()
+		end_logits = end_logits.squeeze(-1).contiguous()
+
+		return start_logits, end_logits
+
+```
+
+##### Un-answeribility in MRC
+
+If the training data contains un-answerable examples, the model can be optimised to predict [CLS] as answer token for these. In post processing these predictions will be repalced with "unanswerable"
+
+```
+For all combinations P_is, P_je for all i in j 1 ... len(chunk)
+for all chunk in chunks:
+- Discard all special tokens (e.g. P[CLS], P[SEP])
+- Discard all spans where i > j
+- Discard all spans where j - i > k(e.g. all spans that are way longer than what you’d reasonably expect based on training set)
+- Rank based on Pi + Pj
+- pick best
+- if: best score > P[CLS] + t (threshold hyperparameter)
+then: return best span
+else: return “Unanswerable”
+```
+
+#### Learning Span Representations
+
+represent spans by their boundaries and content
+
+$$
+span_{ij} = [h_i; h_j; g_{ij}]
+$$
+
+from hidden state i to hidden state j is the span representation, and g is the algorithm for obtaininig the embeddings
+
+##### SpanBERT
+
+Mask spans of text intead of tokens. In addition to Masked Language Modelling objective, predict masked token given start/end span representation (and relative positionla embedding)
+
+![image](../pictures/span-bert.png)
+
+### Coreference Resolution
+
+It is important to identify which *real world concept* the mentions refer to
+
+* On the global level, this task is Entity Linking
+* On the local level, this etask is called Coreference Resolution
+
+**Coreference Resolution**: is the taks of identifying all mentions that co-refer to the same concept
+
+Having span representation $span_{ij}$ and $span_{kl}$ we can predict
+
+* how likely $span_{ij}$, $span{kl}$ are mentioning entities (mention score)
+* how likely $span_{kl}$ refers to the same entity as $span_{ij}$ (antecedent score)
+
+This information allows to learn a probability distribution of all possible $span_{ij}$ being the antecedent of $span_{kl}$
+
+## Week 8 
+
+### Sequence to Sequence Learning
+
+#### Language Models for NLG
+
+**Autoregresive Generation with RNN Language Models**: the word generated at each time step t is conditioned on the word selected by the RNN from the previous time step t-1
+
+![image](../pictures/rnn-nlg.png)
+
+**Autoregressive Generation with Transformer Models**: at each time step t the model has direct access to the prefix text and the outputs it has geenrated so far 
+
+![image](../pictures/trans-nlg.png)
+
+#### GPT Language Models
+
+Two training objectives
+
+1. Language Modelling: unsupervised training on unlabelled data
+2. Task specific fine-tuning: supervised training on a target task
+* sequence classification
+* textual entailment, semantic textual similarity, question answering (multiple choice)
+
+**Masked Multihead Self Attention**:
+* multihead: multiple heads, each of which learns a different aspect of the relationships between the input tokens. 每一个头学习输入之间不同的关系
+* masked self-attention: hides information to the right of the current token position
+
+### Seq2Seq Learning
+
+The task transform one sequence into another sequence. It takes as input one token sequence and produces another otken sequence as output
+
+![image](../pictures/seq2seq-def.png)
+
+#### Encoder-Decoder Models for Seq2Seq Learning
+
+Takes an input of sequence X of length n, and generates a corresponding sequence of contextualised representation. A context vector is used to generates a sequence of hidden states from which the output sequence Y of length n can be generated by the decoder
+
+### Seq2Seq Learning Application
+
+1. Machine Translation
+2. Automatic Text Summarisation
+3. Paraphrase Generation
+4. Semantic Parsing
+5. Long-form Question Answering
+
+#### Paraphrase Generation as Seq2Seq Learning
+
+The task:
+
+* transform an input sequence to another sequence that *preserves the meaning* of the input sequence while having a different lexical or syntactic form
+* More formally: given a sequence of n tokens S, generate a sequence Y with m tokens that conveys similar semantics as S
+
+#### Semantic Parsing as Seq2Seq Learning
+
+The task:
+
+* convert an input sequence into a sequence written in meaning representation langage MRL (a data structure that can be executed)
+
+![image](../pictures/srl-def.png)
+
+
+#### Long-form QA as Seq2Seq Learning
+
+The task
+
+* given an open ended question and supporting document generate a *paragraph lenght answer with an explanation*
+* with respect to abstractive QA: similar in that the generated answer is not just an extracted span. The answer should be longer than a sentence.
+
+![image](../pictures/long-qa.png)
+
+#### Text to Text Transfer Transformer (T5)
+
+A unified framework that casts all NLP tasks as a text to text problem
+
+Further study: T5 Paper: Raffel, Colin, et al. "Exploring the limits of transfer learning with a
+unified text-to-text transformer." arXiv preprint arXiv:1910.10683 (2019).
+
+![image](../pictures/t5.png)
+
+### Machine Translation
+
+The task:
+
+* take a sequence written in one language and translate it into another sequence written in another lanugage
+* input: sequence in source language
+* output: sequence in target language
+
+Issue: simple word by word translation fails.
+
+
+#### Traditional Approach to MT
+
+1. Rule Based: rules for reording word by word translation obtained using a bilingual dictionary
+2. Transfer based: 
+	* syntactic structure generation based on the source text
+	* conversion of syntactic structure into corresponding structure in the target language
+	* output text is generated based on the corresponding syntactic structure
+	* 学习文本语义，然后转换到目标语言内的语义结构，最终生成文本
+3. Interlingua based
+	* analyssi of the source text and representing it in a language independent formalisim
+	* generation of the output text in target language using the formalism
+	* 将给定文本以中间化的形式呈现，最终转换到目标语言
+
+### Deep Learning based Approach to MT
+
+#### Encoder-Decoder with RNN
+
+![image](../pictures/en-de-rnn-mt.png)
+
+greedy decoding: choose the optimal probability locally
+
+**Search Tree**: graphical representation of the choicees made by a decoder
+
+![image](../pictures/search-tree.png)
+
+
+This might miss the global optimal solution
+
+
+To mitigate the sub-optimal solution
+
+We use **Beam Search**
+
+
+**Beam Search**: select K possible tokens at each time step, where k is the beam width parameter
+
+```
+1. Select the k best options (hypotheses) based on softmax
+2. Pass each of the hypotheses through the decoder to obtain softmax over the next possible tokens
+3. Score each hypotheses
+```
+* The procedure repeat until an end of sequence is generated; k is reduced and the search continues unitl k=0
+* Probability of a partial translation: sum of log probability
+
+$$
+score(y) = \sum_{i=1}^t log(P(y_i \mid y_1,...,y_{i-1},x))
+$$
+
+At each time step, add the log probability of the translation so far to the log probability of generating the next token
+
+![image](../pictures/beam-search.png)
+
+#### Transformer Block in Encoder-Decoder for MT
+
+![image](../pictures/ec-de-mt.png)
+
+It has an additional cross attention layer
+
+The Cross attention layer can attend to each of the source language tokens projected into the final layer of the encoder. 也就是可以获得编码器最后一层的信息
+
+### Metrics for Manual Evaluation fo Translation
+
+Human evaluators asked to score a translation based on a 5-point scale (1 = strongly
+disagree to 5 = strongly agree), according to:
+
+* Adequacy (how well the meaning of the source sentence is captured)
+* Fluency (grammaticality, readability, how natural)
+
+#### BLEU
+
+BiLingual Evaluation Understudy
+
+Modification to simple precision
+
+1. For each word in the hypothesis, get the $min(count_{hypothesis}, count_{reference})$
+2. BLEU = sum of the niminum values for each word / number words in hypothesis
+
+![image](../pictures/bleu-example.png)
+
+* precision based metric that uses word overlap
+* calculated for each translated sequence (averaged over a corpus to report overall performance)
+
+
+#### BLEU-N: based on n-grams
+
+
+1. generate n-grams for each of the hypothesis and reference
+2. for each n-gram in the hypothesis, get the $min(count_{hypothesis}, count_{reference})$
+3. BLEU-N = sum of the minimum values for each n-gram / number of n-grams in hypothesis
+4. 对每一个 n-gram 求bleu，然后把他们相加
+
+![image](../pictures/BLEU-N.png)
+
+
+#### Character F-score (chrF)
+
+* based on a function of the number of character n-gram overlaps between a hypothesis and a reference translation
+* uses a parameter k (maximum length of a character n-grams to be considered)
+
+chrP = ratio of 1 to k grams in the hypthesis that occur in the reference, averaged
+
+chrR = ratio of 1 to k grams in the reference that occur in the hypothesis, averaged
+
+$$
+chrF\beta = (1+\beta^2) \frac{chrP \times chrR}{\beta^2 \times chrP + chrR}
+$$
+
+usually $\beta = 2$ for Machine translation
+
+$$
+chrF2 = \frac{5 \times chrR \times chrR}{4 \times chrR + chrR}
+$$
+
+### Automatic Text Summarisation (ATS)
+
+The task:
+
+* produce a summary of a full-length document
+* input sequence: full length text (source)
+* output sequence: summarised text (target)
+
+
+Four types of ATS
+
+1. Input: Single or Multi-document (单一文本, 多文本)
+2. Language: Mono, Multi, or Corss Lingual (单一语言, 多语言, 跨语言)
+3. Learning: Supervised or Unsupervised (监督学习，非监督学习)
+4. Generation: Extractive or Abstractive (提取式, 概括式)
+
+#### Extractive Summarisation
+
+Generates summaries by *extracting phrases or sentences* from the input document, and *selecting phrases/sentences* to include in the summary
+
+Pros:
+
+* simpler
+* generated summary tends to be grammatically correct
+
+Cons:
+
+* summary tends to include redundant information
+* lack of semantics and cohension
+
+![image](../pictures/extractive-ats.png)
+
+#### Abstractive Summarisation
+
+Generate summaries by *understanding* the content of the input document, and paraphrasing the text to express the same content in fewer words
+
+Pros
+
+* generated summary is closer to human provided summary
+* redundancy is reduced since newly produced sentences can compress more information
+
+Cons
+
+* difficult to implement since due to reliance on NLG
+
+
+![image](../pictures/abstractive-ats.png)
+
+[Resource for Further Study](https://www.sciencedirect.com/science/article/pii/S0957417420305030)
+
+### Traditional Approaches to Extractive ATS
+
+#### Statistical Methods
+
+* word frequency based: a sentence is considered important if it contains a frequent word
+* TF-IDF based: used in multi-document summarisation
+
+#### Machine Learning based Methods
+
+* binary classifier: (naive Bayes, random forest) with features such as sentence position, sentence length, capitalisation, existence of thematic words
+* graph based (Text Rank): nodes are sentences and edges are similarities; a score for each node is calculated which allows for ranking the sentence
+
+
+### Deep Learning based Approaches to ATS
+
+**Encoder Decoder Models**
+
+![image](../pictures/en-de-ats.png)
+
+
+
+#### Attention Encoder-Decoder RNNs for ATS
+
+With the usual encoder-decoder architecture, the encoder contains features combined with embeddings. The combination extracts more information from the soruce text for the decoder to attend.
+
+![image](../pictures/atn-feature-ats.png)
+
+#### Switching generator/pointer model
+
+instead of emitting <UNK> for OOV words, point tot the word's position in the input document
+
+a swtich (i.e probability) decides whether to generate or to point
+
+#### Transformer for ATS
+
+* during inference, the source, with the separator token appendend, is used as input
+* target is generated in an auto-regressive manner
+
+
+### Metrics for Manual Evaluation of Summaries
+
+
+Ask human evaluator to score the summary based on a 5-point scale
+
+* readability and grammaticality (linguistic quality)
+* structure and cohenrence (sentence organisation)
+* referential clarity (no unidentifiable pronouns)
+* content coverage (inclusion of salient points)
+* consiseness and focus (succinctness)
+* non-redundancy (no repetition)
+
+
+#### Recall-Oriented Understudy for Gisting Evaluation (ROUGE)
+
+It counts the number of overlapping units (i.e. n-grams) between the generated (condidates) and reference summaries
+
+**ROUGE-N**: n-gram recall
+
+$$
+\frac{\sum_{gram_n \in S} Count_{match}(gram_n) }{\sum_{gram_n \in S} Count(gram_n)}
+$$
+
+![image](../pictures/rouge.png)
+
+#### ROUGE-L 
+
+Longest common subsequence (LCS)-based F-score
+
+* assuming X and Y are the reference and condidate summaries, with lengths m and n tokens, respectively
+
+$$
+R_{lcs} = \frac{LCS(X,Y)}{m} \\
+
+P_{lcs} = \frac{LCS(X,Y)}{n} \\ 
+
+F_{lcs} = \frac{(1+\beta^2) \times P_{lcs} \times R_{lcs}}{ \beta^2 \times P_{lcs} + P_{lcs}}
+
+$$
+
+the longest subsequence requires the order to tokens to be matched
+
+![image](../pictures/rouge-l.png)
+
+
+#### ROUGE-S  
+
+It's based on skip-bigram co-occurrences
+
+* assuming X and Y are the reference and candiate summaries, with lengths m and n tokens respectively
+
+$$
+R_{skip2} = \frac{SKIP2(X,Y)}{C(m,2)} \\
+
+P_{skip2} = \frac{SKIP2(X,Y)}{C(n,2)} \\
+
+F_{skip2} = \frac{(1+\beta^2) \times P_{skip2} \times R_{skip2}}{\beta^2 \times P_{skip2} + R_{skip2}}
+$$
+
+the ROUGE-S allows skip for bi-grams
+![image](../pictures/rouge-s.png)
+
+
+when training the bert classifer there might leak the data which is later used as evaluation set. Because of 10000 examples are split into chunks of 512 tokens, so this might leads to over optimistic results. 
+
+evaluation on the chunk level is not enough. we also need to evaluate on the claim level.
+
+
+
+
+For improvement, split the dataset 9/1 for training and validation for the bert fine-tuning, and train the RNN on the chunks corresponding to the training set, and evaluate the model on the validation set to obtain more robust result. Furthermore, in addition to accuracy, compute precision, recall, and f1 score as well to have a complete understanding of the performance
+
+
+
+
+Aggregate the chunk-level predictions to make a single prediction per claim and report the accuracy at the claim level.

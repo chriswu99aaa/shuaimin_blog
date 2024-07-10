@@ -684,6 +684,33 @@ Calculate the word embedding by performing prediction tasks formulated based on 
 
 ![image](../pictures/word2vec.png)
 
+The word2vec copies the value in the $W$ for each context word, and average them as the value for $h$.
+
+There are two types of Word2Vec models
+
+1. Continuous Bag of Words
+2. Skip-Gram
+
+**CBOW**:
+* as illusrated by the image above, use the context words to predict the target word.
+* it's good for small consistent datasets
+
+**Skip-Gram**
+* use the target word to predict the context words.
+* it's good for large and inconsistent datasets$
+
+Semantic relation captured by Word2Vec
+* similarity
+* clustering 
+* analogy
+
+Limitations of Word2Vec
+
+* Static, Non-Contextualised Nature: each word is assigned to a static vector regardless its contextual variation in different sentences
+* Context Window Limitation: it uses fixed window size, and captures only local semantic meaning of the word, ignoring the meaning in a broader context.
+* Handling of Special Cases: Phrase representation, and out of vocabulary words representations are the two challenges of word2vec. Its abilty to handle unnkown words is limited.
+* 
+
 ##### GloVe
 
 ![image](../pictures/glove.png)
