@@ -6345,7 +6345,7 @@ class Solution {
 }
 ```
 
-### 背包问题理论
+### 背包问题理论 01背包
 
 ![image](../pictures/bag.png)
 
@@ -6400,10 +6400,1008 @@ class Solution {
                 dp[j] = Math.max(dp[j], dp[j - stones[i]] + stones[i]); 
             }
         }
-
-
         return sum - dp[target] - dp[target];
     }
 }
 
 ```
+
+### 416. 分割等和子集
+
+```
+给定一个只包含正整数的非空数组。是否可以将这个数组分割成两个子集，使得两个子集的元素和相等。
+
+注意: 每个数组中的元素不会超过 100 数组的大小不会超过 200
+
+输入: [1, 5, 11, 5]
+输出: true
+解释: 数组可以分割成 [1, 5, 5] 和 [11].
+
+输入: [1, 2, 3, 5]
+输出: false
+解释: 数组不能分割成两个元素和相等的子集.
+
+1 <= nums.length <= 200
+1 <= nums[i] <= 100
+```
+
+```java
+class Solution {
+    public boolean canPartition(int[] nums) {
+        int[] dp = new int[1001];
+
+        int n = nums.length;
+        int sum = 0;
+
+        for(int i=0; i<nums.length; i++)
+            sum += nums[i];
+        
+        if(sum % 2 != 0)
+            return false;
+        
+        int target = sum/2;
+        dp[0] = 0;
+
+        for(int i=0; i<nums.length;i++)
+        {
+            for(int j=target; j>=nums[i];j--)
+            {
+                dp[j] = Math.max(dp[j], dp[j - nums[i]] + nums[i]);
+            }
+        }
+
+        return dp[dp.length-1] == target;
+    }
+}
+```
+
+数组dp[j] 代表容量为j的背包可以装多少价值。我们可以选择装入或不装入一个数字，如果完成遍历，结果等于sum/2 就可以分割，否则不能。
+
+### 494.目标和
+
+```
+给定一个非负整数数组，a1, a2, ..., an, 和一个目标数，S。现在你有两个符号 + 和 -。对于数组中的任意一个整数，你都可以从 + 或 -中选择一个符号添加在前面。
+
+返回可以使最终数组和为目标数 S 的所有添加符号的方法数。
+
+示例：
+
+输入：nums: [1, 1, 1, 1, 1], S: 3
+输出：5
+```
+
+如果有一个目标target，以下等式成立
+$$
+left - right = target\\
+
+right = sum - left \\
+
+left = (target + sum)/2
+$$
+
+如果将left 和 right 分为加减背包，那么left 里的元素就会全部加起来，而right 里的元素就会全部减，但是在这里我只需要考虑找到left 背包中的容量即可，因为根据上面的公式，我们可以将right 通过left 和 sum 表达出来。
+
+$$
+x = (target + sum)/2
+$$
+
+也就是填满背包容量为x 的背包有多少种背法。这就是一个组合问题。
+
+```java
+class Solution {
+    public int findingTargetSumWays(int[] nums int target) {
+        
+        int sum = 0;
+        //finding the sum of the array
+        for(int i=0; i<nums.length; i++)
+        {
+            sum += nums[i];
+        }
+        
+        //check if the total sum is not modulo of 2 and target > sum 
+        if((sum + target) % 2 !=) return 0;
+        
+        if(Math.abs(target) > sum) return 0;
+
+        // this is the equation x above. A bag size of x
+        int bagSize = (sum + target)/2;
+        int[] dp = new int[bagSize + 1];
+
+        // the first way to initiate the dp array dp[0]=0
+        dp[0] = 1;
+
+        //dynamic programming procedure
+        for(int i=0; i<nums.length; i++)
+        {
+            for(int j= bagSize; j>=nums[i]; j--)
+            {
+                dp[j] += dp[j - nums[i]];
+            }
+        }
+        return dp[bagSize];
+    }
+
+}
+```
+
+1. 动归数组意义：dp[j] 代表容量为j的背包有 dp[j] 中求目标和方式
+2. 动归公式： dp[j] += dp[j - nums[i]]。这个问题的求解思路就像走楼梯那一题，需要前面的结果累积。当nums[i] = 1，那么dp[5 - nums[i]] = dp[4]。这就代表有dp[4] 种方法
+3. 数组初始化: dp[0] = 0。
+4. 遍历顺序是先遍历背包容量，再遍历元素。
+
+### 474.一和零
+
+```
+给你一个二进制字符串数组 strs 和两个整数 m 和 n 。
+
+请你找出并返回 strs 的最大子集的大小，该子集中 最多 有 m 个 0 和 n 个 1 。
+
+如果 x 的所有元素也是 y 的元素，集合 x 是集合 y 的 子集 。
+
+示例 1：
+
+输入：strs = ["10", "0001", "111001", "1", "0"], m = 5, n = 3
+
+输出：4
+
+解释：最多有 5 个 0 和 3 个 1 的最大子集是 {"10","0001","1","0"} ，因此答案是 4 。 其他满足题意但较小的子集包括 {"0001","1"} 和 {"10","1","0"} 。{"111001"} 不满足题意，因为它含 4 个 1 ，大于 n 的值 3 。
+
+示例 2：
+
+输入：strs = ["10", "0", "1"], m = 1, n = 1
+输出：2
+解释：最大的子集是 {"0", "1"} ，所以答案是 2 。
+提示：
+
+1 <= strs.length <= 600
+1 <= strs[i].length <= 100
+strs[i] 仅由 '0' 和 '1' 组成
+1 <= m, n <= 100
+
+```
+
+这个问题中是一个01背包问题，每一个str[i] 就是其中一个元素，而它们的数量就只有一个。 这里的m 和 n 是背包限制的两个维度，这个就是与其他01背包问题的区别，之前的问题都只有一个背包容量限制，而这个问题有i 和 j 两个维度。
+
+1. dp[i][j]: 最多i 个1， j 个0 的背包中可以装入dp[i][j] 个str 元素
+2. 状态转移公式: dp[i][j] = max(dp[i][j], dp[i - ZeroNum][j - OneNum] + 1)。 这里zeroNum 和 oneNum 代表字符串中有多少个零和一。
+3. dp[0][0] = 0: 当背包可以有0个0 和 0个1 时可以装0个元素
+4. 遍历顺序先遍历每一个元素，然后对每一个元素进行遍历满足i 和 j
+
+在这个题目中一个物品就是数组中的一个字符串，这个字符串的重量就是它包含01的数量，而它的价值就是1，因为我们需要考虑的是有多少个字符串符合要求，也就是可以放入背包。
+
+指针i j 从m 和 n 开始遍历，这样i-zeroNum 就不会越界，也就是不会有负下标。题目的整体解题思路就是先便利背包中的每一个字符串，然后对字符串的每一个字符扫描从而确定它包含01的数量。 然后使用两个嵌套for 循环来满足二维背包限制
+
+```java
+
+class Solution {
+    public int findMaxForm(String[] strs, int m, int n) {
+        
+        int[][] dp = new int[m+1][n+1];
+
+        for(String str : strs)
+        {
+            int zeroNum = 0;
+            int oneNum = 0;
+            for(char c : str)
+            {
+                if(c == '1') oneNum++;
+                else zeroNum++;
+            }
+            for(int i=m; i>=zeroNum; i--)
+            {
+                for(int j=n; j>=oneNum; j--)
+                {
+                    dp[i][j] = Math.max(dp[i][j], dp[i-zeroNum][j-oneNum] + 1)
+                }
+            }
+        }
+        return dp[m][n]
+    }
+}
+```
+
+### 完全背包理论
+
+在完全背包中每一个物品可以放入背包多次，而在01背包中每一个物品只能被放入一次。这个差别在具体的代码中就可以让遍历背包容量的内层循环从小到大遍历。
+
+因为在01背包中容量的内层循环是从大到小的，这是为了避免物品被重复放入。而完全背包可以多次放入，所以内层for循环要从小打到遍历。
+
+```java
+
+for(int i=0; i<weights.length; i++)
+{
+    for(int j=0; j<=BagWeights; j++)
+    {
+        dp[i][j] = Math.max(dp[i-1][j], dp[i-1][j-weights[i]] + value[i]);
+    }
+}
+// or 1D array
+for(int i=0; i<weights.length; i++)
+{
+    for(int j=0; j<=BagWeights; j++)
+    {
+        dp[j] = Math.max(dp[j], dp[j-weights[i]] + value[i]);
+    }
+}
+```
+
+### 零钱兑换II
+
+给定不同面额的硬币和一个总金额。写出函数来计算可以凑成总金额的硬币组合数。假设每一种面额的硬币有无限个。 
+
+
+```
+示例 1:
+
+输入: amount = 5, coins = [1, 2, 5]
+输出: 4
+解释: 有四种方式可以凑成总金额:
+
+5=5
+5=2+2+1
+5=2+1+1+1
+5=1+1+1+1+1
+示例 2:
+
+输入: amount = 3, coins = [2]
+输出: 0
+解释: 只用面额2的硬币不能凑成总金额3。
+示例 3:
+
+输入: amount = 10, coins = [10]
+输出: 1
+```
+
+```java
+class Solution {
+    public int change(int amount, int[] coins) {
+        int[] dp = new int[amount+1];
+
+        dp[0] = 1;
+
+        for(int i=0; i<coins.length;i++)
+        {
+            for(int j=coins[i]; j<= amount; j++)
+            {
+                dp[j] += dp[j - coins[i]];
+            }
+        }
+        return dp[amount];
+    }
+}
+```
+
+这次的代码自己一次性做出了，这是非常好的一个状态。
+
+1. dp[j] 定义：金额为j 的情况下有dp[j] 中组合方式
+2. 状态转移公式：dp[j] += dp[j - coins[i]]。 当金额为j 时，我们需要加上 j-coins[i] 的组合个数。这也是利用到了动归自底向上的思想逻辑
+3. dp 数组初始化：dp[0] = 1。因为转移公式用的是 += ，如果初始化为0，所有加起来都是0。所以要初始化为1。
+4. 遍历顺序：本题讨论的是组合个数，这就需要先遍历物品，在遍历背包容量，也就是先遍历硬币，再遍历金额。 如果要求的是排列，那么就要先便利金额，再遍历硬币。 因为后者会重复计算相同的硬币组合。比如 {1,5},{5,1}，就会被看做两个排列被重复计算，但是他们两个是一个组合{1,5}。 这也就说明了求组合和求排列，遍历顺序的不同。
+
+值得注意的是在遍历金额是，从小到大遍历，下边界是coins[i]， 上边界是amount（总金额）
+
+### 377. 组合总和 Ⅳ
+
+```
+给定一个由正整数组成且不存在重复数字的数组，找出和为给定目标正整数的组合的个数。
+
+示例:
+
+nums = [1, 2, 3]
+target = 4
+所有可能的组合为： (1, 1, 1, 1) (1, 1, 2) (1, 2, 1) (1, 3) (2, 1, 1) (2, 2) (3, 1)
+
+请注意，顺序不同的序列被视作不同的组合。
+
+因此输出为 7。
+```
+
+```java
+class Solution {
+    public int combinationSum4(int[] nums, int target) {
+        int[] dp = new int[target+1];
+
+        dp[0] = 1;
+
+        for(int j=0; j<= target; j++)
+        {
+            for(int i=0; i<nums.length; i++)
+            {
+                // here I forgot to check the value of j and nums[i]. The difference may result in negative index
+                if(j>=nums[i])
+                   dp[j] += dp[j - nums[i]]
+            }
+        }
+        return dp[target];
+    }
+}
+
+```
+
+1. dp[j] 数组定义: 当数字为j 时，有dp[j]种方式相加为j
+2. 动归公式： dp[j] += dp[j - nums[i]]。 当前数字为nums[i]是，j-nums[i] 给出的是相关的子问题。这里还需要确定j-nums[i] 大于等于零，否则会是负下标
+3. 数组初始化: dp[0] = 1
+4. 遍历顺序：求的是完全背包问题的组合总和，那就是先遍历物品，再遍历背包容量，背包容量从小到大
+
+
+### 爬楼梯（进阶版）
+
+```
+假设你正在爬楼梯。需要 n 阶你才能到达楼顶。
+
+每次你可以爬至多m (1 <= m < n)个台阶。你有多少种不同的方法可以爬到楼顶呢？
+
+注意：给定 n 是一个正整数。
+
+输入描述：输入共一行，包含两个正整数，分别表示n, m
+
+输出描述：输出一个整数，表示爬到楼顶的方法数。
+
+输入示例：3 2
+
+输出示例：3
+
+提示：
+
+当 m = 2，n = 3 时，n = 3 这表示一共有三个台阶，m = 2 代表你每次可以爬一个台阶或者两个台阶。
+```
+
+```java
+class Solution {
+    public int combinationSum4(int m, int n) 
+    {
+        int[] dp = new int[n + 1];
+        
+        for(int j=1; j<=n; j++)
+        {
+            for(int i=1; i<=m; i++)
+            {
+                if(j-i >= 0)
+                {
+                    dp[j] += dp[j-i];
+                }
+            }
+        }
+        return dp[n];
+    }
+}
+```
+
+1. dp 数组下标定义: 当阶梯数为j 时，有dp[j] 种爬楼梯方式
+2. 动归公式: dp[j] += dp[j-i];
+3. 数组初始化: dp[0] = 1;
+4. 遍历顺序: 这里求有多少种爬楼梯方式: {1,1,2}, {1,2,1} 假设有四节楼梯。这里的两个是不同的方式。这就是求排列，所以先遍历背包容量，再遍历物品。这里背包容量就是n 级台阶， 物品就是m 种登楼方式。 因为是完全背包问题，每一个元素可以反复利用，所以从小到大遍历背包容量。
+
+### 322. 零钱兑换
+
+```
+给定不同面额的硬币 coins 和一个总金额 amount。编写一个函数来计算可以凑成总金额所需的最少的硬币个数。如果没有任何一种硬币组合能组成总金额，返回 -1。
+
+你可以认为每种硬币的数量是无限的。
+
+示例 1：
+
+输入：coins = [1, 2, 5], amount = 11
+输出：3
+解释：11 = 5 + 5 + 1
+示例 2：
+
+输入：coins = [2], amount = 3
+输出：-1
+
+```
+
+```java
+class Solution {
+    public int coinChange(int[] coins, int amount) {
+        int int_max = Integer.MAX_VALUE;
+
+        int[] dp = new int[amount+1];
+
+        dp[0] = 0;
+        for(int i=1; i<dp.length; i++)
+        {
+            dp[i] = int_max;
+        }
+
+        for(int i=0; i<coins.length; i++)
+        {
+            for(int j=coins[i]; j<=amount; j++)
+            {
+                dp[j] = Math.min(dp[j], dp[j - coins[i]] + 1);
+            }
+        }
+        return dp[amount] == int_max ? -1: dp[amount];
+    }
+}
+```
+
+### 279.完全平方数
+
+```
+给定正整数 n，找到若干个完全平方数（比如 1, 4, 9, 16, ...）使得它们的和等于 n。你需要让组成和的完全平方数的个数最少。
+
+给你一个整数 n ，返回和为 n 的完全平方数的 最少数量 。
+
+完全平方数 是一个整数，其值等于另一个整数的平方；换句话说，其值等于一个整数自乘的积。例如，1、4、9 和 16 都是完全平方数，而 3 和 11 不是。
+
+示例 1：
+
+输入：n = 12
+输出：3
+解释：12 = 4 + 4 + 4
+示例 2：
+
+输入：n = 13
+输出：2
+解释：13 = 4 + 9
+提示：
+
+1 <= n <= 10^4
+```
+
+```java
+class Solution {
+
+    public int numSquares(int n) {
+        int[] dp = new int[n+1];
+
+        int int_max = Integer.MAX;
+
+        dp[0] = 0;
+        for(int i=1; i<dp.length; i++)
+        {
+            dp[i] = int_max;
+        }
+
+        for(int i=0; i**2 <= n; i++)
+        {
+            for(int j=0; j<=n; j++)
+            {
+                if(j-i**2 >= 0)
+                {
+                    dp[j] = Math.min(dp[j], dp[j - (i**2)] + 1);
+                }
+            }
+        }
+
+        return dp[n];
+    }
+}
+```
+
+1. dp[j] 数组定义： 当数字为j时，和为j 的完全平方数最少为 dp[j] 个
+2. 动归公式：dp[j] = min(dp[j], dp[j- i*i] + 1)。 这里完全平方数 $i^2$ 是物品。我们需要在 dp[j - i*i]+1 或者dp[j] 中选择最小的。也就是放入数字i*i，还是不放入它
+3. dp[0]=0，其他所有位置都是int 的最大值。初始化为最大值，因为需要选择最小值。如果初始化为0，后面所有的计算都会被0覆盖。
+4. 遍历顺序：这里我们求的是组合，所以外层遍历物品，内层遍历背包容量。因为是完全背包问题，容量从小到大遍历。
+
+### 139.单词拆分
+
+```
+给定一个非空字符串 s 和一个包含非空单词的列表 wordDict，判定 s 是否可以被空格拆分为一个或多个在字典中出现的单词。
+
+说明：
+
+拆分时可以重复使用字典中的单词。
+
+你可以假设字典中没有重复的单词。
+
+示例 1：
+
+输入: s = "leetcode", wordDict = ["leet", "code"]
+输出: true
+解释: 返回 true 因为 "leetcode" 可以被拆分成 "leet code"。
+示例 2：
+
+输入: s = "applepenapple", wordDict = ["apple", "pen"]
+输出: true
+解释: 返回 true 因为 "applepenapple" 可以被拆分成 "apple pen apple"。
+注意你可以重复使用字典中的单词。
+示例 3：
+
+输入: s = "catsandog", wordDict = ["cats", "dog", "sand", "and", "cat"]
+输出: false
+```
+
+
+```java
+class Solution {
+    public boolean wordBreak(String s, List<String> wordDict) {
+        
+        HashSet<> dict = new HashSet<>(wordDict);
+
+        boolean[] dp = new boolean[s.length+1];
+
+        dp[0] = true;
+
+        for(int j=0; j<s.length(); j++)
+        {
+            for(int i=0; i<j && !dp[i]; i++)
+            {
+                    if(dict.contains(s.substrings(j,i)) && dp[i]==true)
+                    {
+                        dp[j] = true;
+                    }             
+            }
+        }
+        return dp[s.length()];
+    }
+}
+```
+
+本题要查看是否一个字符串可以被字典中的单词所构成。我们可以将它看成一个完全背包问题，对于字典里的单词选择或不选择。 
+
+1. dp 数组定义：字符串长度为j 时，dp[j] 为true 代表可以被拆分成字典里的一个或多个单词
+2. 动归公式: 如果dp[j] 为true，同时 子字符串 [j,i] 也出现在字典中，那么dp[i] 为true
+3. 数组初始化: dp[0] = true，其他位置都为false。 dp[0] 为 true，是所有后续的动归的基础。这个没有具体的意义，只是后续计算的需要
+4. 遍历顺序： 字符串中单词出现的先后顺序是很重要的，因为单词出现的顺序不同。比如 "applepen" "penapple"， 这两个是单词 "apple" "pen"。两个不同的出现顺序都可以出现在字符串中，所以我们求的是排序。 从而可以确定，先遍历字符串（背包），再遍历单词。
+
+本题中遍历物品 i 的上界是j，也就是 i < j。也就是j 代表当前字符串长度，所以i不能超过j
+
+### 背包问题总结
+
+
+#### 递推公式
+
+1. 问能否装满背包/ （或者最多装多少）：dp[j] = max(dp[j], dp[j - weight[i]] + value[i]) 或者 dp[j] = max(dp[j], dp[j- nums[i] + nums[i]])
+    * 416 分割等和子集
+    * 1049 最后一块石头的重量
+2. 问装满背包有多少种方法: dp[j] += dp[j - nums[i]]
+    * 494 目标和
+    * 518 零钱兑换II
+    * 377 组合总合IV
+    * 70 爬楼梯进阶
+3. 问装满背包最大价值： dp[j] = max(dp[j], dp[j - weights[i]] + values[i])
+    * 474 一和零
+4. 问装满背包物品的最小个数：dp[j] = min(dp[j], dp[j - coins[i]] + 1)
+    * 322 零钱兑换
+    * 279 完全平方数
+
+#### 遍历顺序
+
+1. 01 背包：
+    * 二维dp 数组可以先遍历顺序物品或背包容量，顺序不重要。背包容量从小到大
+    * 一维dp 数组先便利物品再遍历背包容量， 背包容量从大到小遍历。 遍历容量的指针下界是 nums[i]
+2. 完全背包：
+    * 纯粹的完全背包问题先遍历物品或先遍历容量都是可以的，但题目变化就会有改变
+    * 求组合问题：外层遍历物品，内层遍历背包容量
+    * 求排列问题： 外层遍历背包容量，内层遍历物品
+
+### 198.打家劫舍
+
+```
+你是一个专业的小偷，计划偷窃沿街的房屋。每间房内都藏有一定的现金，影响你偷窃的唯一制约因素就是相邻的房屋装有相互连通的防盗系统，如果两间相邻的房屋在同一晚上被小偷闯入，系统会自动报警。
+
+给定一个代表每个房屋存放金额的非负整数数组，计算你 不触动警报装置的情况下 ，一夜之内能够偷窃到的最高金额。
+
+示例 1：
+输入：[1,2,3,1]
+输出：4
+解释：偷窃 1 号房屋 (金额 = 1) ，然后偷窃 3 号房屋 (金额 = 3)。   偷窃到的最高金额 = 1 + 3 = 4 。
+
+示例 2：
+输入：[2,7,9,3,1]
+输出：12 解释：偷窃 1 号房屋 (金额 = 2), 偷窃 3 号房屋 (金额 = 9)，接着偷窃 5 号房屋 (金额 = 1)。   偷窃到的最高金额 = 2 + 9 + 1 = 12 。
+```
+
+1. dp[j] 下标定义： 房间j 可以偷的最多现金为 dp[j]
+2. 递归公式： dp[j] = max(dp[j-1], dp[j-2] + nums[i])。在房间j 我们有偷和不偷两个选项。 如果偷 房间j，那么就要考虑 j - 2 之前的所有房间，因为相邻的两个房间不能偷。 如果不偷，那就考虑 j-1 之前的房间。 我们不一定要偷房间 j-1 ，这取决于我们之前的递归状态
+3. dp 数组初始化： dp[0] = nums[0], dp[1] = max(nums[0], nums[1])
+4. 遍历顺序： 从小到大
+
+```java
+
+class Solution {
+	public int rob(int[] nums) {
+        if(nums.length == 0) return 0;
+        if(nums.length == 1) return nums[0]
+        int[] dp = new int[nums.length + 1];
+
+        dp[0] = nums[0];
+        dp[1] = Math.max(dp[0], dp[1]);
+
+        for(int i=2; i<nums.length; i++)
+        {
+            dp[i] = Math.max(dp[i-2] + nums[i], dp[i-1]);
+        }
+
+        return dp[nums.length];
+	}
+}
+```
+
+### 213.打家劫舍II
+
+```
+你是一个专业的小偷，计划偷窃沿街的房屋，每间房内都藏有一定的现金。这个地方所有的房屋都 围成一圈 ，这意味着第一个房屋和最后一个房屋是紧挨着的。同时，相邻的房屋装有相互连通的防盗系统，如果两间相邻的房屋在同一晚上被小偷闯入，系统会自动报警 。
+
+给定一个代表每个房屋存放金额的非负整数数组，计算你 在不触动警报装置的情况下 ，能够偷窃到的最高金额。
+
+示例 1：
+
+输入：nums = [2,3,2]
+
+输出：3
+
+解释：你不能先偷窃 1 号房屋（金额 = 2），然后偷窃 3 号房屋（金额 = 2）, 因为他们是相邻的。
+
+示例 2：
+
+输入：nums = [1,2,3,1]
+
+输出：4
+
+解释：你可以先偷窃 1 号房屋（金额 = 1），然后偷窃 3 号房屋（金额 = 3）。偷窃到的最高金额 = 1 + 3 = 4 。
+```
+
+```java
+
+class Solution {
+    public int rob(int[] nums) {
+        if(nums == NULL || nums.length == 0)
+            return 0;
+
+        if(nums.length == 1)
+            return 1;
+        return Math.max(robAction(nums,0, len-2, robAction(nums, 1, len-1)));
+    }
+
+    int robAction(int[] nums, int start, int end) {
+        int[] dp = new int[nums.length+1];
+
+        dp[0] = nums[start];
+        dp[1] = Math.max(nums[start], nums[start+1]);
+
+        for(int i=start+2; i<=end; i++)
+        {
+           dp[i] = Math.max(dp[i-2] + nums[i], dp[i-1]);
+        }
+        return dp[end];
+    }
+}
+```
+
+成环问题导致首尾相连，我们需要分辨考虑包含首，和包含尾两种情况。 这里定义了两个函数，robaction 具体选择盗窃的房间。 我们对于区间的定义需要明确，这一题我们使用的是左闭右闭。 所以后续会采用小于等于号。 我们从 0 到 len-2，的盗窃金币， 从 1 到 len-1 的盗窃金币，从中选择最大值。
+
+### 337.打家劫舍 III
+
+```
+在上次打劫完一条街道之后和一圈房屋后，小偷又发现了一个新的可行窃的地区。这个地区只有一个入口，我们称之为“根”。 除了“根”之外，每栋房子有且只有一个“父“房子与之相连。一番侦察之后，聪明的小偷意识到“这个地方的所有房屋的排列类似于一棵二叉树”。 如果两个直接相连的房子在同一天晚上被打劫，房屋将自动报警。
+
+计算在不触动警报的情况下，小偷一晚能够盗取的最高金额。
+
+Input: root = [3,2,3,null,3,null,1]
+Output: 7
+Explanation: Maximum amount of money the thief can rob = 3 + 3 + 1 = 7.
+
+```
+
+```java
+class Solution {
+   public int rob(TreeNode root) {
+        int[] res = robAction(root);
+
+        return Math.max(res[0], res[1]);
+    }
+
+    int[] robAction(TreeNode root) {
+
+        if(root == null) return new int[2];
+
+        int[] left = robAction(root.left);
+        int[] right = robAction(root.right);
+        
+        int[] res = new int[2]; //res= {0,0}
+        res[0] = Math.max(left[0], left[1]) + Math.max(right[0], right[1]);
+        res[1] = root.val + left[0] + right[0];
+
+        return res;
+    }
+}
+```
+
+### 121. 买卖股票的最佳时机
+
+```
+给定一个数组 prices ，它的第 i 个元素 prices[i] 表示一支给定股票第 i 天的价格。
+
+你只能选择 某一天 买入这只股票，并选择在 未来的某一个不同的日子 卖出该股票。设计一个算法来计算你所能获取的最大利润。
+
+返回你可以从这笔交易中获取的最大利润。如果你不能获取任何利润，返回 0 。
+
+示例 1：
+
+输入：[7,1,5,3,6,4]
+
+输出：5
+解释：在第 2 天（股票价格 = 1）的时候买入，在第 5 天（股票价格 = 6）的时候卖出，最大利润 = 6-1 = 5 。注意利润不能是 7-1 = 6, 因为卖出价格需要大于买入价格；同时，你不能在买入前卖出股票。
+
+示例 2：
+
+输入：prices = [7,6,4,3,1]
+
+输出：0
+解释：在这种情况下, 没有交易完成, 所以最大利润为 0
+```
+
+1. dp[j][0] 数组定义: dp[j][0] 代表在第 j 天持有股票所获取的最高现金，dp[j][1] 代表不持有股票在第 j 天所获取的最高现金。注意持有可以是在前几天就买入，一直持续到今天，持有和买入的概念需要明确
+2. 递归公式: 在每一天都有持有和不持有的两个选项，需要分别讨论。 
+    * dp[j][0] = max(dp[j-1][0], -prices[j]): 这个分别对应在j-1 天已经买入，我们只需要继承前一天的现金，和在第j 天买入，这里我们要在 dp[j][0] 中减去买入的费用。
+    * dp[j][1] = max(dp[j-1][1], prices[j] + dp[j-1][0]): 这个分别对应在j-1 天中不持有该股票，和在第j天抛售股票。 这里我们要在dp[j-1][0] 中加上抛售股票的价格。因为前一天我们持有该股票，在这个现金基础上，我们在第j 天抛售这个股票，所以要加上当天的股价。
+3. 所有的公式都基于 dp[0][0] 以及 dp[0][1]。 根据我们对数组的定义 dp[0][0] 代表在第0 天持有该股票，我们需要初始化为 dp[0][0] -= prices[0]。 要减去买入的价格。 dp[0][1] 代表在第0天不持有股票，所以等于0. dp[0][0] = 0
+4. 遍历顺序： 从左到右
+
+```java
+class Solution {
+    public int maxProfit(int[] prices) {
+    if(prices == null || prices.length == 0) return 0;
+     
+     int[][] dp = new int[prices.length][2];
+        
+        // 数组初始化
+        dp[0][0] -= prices[0];
+        dp[0][1] = 0; 
+
+        for(int i = 1; i<prices.length; i++)
+        {
+            dp[i][0] = Math.max(dp[i-1][0], -prices[i]);
+
+            dp[i][1] = Math.max(dp[i-1][1], dp[i-1][0] + prices[i]);
+        }
+
+        return dp[prices.length-1][1];
+    }
+}
+
+```
+
+### 本周总结
+
+#### 打家劫舍 I
+
+1. dp 数组定义: dp[i] 代表在前i 个房间可以偷去的最多现金
+2. 递归公式： dp[i] = max(dp[i-2] + nums[i], dp[i-1]) . 因为不能偷连续的两个房间，所以在 i-2 的基础上 加上 nums[i]。同时考虑 dp[i-1]，不一定要偷，具体如何决定取决于递推的结果
+3. 数组初始化
+
+### 122.买卖股票的最佳时机II 
+
+```
+
+给定一个数组，它的第 i 个元素是一支给定股票第 i 天的价格。
+
+设计一个算法来计算你所能获取的最大利润。你可以尽可能地完成更多的交易（多次买卖一支股票）。
+
+注意：你不能同时参与多笔交易（你必须在再次购买前出售掉之前的股票）。
+
+示例 1:
+
+输入: [7,1,5,3,6,4]
+
+输出: 7
+解释: 在第 2 天（股票价格 = 1）的时候买入，在第 3 天（股票价格 = 5）的时候卖出, 这笔交易所能获得利润 = 5-1 = 4。随后，在第 4 天（股票价格 = 3）的时候买入，在第 5 天（股票价格 = 6）的时候卖出, 这笔交易所能获得利润 = 6-3 = 3 。
+
+示例 2:
+
+输入: [1,2,3,4,5]
+
+输出: 4
+解释: 在第 1 天（股票价格 = 1）的时候买入，在第 5 天 （股票价格 = 5）的时候卖出, 这笔交易所能获得利润 = 5-1 = 4 。注意你不能在第 1 天和第 2 天接连购买股票，之后再将它们卖出。因为这样属于同时参与了多笔交易，你必须在再次购买前出售掉之前的股票。
+```
+
+```java
+
+class Solution {
+    public int maxProfit(int[] prices) {
+        if(prices == null || prices.length == 0) return 0;
+        
+        int[][] dp = new int[prices.length][2];
+        dp[0][0] -= prices[0];
+
+        for(int i=1; i<prices.length; i++)
+        {
+            dp[i][0] = Math.max(dp[i-1][0], dp[i-1][1] - prices[i]);
+            dp[i][1] = Math.max(dp[i-1][1], dp[i-1][0] + prices[i]);
+        }
+        return dp[prices.length-1][1];
+
+    }
+}
+
+```
+
+这题可以多次交易，那么与第一个版本的股票交易问题不同的是，在递归公式中，我们需要 
+
+```
+dp[i][1] = max(dp[i-1][1], dp[i-1][0] + prices[i])
+```
+这其中包含在第 i 天之前出售股票的利润，和在第 i 天出售股票利润。 其中下标0 代表着在前一天持有股票，然后在第 i 天出售股票的这个情况。
+
+
+
+### 买卖股票的最佳时机III
+
+```
+给定一个数组，它的第 i 个元素是一支给定的股票在第 i 天的价格。
+
+设计一个算法来计算你所能获取的最大利润。你最多可以完成 两笔 交易。
+
+注意：你不能同时参与多笔交易（你必须在再次购买前出售掉之前的股票）。
+
+示例 1:
+
+输入：prices = [3,3,5,0,0,3,1,4]
+
+输出：6 解释：在第 4 天（股票价格 = 0）的时候买入，在第 6 天（股票价格 = 3）的时候卖出，这笔交易所能获得利润 = 3-0 = 3 。随后，在第 7 天（股票价格 = 1）的时候买入，在第 8 天 （股票价格 = 4）的时候卖出，这笔交易所能获得利润 = 4-1 = 3。
+
+示例 2：
+
+输入：prices = [1,2,3,4,5]
+
+输出：4 解释：在第 1 天（股票价格 = 1）的时候买入，在第 5 天 （股票价格 = 5）的时候卖出, 这笔交易所能获得利润 = 5-1 = 4。注意你不能在第 1 天和第 2 天接连购买股票，之后再将它们卖出。因为这样属于同时参与了多笔交易，你必须在再次购买前出售掉之前的股票。
+
+示例 3：
+
+输入：prices = [7,6,4,3,1]
+
+输出：0 解释：在这个情况下, 没有交易完成, 所以最大利润为0。
+```
+
+```java
+class Solution {
+    public int maxProfit(int[] prices) {
+    if(prices == null || prices.length == 0) return 0;
+
+    int[][] dp = new int[prices.length][5];
+    dp[0][0] = 0;
+    dp[0][1] -= prices[0];
+    dp[0][2] = 0;
+    dp[0][3] -= prices[0];
+    dp[0][4] = 0;
+
+    for(int i=1; i<prices.length; i++)
+    {
+        dp[i][1] = Math.max(dp[i-1][1], dp[i-1][0] - prices[i]);
+        dp[i][2] = Math.max(dp[i-1][2], dp[i-1][1] + prices[i]);
+        dp[i][3] = Math.max(dp[i-1][3], dp[i-1][2] - prices[i]);
+        dp[i][4] = Math.max(dp[i-1][4], dp[i-1][3] + prices[i]);
+    }
+    return dp[prices.length-1][4];
+
+    }
+}
+```
+
+这题只能交易两次，所以数组中的第二个维度
+
+### 188.买卖股票的最佳时机IV
+
+```
+给定一个整数数组 prices ，它的第 i 个元素 prices[i] 是一支给定的股票在第 i 天的价格。
+
+设计一个算法来计算你所能获取的最大利润。你最多可以完成 k 笔交易。
+
+注意：你不能同时参与多笔交易（你必须在再次购买前出售掉之前的股票）。
+
+示例 1：
+
+输入：k = 2, prices = [2,4,1]
+
+输出：2 解释：在第 1 天 (股票价格 = 2) 的时候买入，在第 2 天 (股票价格 = 4) 的时候卖出，这笔交易所能获得利润 = 4-2 = 2。
+
+示例 2：
+
+输入：k = 2, prices = [3,2,6,5,0,3]
+
+输出：7 解释：在第 2 天 (股票价格 = 2) 的时候买入，在第 3 天 (股票价格 = 6) 的时候卖出, 这笔交易所能获得利润 = 6-2 = 4。随后，在第 5 天 (股票价格 = 0) 的时候买入，在第 6 天 (股票价格 = 3) 的时候卖出, 这笔交易所能获得利润 = 3-0 = 3 。
+
+```
+
+1. dp 数组定义: dp[i][j] 代表第 i 天 的第 j 个交易状态所获的最大资金。例如 第 i 天， 
+    * dp[i][0] 代表不操作
+    * dp[i][1] 代表第一次买入
+    * dp[i][2] 代表第一次卖出
+    * ...
+    * dp[i][2* (k-2)] 代表第 k 次买入
+    * dp[i][2* (k-1)] 代表第 k 次卖出
+2. 递归公式： 
+    * dp[i][j+1] = max(dp[i-1][j+1], dp[i-1][j] - prices[i]) 
+    * dp[i][j+2] = max(dp[i-1][j+2], dp[i-1][j+1] + prices[i])
+3. 数组初始化：
+    * 第 dp[0][0] 是 0
+    * j % k = 1 就是 dp[0][j] 是 -prices[0]
+    * j % k = 0 就是 dp[0][j] 是 0
+
+```java
+class Solution {
+    public int maxProfit(int k, int[] prices) {
+    if(prices == null || prices.length == 0) return 0;
+
+    int[][] dp = new int[prices.length][2*k+1];
+    
+    for(int i=1; i< 2*k; i+=2)
+    {
+        dp[0][i] -= prices[0];
+    }
+
+    for(int i=1; i<prices.length; i++)
+    {
+ 
+        for(int j=0; j< 2*k; j+=2)
+        {
+            dp[i][j+1] = Math.max(dp[i-1][j+1], dp[i-1][j] - prices[i]);
+            dp[i][j+2] = Math.max(dp[i-1][j+2], dp[i-1][j+1] + prices[i]);
+        }
+    }
+    return dp[prices.length-1][2*k];
+    }
+}
+
+```
+
+### 309.最佳买卖股票时机含冷冻期
+
+
+```
+给定一个整数数组，其中第 i 个元素代表了第 i 天的股票价格 。
+
+设计一个算法计算出最大利润。在满足以下约束条件下，你可以尽可能地完成更多的交易（多次买卖一支股票）:
+
+你不能同时参与多笔交易（你必须在再次购买前出售掉之前的股票）。
+卖出股票后，你无法在第二天买入股票 (即冷冻期为 1 天)。
+示例:
+
+输入: [1,2,3,0,2]
+输出: 3
+解释: 对应的交易状态为: [买入, 卖出, 冷冻期, 买入, 卖出]
+
+```
+
+![image](../pictures/status.png)
+1. dp[i][j] 定义：第 i 天在状态 j 能够获得的最大现金
+    * 状态一： 保持持有股票获取的最大现金。 这其中包含，在 i-1 天前买入股票保持持有，和在第 i 天买入股票
+    * 保持不持有股票分为两个状态
+        * 状态二： 两天或更早前卖出股票，一直没有操作
+        * 状态三： 今天卖出股票
+    * 状态四： 前一天卖出股票，今天在冷冻期
+2. 确定递归公式：
+    * 状态一 dp[i][0]: max(dp[i-1][0], dp[i-1][1] - prices[i], dp[i-1][3] - prices[i]). 状态一有三种可能性， 前一天已经买入， 前一天保持卖出状态（状态二）今天买入， 以及前一天是冷冻期（状态四）今天买入
+    * 状态二 dp[i][1]: 状态二 有两种可能性：两天前已经卖出，保持在状态二， 以及 前一天是冷冻期，今天保持卖出的状态。 dp[i][1] = max(dp[i-1][1], dp[i-1][3])
+    * 状态三 dp[i][2]: 第 i 天卖出， 就只有一个可能的状态。 dp[i][2] = dp[i-1][0] + prices[i]
+    * 状态四 dp[i][3]: 第 i 天在冷冻期，这个状态也只有一个可能性，也就是前一天卖出。dp[i][3] = dp[i-1][2]
+3. dp数组初始化： 一般初始化第0天，dp[0][0] -= prices[0] ，因为在第0天买入股票就需要支付当天的价格。 dp[0][1] = 0 因为不初始化为0，后续卖出的价格就会高于实际的值。同理 dp[0][2], dp[0][3] 都是0
+4. 遍历顺序从左到右
+
+```java
+class Solution {
+    public int maxProfit(int[] prices) {
+    if(prices == null || prices.length == 0) return 0;
+
+    int[][] dp = new int[prices.length][4];
+    
+    dp[0][0] -= prices[0];
+    // 其他位置都是0，不用赋值
+    
+    for(int i=1; i<prices.length; i++)
+    {
+        dp[i][0] = Math.max(dp[i-1][0], dp[i-1][1] - prices[i], dp[i-1][3] - prices[i]);
+
+        dp[i][1] = Math.max(dp[i-1][1], dp[i-1][3]);
+
+        dp[i][2] = dp[i-1][0] + prices[i];
+
+        dp[i][3] = dp[i-1][2];
+    }
+    int n = prices.length-1;
+    return Math.max(dp[n][3], dp[n][2], dp[n][1]);
+    
+    }
+}
+
+```
+
+### 股票买卖最佳时机总结
+
+#### 121 买卖股票的最佳时机
+
+1. dp[i][j] 定义：在第i天状态j 可以获得最大资金。 有两个状态： 0 代表在第 i 天持有股票，这其中可能在 i -1 天买入并持有，或者在第 i 天买入。 1 代表在第 i 天不持有股票，这其中包括在i-1 天之前卖出并不持有，或者在第 i 天卖出股票
+2. dp[] 
