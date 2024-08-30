@@ -7403,5 +7403,1135 @@ class Solution {
 
 #### 121 买卖股票的最佳时机
 
+这个题目只能买卖一次，这个限制会体现在递推公式的持有状态上 也就是状态0 。我们选择-prices[i] 表示买入支付的金额。
 1. dp[i][j] 定义：在第i天状态j 可以获得最大资金。 有两个状态： 0 代表在第 i 天持有股票，这其中可能在 i -1 天买入并持有，或者在第 i 天买入。 1 代表在第 i 天不持有股票，这其中包括在i-1 天之前卖出并不持有，或者在第 i 天卖出股票
-2. dp[] 
+2. 递归公式： dp[i][0] = max(dp[i-1][0], -prices[i]);  dp[i][1] = max(dp[i-1][1], dp[i-1][0])
+3. dp数组初始化： dp[0][0] -= prices[0], dp[0][1] = 0
+
+#### 动态规划：买卖股票的最佳时机III
+
+最多只能完成两笔交易。
+
+这意味着可以买卖一次，可以买卖两次，也可以不买卖。
+
+本题有五个状态：
+1. 0 没有操作
+2. 1 第一次买入
+3. 2 第一次卖出
+4. 3 第二次买入
+5. 4 第二次卖出
+
+
+1. dp[i][j] 定义：二维dp 数组的第一个维度代表天数， 第二个维度代表买卖的状态，每一个状态都会有一个下标。 dp[i][j] 代表第 i 天 状态 j 可以获得的最大金额
+2. 递推公式: 分别在两个情况下找到最大值， 第一个是在 第 i-1 天之前就在这个状态中，第二个是在第 i 天从前一天的买卖状态中，加上或减去第 i 天的价格。 加上或减去取决于买卖的具体状态。
+    * dp[i][1] = max(dp[i-1][1], dp[i-1][0] - prices[i]);
+    * dp[i][2] = max(dp[i-1][2], dp[i-1][1] + prices[i]);
+    * dp[i][3] = max(dp[i-1][3], dp[i-1][2] - prices[i]);
+    * dp[i][4] = max(dp[i-1][4], dp[i-1][3] + prices[i]);
+3. dp 数组初始化：
+    * dp[0][0] = 0
+    * dp[0][1] -= prices[0]
+    * dp[0][2] = 0
+    * dp[0][3] -= prices[0]
+    * dp[0][4] = 0
+
+
+#### 188.买卖股票的最佳时机IV
+
+最多可以完成k次交易，这是上一题的进阶版。 每一次交易都会有买卖两种状态，加上状态0（不操作）
+
+1. dp[i][j]: 除0 以外，奇数买入，偶数卖出
+2. 递推公式： 因为在之后的内循环中要遍历j，每次增加二，上界为 2k
+    * dp[i][j+1] = max(dp[i-1][j] - prices[i], dp[i-1][j+1])
+    * dp[i][j+2] = max(dp[i-1][j+1] + prices[i], dp[i-1][j+2])
+3. 数组初始化: 所有第二维度奇数下标都初始化为 dp[0][j] -= prices[0], 其他下标初始化为0
+
+#### 309.最佳买卖股票时机含冷冻期
+
+这个包含冷冻期，所以在状态的分别上更加复杂，
+
+1. dp数组定义: dp[i][j]
+    * 状态一： 持有股票在第 i 天可以获得的最大金额
+    * 不持有股票分两种情况：
+        * 状态二： 两天或更早前不持有股票，持续到 第 i 天
+        * 状态三： 第 i 天出售股票
+    * 状态四： 前一天卖出股票，今天在冷冻期
+2. 递推公式
+    * 状态一：持有股票有三种情况，前一天已经持有， 两天前不持有股票（状态二）第i 天买入， 前一天是冷冻期（状态四） 第 i 天买入
+        * dp[i][0] = max(dp[i-1][0], dp[i-1][1] - prices[i], dp[i-1][3] - prices[i])
+    * 状态二： 状态二有两种情况， 前一天已经是状态二继续保持， 或者前一天是冷冻期，今天进入状态二
+        * dp[i][1] = max(dp[i-1][1], dp[i-1][3])
+    * 状态三： 只有一种情况，那就是前一天持有股票，然后今天卖出。也就是从状态一，转移到状态三
+        * dp[i][2] = dp[i-1][0]
+    * 状态四： 只有一种情况，前一天卖出股票，今天是冷冻期。也就是从状态三，转移到状态四
+        * dp[i][3] = dp[i-1][2]
+3. dp 数组初始化
+    * dp[0][0] -= prices[0]: 因为第一天持有股票
+    * dp[0][1], dp[0][2], dp[0][3] = 0: 因为这三个状态都需要买卖股票。
+
+
+### 300.最长递增子序列
+
+```
+给你一个整数数组 nums ，找到其中最长严格递增子序列的长度。
+
+子序列是由数组派生而来的序列，删除（或不删除）数组中的元素而不改变其余元素的顺序。例如，[3,6,2,7] 是数组 [0,3,1,6,2,2,7] 的子序列。
+
+示例 1：
+
+输入：nums = [10,9,2,5,3,7,101,18]
+输出：4
+解释：最长递增子序列是 [2,3,7,101]，因此长度为 4 。
+示例 2：
+
+输入：nums = [0,1,0,3,2,3]
+输出：4
+示例 3：
+
+输入：nums = [7,7,7,7,7,7,7]
+输出：1
+```
+
+```java
+class Solution {
+    public int lengthOfLIS(int[] nums) {
+        if (nums.length <= 1) return nums.length;
+        int[] dp = new int[nums.length];
+
+        for(int i=0; i<nums.length; i++)
+        {
+            dp[i] = 1;
+        }
+        for(int i=1; i<nums.length; i++)
+        {
+            for(int j=0; j<i; j++)
+            {
+                if(nums[i] > nums[j])
+                {
+                    dp[i] = Math.max(dp[i], dp[j] + 1);
+                }
+            }
+        }
+        int res = 0;
+        for(int i=0; i<nums.length; i++)
+        {
+            res = Math.max(res, dp[i]);
+        }
+        return res;
+    }
+}
+
+```
+
+1. dp[i] 数组下标定义: 表示 i 之前 包括 i 以nums[i] 结尾的最长递增子序列的长度
+2. 递推公式: 
+    * 首先判断 nums[i] > nums[j] 如果为真， 
+    * dp[i] 等于 j 从 0 到 i-1 的最长增长子序列 + 1: dp[i] = max(dp[i], dp[j] + 1)
+3 dp 数组初始化：所有dp 都为1， 因为最差的情况是，每一个子序列只有包括自己
+4. 遍历顺序，从小到大
+
+
+### 674. 最长连续递增序列
+
+```
+给定一个未经排序的整数数组，找到最长且 连续递增的子序列，并返回该序列的长度。
+
+连续递增的子序列 可以由两个下标 l 和 r（l < r）确定，如果对于每个 l <= i < r，都有 nums[i] < nums[i + 1] ，那么子序列 [nums[l], nums[l + 1], ..., nums[r - 1], nums[r]] 就是连续递增子序列。
+
+示例 1：
+
+输入：nums = [1,3,5,4,7]
+输出：3
+解释：最长连续递增序列是 [1,3,5], 长度为3。尽管 [1,3,5,7] 也是升序的子序列, 但它不是连续的，因为 5 和 7 在原数组里被 4 隔开。
+示例 2：
+
+输入：nums = [2,2,2,2,2]
+输出：1
+解释：最长连续递增序列是 [2], 长度为1。
+提示：
+
+0 <= nums.length <= 10^4
+-10^9 <= nums[i] <= 10^9
+```
+
+1. dp[i] 下表定义： 以下标 i 结尾的连续递增序列的长度是 dp[i]
+2. 递推公式： 这个是连续递增序列，所以不用考虑所有的子序列。上一题因为要考虑非连续的子序列，所以要考虑 nums[i] 与 nums[j] 所以要用两层for 循环。本题考虑的是连续递增子序列，所以只需要考虑相邻的两个位置也就是 nums[i] 和 nums[i-1]
+3. dp数组初始化：所有都为1
+4. 遍历顺序: 从左到右
+
+```java
+class Solution {
+    public int findLengthOfLCIS(int[] nums) {
+        int[] dp = new int[nums.length];
+        for(int i=0; i<dp.length; i++)
+        {
+            dp[i] = 1;
+        }
+        for(int i=1; i<dp.length; i++)
+        {
+            if(nums[i] > nums[i-1])
+            {
+                dp[i] = dp[i-1] + 1;
+            }
+        }
+        int result = 1;
+        for(int i=0; i<dp.length; i++)
+        {
+            result = Math.max(result, dp[i]);
+        }
+        return result;
+    }
+}
+```
+
+### 718. 最长重复子数组
+
+```
+给两个整数数组 A 和 B ，返回两个数组中公共的、长度最长的子数组的长度。
+
+示例：
+
+输入：
+
+A: [1,2,3,2,1]
+B: [3,2,1,4,7]
+输出：3
+解释：长度最长的公共子数组是 [3, 2, 1] 。
+提示：
+
+1 <= len(A), len(B) <= 1000
+0 <= A[i], B[i] < 100
+
+```
+
+1. dp[i][j] 数组下标定义：以下标 i-1 结尾的A 和 以下标 j-1 结尾的B 的最长公共子数组是 dp[i][j]
+2. 递推公式: 如果 A[i] == B[j]， dp[i][j] = dp[i-1][j-1] + 1。 因为本题要求得是重复子数组，所以当相等时，就需要同时向后退一格。 两个重复子数组的起始位置可能会不一样，这个其实位置会通过两层for 循环进行遍历，从而找到合适的子数组起始位置。但是dp 数组记录的是以下标 i j 结尾的数组
+3. 数组初始化： 数组从 1 的位置开始遍历，因为 0 的位置上没有意义。 比如，nums[0]，要查看-1 位置上的数，而负下标是没有意义的
+4. 遍历顺序： 先A再B，实际上两者都可以
+
+```java
+class Solution {
+    public int findLength(int[] nums1, int[] nums2) {
+        int[][] dp = new int[nums1.length+1][nums1.length+1];
+        int result = 0;
+
+        for(int i=1; i<=nums1.length; i++)
+        {
+            for(int j=1; j<=nums2.length; j++)
+            {
+                if(nums1[i-1] == nums2[j-1])
+                {
+                    dp[i][j] = dp[i-1][j-1] + 1;
+                }
+                result = Math.max(result, dp[i][j]);
+            }
+          
+        }
+       return result; 
+    }
+    
+}
+
+```
+
+这里我们对dp 数组的定义和两个数组都用到了 i-1， j-1。 要覆盖全部的nums1 的值，就需要dp 数组在他们的长度上加一。在遍历中的上界是 <= nums1.length 和 <= nums2.length。这样就可以覆盖到最后一个元素。这样的操作主要原因就是i-1 和 j-1 的操作。
+
+
+### 1143.最长公共子序列
+
+```
+给定两个字符串 text1 和 text2，返回这两个字符串的最长公共子序列的长度。
+
+一个字符串的 子序列 是指这样一个新的字符串：它是由原字符串在不改变字符的相对顺序的情况下删除某些字符（也可以不删除任何字符）后组成的新字符串。
+
+例如，"ace" 是 "abcde" 的子序列，但 "aec" 不是 "abcde" 的子序列。两个字符串的「公共子序列」是这两个字符串所共同拥有的子序列。
+
+若这两个字符串没有公共子序列，则返回 0。
+
+示例 1:
+
+输入：text1 = "abcde", text2 = "ace"
+输出：3
+解释：最长公共子序列是 "ace"，它的长度为 3。
+示例 2:
+
+输入：text1 = "abc", text2 = "abc"
+输出：3
+解释：最长公共子序列是 "abc"，它的长度为 3。
+```
+
+1. dp[i][j] 下标定义：代表长度为 i-1 的字符串 text1 和 长度为j-1 的字符床 text2 拥有的最长公共子序列的长度为 dp[i][j]
+2. 递推公式： 
+    * 如果nums[i-1] == [nums[j-1]]： dp[i][j] = dp[i-1][j-1] + 1。 如果相等，就直接在上一个相等的位置上的数字加一。 
+    * 如果不相等，dp[i][j] = max(dp[i][j-1], dp[i-1][j]) 。 也就是选择两个字符串中最长的那个。因为我们 i j 的定义本身就是针对减一， 如果 i-1 或者j-1 实际上是在减二的位置上。
+3. 数组初始化： 全部都为0
+![image](../pictures/long-common-sequence.png) 
+4. 遍历顺序：从左到右，先text1 再 text2 。 两个字符串先后顺序无所谓
+
+
+```java
+class Solution {
+    public int longestCommonSubsequence(String text1, String text2) {
+        char[] char1 = text1.toCharArray();
+        char[] char2 = text2.toCharArray();
+
+        int[][] dp = new int[char1.length+1][char2.length+1];
+        int result = 0;
+        for(int i=1; i<=char1.length; i++)
+        {
+            for(int j=1; j<= char2.length; j++)
+            {
+                if(char1[i-1] == char2[j-1])
+                {
+                    dp[i][j] = dp[i-1][j-1] + 1;
+                }else{
+                    dp[i][j] = Math.max(dp[i][j-1], dp[i-1][j]);
+                }
+                result = Math.max(result, dp[i][j]);
+            }
+        }
+        return result;
+    }
+}
+```
+
+### 1035.不相交的线
+
+```
+我们在两条独立的水平线上按给定的顺序写下 A 和 B 中的整数。
+
+现在，我们可以绘制一些连接两个数字 A[i] 和 B[j] 的直线，只要 A[i] == B[j]，且我们绘制的直线不与任何其他连线（非水平线）相交。
+
+以这种方法绘制线条，并返回我们可以绘制的最大连线数。
+```
+本题我们是要找相同子序列，也就是最长公共子序列。相连接的线，其实是找到排列相同的子序列。当子序列相同时，线就不会相交！ 所以就是和前一题一摸一样
+
+```java
+class Solution {
+    public int maxUncrossedLines(int[] nums1, int[] nums2) {
+        int[][] dp = new int[nums1.length+1][nums2.length+1];
+
+        int result = 0;
+
+        for(int i=1; i<=nums1.length; i++)
+        {
+            for(int j=1; j<=nums2.length; j++)
+            {
+                if(nums1[i-1] == nums2[j-1])
+                {
+                    dp[i][j] = dp[i-1][j-1] + 1;
+                }else{
+                    dp[i][j] = Math.max(dp[i][j-1], dp[i-1][j]);
+                }
+                result = Math.max(result, dp[i][j]);
+            }
+        }
+        return result;
+    }
+}
+```
+
+### 53. 最大子序和
+
+```
+给定一个整数数组 nums ，找到一个具有最大和的连续子数组（子数组最少包含一个元素），返回其最大和。
+
+示例:
+
+输入: [-2,1,-3,4,-1,2,1,-5,4]
+输出: 6
+解释: 连续子数组 [4,-1,2,1] 的和最大，为 6。
+
+```
+
+1. dp[i] 数组下标定义： nums 以下标i-1 结尾的最大自序和为dp[i]
+2. 递推公式： 有两个方向推导，也就是从之前 i-2 连续子序列和中加上nums[i] ，或者单独把nums[i] 作为一个新的起点。在这二者之间取一个最大值
+    * dp[i] = max(dp[i-1] + nums[i], nums[i])
+3. 数组初始化：dp[0] = nums[0]， result = dp[0]。 以下标0为结尾的子序和就是第0个元素。result 就是一个对比给出最终答案的变量。
+4. 遍历顺序： 从左到右
+
+```java
+class Solution {
+    public int maxSubArray(int[] nums) {
+    
+        
+        int[] dp = new int[nums.length];
+        dp[0] = nums[0];
+        int result = dp[0];
+
+        for(int i=1; i< nums.length; i++)
+        {
+            dp[i] = Math.max(dp[i-1] + nums[i], nums[i]);
+            if(dp[i] > result)
+                result = dp[i];
+        }
+        return result;
+    }
+}
+
+```
+
+### 392.判断子序列
+
+```
+给定字符串 s 和 t ，判断 s 是否为 t 的子序列。
+
+字符串的一个子序列是原始字符串删除一些（也可以不删除）字符而不改变剩余字符相对位置形成的新字符串。（例如，"ace"是"abcde"的一个子序列，而"aec"不是）。
+
+示例 1：
+
+输入：s = "abc", t = "ahbgdc"
+输出：true
+示例 2：
+
+输入：s = "axc", t = "ahbgdc"
+输出：false
+提示：
+
+0 <= s.length <= 100
+0 <= t.length <= 10^4
+两个字符串都只由小写字符组成。
+```
+
+![image](../pictures/decide-sequence.png)
+
+1. dp[i][j] 数组下标定义: 以下标i-1 结尾的s，与以下标j-1 结尾的t，的最长公共子序列是 dp[i][j]
+2. 递推公式： 有两种情况，一种是字符串在i-1 和j-1 上相等，或者不相等。
+    * 如果相等： dp[i][j] = dp[i-1][j-1] + 1;
+    * 如果不相等 dp[i][j] = dp[i][j-1] 注意这个第二个情况根据dp 数组维度定义而有不同。现在第一维度是s，第二维度是 t 所有就是 j-1。 如果第一维度是 t，而第二维度是 s 那么就是 i-1。本题是针对 t 进行删除操作，所以只会考虑对应t 的那个维度。这一点上与最长公共子序列不同，那一题是同时考虑两个序列所能得到的最长公共子序列
+3. dp 数组初始化：dp[0][0], dp[i][0] 。我们都初始化为0 ，因为 dp[-1][0] 对应的字符串长度为0
+4. 遍历顺序： 从左到右，从上到下
+
+```java
+
+class Solution {
+    public boolean isSubsequence(String s, String t) {
+        char[] s1 = s.toCharArray();
+        char[] t1 = t.toCharArray();
+        int result = 0;
+
+
+        int[][] dp = new int[s1.length+1][t1.length+1];
+        for(int i=1; i<= s1.length; i++)
+        {
+            for(int j=1; j<= t1.length; j++)
+            {
+                if(s1[i-1] == t1[j-1])
+                    dp[i][j] = dp[i-1][j-1] + 1;
+                else
+                    dp[i][j] = dp[i][j-1];
+                
+                result = Math.max(result, dp[i][j]);
+            }
+        }
+
+        return result == s1.length;
+        
+    }
+}
+```
+
+```java
+
+class Solution {
+    public boolean isSubsequence(String s, String t) {
+        char[] s1 = s.toCharArray();
+        char[] t1 = t.toCharArray();
+        int result = 0;
+
+
+        int[][] dp = new int[s1.length+1][t1.length+1];
+        for(int i=1; i<= s1.length; i++)
+        {
+            for(int j=1; j<= t1.length; j++)
+            {
+                if(s1[i-1] == t1[j-1])
+                    dp[i][j] = dp[i-1][j-1] + 1;
+                else
+                    dp[i][j] = dp[i][j-1];
+                
+                result = Math.max(result, dp[i][j]);
+            }
+        }
+
+        return result == s1.length;
+        
+    }
+}
+```
+
+### 115.不同的子序列
+
+```
+给定一个字符串 s 和一个字符串 t ，计算在 s 的子序列中 t 出现的个数。
+
+字符串的一个 子序列 是指，通过删除一些（也可以不删除）字符且不干扰剩余字符相对位置所组成的新字符串。（例如，"ACE" 是 "ABCDE" 的一个子序列，而 "AEC" 不是）
+```
+
+![image](../pictures/115-ques.png)
+
+1. dp[i][j]数组定义：以下标 i-1 为结尾 s 中出现包含以下标j-1 结尾的t 的个数
+2. 递推公式： 
+    * dp[i][j] = dp[i-1][j-1] + dp[i-1][j]。如果 i-1 和 j-1 下标上的字符相等，那么有两种方式得到当前的子字符串的个数。 一 是s[i-1] == t[j-1] 也就是前一个字母也相同，用到了最后一个字母匹配。 还有一个是不用 s[i-1] 匹配，而是用 i-1 之前的字母进行匹配。比如： s = bagg， t = bag。 可以用 s[0]s[1][3] 匹配（情况一），也可以用s[0]s[1]s[2]（情况二）。因为这里删除操作只在s 上进行，所以情况二会有 i-1 的单独操作。如果可以操作 t ，那么也就会在情况二对 j-1 进行选择
+    * dp[i][j] = dp[i-1][j]: 如果不相等也就不用当前i-1的字母匹配，因为只能在s 上操作，所以就只针对i-1 进行操作
+3. 数组初始化： 
+    * dp[i][0]=1， t 是空字符串，通过不断删除s 就可以得到
+    * dp[0][j]=0，s 是空字符串，非空字符串t 无法匹配
+    * dp[0][0]=1
+4. 遍历顺序： 从左到右，从上到下
+
+![image](../pictures/diff-seq.png)
+
+```java
+class Solution {
+    public int numDistinct(String s, String t) {
+        char[] s1 = s.toCharArray();
+        char[] t1 = t.toCharArray();
+
+        int[][] dp = new int[s1.length+1][t1.length+1];
+        
+        // System.out.println(s1.length + " and " + t1.length);
+        
+        for(int i=0; i<=s1.length; i++)
+            dp[i][0] = 1;
+        
+        for(int i=1; i<=s1.length; i++ )
+        {
+            for(int j=1; j<=t1.length; j++)
+            {
+                if(s1[i-1] == t1[j-1])
+                    dp[i][j] = dp[i-1][j-1] + dp[i-1][j];
+                    // System.out.println(dp[i][j]);  
+                else
+                   dp[i][j] = dp[i-1][j];   
+            }
+        }
+        return dp[s1.length][t1.length];
+    }
+}
+```
+
+
+### 583. 两个字符串的删除操作
+
+```
+给定两个单词 word1 和 word2，找到使得 word1 和 word2 相同所需的最小步数，每步可以删除任意一个字符串中的一个字符。
+
+示例：
+
+输入: "sea", "eat"
+输出: 2
+解释: 第一步将"sea"变为"ea"，第二步将"eat"变为"ea"
+
+```
+
+1. dp[i][j]数组定义： 以i-1 结尾的word1 与j-1 结尾的word2 相同所需要的最少删除操作。也就是他们要删除
+2. 递推公式：
+    * 如果 i-1 和 j-1， dp[i][j] = dp[i-1][j-1] 。不需要任何操作，所以就继承上一个下标上的删除次数
+    * 如果 i-1 和 j-1 不相等，就要考虑删除 word1 还是word2，或者两个同时删除。我们要在其中找到最小的数。他们分别对应 
+        * dp[i-1][j] + 1
+        * dp[i][j-1] + 1
+        * dp[i-1][j-1] + 2
+        * 在这之中 第三种情况其实已经被前两种包含。因为dp[i-1][j-1] + 1 = dp[i][j-1]。左边是两个都删除加一，右边是指删除 j-1 位置。把这个等式带入，就可以之前提到包含的情况。
+    * dp[i][j] = min(dp[i-1][j] + 1, dp[i][j-1] + 1, dp[ii-1][j-1] + 2)
+3. 数组初始化：dp[i][0],dp[0][j] 是需要初始化的。 回到dp 数组定义， i-1 和 j-1 相同所需要最少删除操作。 所以 dp[i][0] = i, dp[0][j] = j
+4. 确定遍历顺序： 
+
+```java
+class Solution {
+    public int minDistance(String word1, String word2) {
+        char[] w1 = word1.toCharArray();
+        char[] w2 = word2.toCharArray();
+
+        int[][] dp = new int[w1.length+1][w2.length+1];
+
+        for(int i=0; i<=w1.length; i++)
+            dp[i][0] = i;
+        for(int j=0; j<=w2.length; j++)
+            dp[0][j] = j;
+
+        for(int i=1; i<= w1.length; i++)
+        {
+            for(int j=1; j<= w2.length; j++)
+            {
+                if(w1[i-1] == w2[j-1])
+                {
+                    dp[i][j] = dp[i-1][j-1];
+                }else{
+                    dp[i][j] = Math.min(Math.min(dp[i][j-1]+1, dp[i-1][j]+1), dp[i-1][j-1] + 2);
+                }
+            }
+        }
+        return dp[w1.length][w2.length];
+    }
+}
+```
+
+另一种解法是讲这个题目看作求公共子序列。在得到公共子序列后将结果乘二，然后用两个字符串的总长减去乘二的结果，这就得到最少删除的次数。
+
+```java
+class Solution {
+    public int minDistance(String word1, String word2) {
+        char[] w1 = word1.toCharArray();
+        char[] w2 = word2.toCharArray();
+        int result = 0;
+
+        int[][] dp = new int[w1.length+1][w2.length+1];
+
+        for(int i =1; i<=w1.length; i++)
+        {
+            for(int j=1; j<=w2.length; j++)
+            {
+                if(w1[i-1] == w2[j-1])
+                {
+                    dp[i][j] = dp[i-1][j-1] + 1;
+                }else{
+                    dp[i][j] = Math.max(dp[i-1][j], dp[i][j-1]);
+                }
+                result = Math.max(result, dp[i][j]);
+            }
+        }
+        result = result * 2;
+        return w1.length + w2.length - result;
+
+    }
+}
+```
+
+### 72. 编辑距离
+
+```
+给你两个单词 word1 和 word2，请你计算出将 word1 转换成 word2 所使用的最少操作数 。
+
+你可以对一个单词进行如下三种操作：
+
+插入一个字符
+
+删除一个字符
+
+替换一个字符
+
+示例 1：
+
+输入：word1 = "horse", word2 = "ros"
+
+输出：3
+
+解释： horse -> rorse (将 'h' 替换为 'r') rorse -> rose (删除 'r') rose -> ros (删除 'e')
+
+示例 2：
+
+输入：word1 = "intention", word2 = "execution"
+
+输出：5
+
+解释： intention -> inention (删除 't') inention -> enention (将 'i' 替换为 'e') enention -> exention (将 'n' 替换为 'x') exention -> exection (将 'n' 替换为 'c') exection -> execution (插入 'u')
+```
+
+1. dp[i][j] 数组定义： i-1 结尾的word1 和 j-1 结尾的word2 相等所需要的最少操作次数
+2. 递推公式： i-1 和 j-1 有相等和不相等两种情况
+    * 如果相等: dp[i][j] = dp[i-1][j-1] 。如果相等就不需要任何操作，所以直接继承前一位上的最少操作次数。
+    * 如果不相等就会有三种操作，增删换
+        * 对 word1 进行删除操作，dp[i-1][j] + 1， 也就是删除word1 i-1 下标上的字母
+        * 对 word2 进行删除操作 dp[i][j-1] + 1，也就是删除word2 j-1 下标上的字母 
+        * **注意：** 对word2 进行删除等价于对word1 进行增加。 例如 word1 = a, word2 = ab， 删除 b 的操作次数（1） 等于增加b 的操作次数（1）。所以我们对两个字符串同时考虑删除操作
+        * 替换操作，dp[i][j] = dp[i-1][j-1] + 1。也就是同时不考虑i-1 和 j-1 我们使用一个替换操作让两个字符串相同。
+    * 在这三个操作中选择次数做少的那个: dp[i][j] = min(dp[i-1][j]+1,dp[i][j-1] +1, dp[i-1][j-1]+1)
+3. 数组初始化：dp[i][0] = i, dp[0][j] = j; 根据dp 数组定义，一个字符串长度为i 时，需要进行i 次删除操作得到空字符串
+4. 遍历顺序： 从左到右，从上到下
+
+```java
+class Solution {
+    public int minDistance(String word1, String word2) {
+        char[] w1 = word1.toCharArray();
+        char[] w2 = word2.toCharArray();
+
+        int[][] dp = new int[w1.length+1][w2.length+1];
+        dp[0][0] = 0;
+        
+        for(int i=1; i<=w1.length; i++)
+            dp[i][0] = i;
+        for(int j=1; j<=w2.length; j++)
+            dp[0][j] = j;
+        
+        for(int i=1; i<=w1.length; i++)
+        {
+            for(int j=1; j<=w2.length; j++)
+            {
+                if(w1[i-1] == w2[j-1])
+                    dp[i][j] = dp[i-1][j-1];
+                else{
+                    dp[i][j] = Math.min(Math.min(dp[i-1][j]+1, dp[i][j-1]+1), dp[i-1][j-1] + 1);
+                }
+            }
+        }
+        return dp[w1.length][w2.length];
+    }
+}
+```
+
+### 编辑距离总结
+
+#### 392.判断子序列
+
+1. dp[i][j]数组定义: 以 i-1 结尾的s， 和以j-1 结尾的t 的最长公共子序列 dp[i][j]
+2. 递推公式： 
+    * s[i-1] == t[j-1]: dp[i][j] = dp[i-1][j-1] + 1
+    * s[i-1] != t[j-1]: dp[i][j] = dp[i][j-1]
+3. 数组初始化： dp[i][0] = 0, dp[0][j]=0.
+
+如果最长公共子序列等于t 的长度，就是子序列
+
+#### 115.不同的子序列
+
+1. dp[i][j] 数组定义： 以i-1 结尾的word1，和以j-1 结尾的word2的子序列的个数
+2. 递推公式： 
+    * w1[i-1] == w2[j-1]: dp[i][j] = dp[i-1][j-1] + dp[i-1][j]
+    * w1[i-1] != w2[j-1]: dp[i][j] = dp[i-1][j]
+3. dp数组初始化： 
+    * dp[i][0]=1: 每一个非空字符串都包含一个空字符串作为子序列
+    * dp[0][j]=0: 空字符串不包含任何非空字符串作为子序列
+    * dp[0][0]=1
+
+#### 583. 两个字符串的删除操作
+
+1. dp[i][j]数组定义： 以i-1 为结尾的word1， 和以j-1 为结尾的word2 相等所需要的最少删除操作
+2. 递推公式：
+    * w1[i-1] == w2[j-1]: dp[i][j] = dp[i-1][j-1]
+    * w1[i-1] != w2[j-1]: dp[i][j] = min(dp[i-1][j]+1, dp[i][j-1] + 1, dp[i-1][j-1] + 2)
+3. dp 数组初始化：
+        * dp[i][0] = i
+        * dp[0][j] = j
+
+#### 72. 编辑距离
+
+1. dp[i][j] 数组定义：以i-1 结尾的word1，和以j-1 结尾的word2 相等所需要的最少编辑操作
+2. 递推公式：
+    * w1[i-1] == w2[j-1]: dp[i][j] = dp[i-1][j-1]
+    * w2[i-1] != w2[jk-1]: dp[i][j] = min(dp[i-1][j]+1, dp[i][j-1]+1, dp[i-1][j-1]+1)
+3. dp 数组初始化：
+    * dp[i][0] = i;
+    * dp[0][j] = j;
+    * dp[0][0] = 0;
+
+### 647. 回文子串
+
+```
+给定一个字符串，你的任务是计算这个字符串中有多少个回文子串。
+
+具有不同开始位置或结束位置的子串，即使是由相同的字符组成，也会被视作不同的子串。
+
+示例 1：
+
+输入："abc"
+输出：3
+解释：三个回文子串: "a", "b", "c"
+示例 2：
+
+输入："aaa"
+输出：6
+解释：6个回文子串: "a", "a", "a", "aa", "aa", "aaa"
+提示：输入的字符串长度不会超过 1000 。
+```
+
+1. dp[i][j] 下标定义：在字符串s 中如果[i,j] （左闭右闭）是回文串，dp[i][j] 为true 否则为false
+2. 递推公式： 
+    * 如果 s[i] == s[j]，那么就会有三种情况。一 i==j，也就是i j 指向相同字母（a）。二 j-i ==1，也就是i j 是相邻下标（aa）。三 j-i >= 2，这就需要判断 dp[i+1][j-1] 是否为回文串，如果是就可以判断当前位置是回文串
+    * if(j-i <= 1): dp[i][j] = true; result++ 记录回文串数量
+    * if（j-i >= 2 && dp[i+1][j-1]）
+3. dp 数组初始化：dp[0][0] 是 ture。 因为[0,0] 一定是一个回文串比如 (a), dp[i][0], dp[0][j] 根据数组下标定义都为false ，因为[0,j] 我们无法判断是否为回文串。同理dp[i][0]
+4. 遍历顺序：i 从下往上， j 从左到右， j >= i 。因为i 要获取下面的信息，也就是i+1，所以要从下往上遍历
+
+```java
+
+class Solution {
+    public int countSubstrings(String s) {
+        char[] chars = s.toCharArray();
+
+        boolean[][] dp = new boolean[chars.length][chars.length];
+        int result = 0;
+        dp[0][0] = true;
+
+        for(int i=chars.length-1; i>=0; i--)
+        {
+            for(int j=i; j<chars.length; j++)
+            {
+                if(chars[i] == chars[j])
+                {
+                    if(j-i <= 1){
+                        result++;
+                        dp[i][j] = true;
+                    }else if(dp[i+1][j-1])
+                    {
+                        result++;
+                        dp[i][j] = true;
+                    }
+                }
+            }
+        }
+        return result;
+    }
+}
+```
+
+### 516.最长回文子序列
+
+```
+给定一个字符串 s ，找到其中最长的回文子序列，并返回该序列的长度。可以假设 s 的最大长度为 1000 。
+
+示例 1: 输入: "bbbab" 输出: 4 一个可能的最长回文子序列为 "bbbb"。
+
+示例 2: 输入:"cbbd" 输出: 2 一个可能的最长回文子序列为 "bb"。
+
+提示：
+
+1 <= s.length <= 1000
+s 只包含小写英文字母
+```
+
+1. dp[i][j] 数组定义：字符串 s [i,j] 范围内的最长回文子序列
+2. 递推公式：
+    * s[i] == s[j]: dp[i][j] = dp[i+1][j-1] + 2。 下标i j 同时缩小范围一格，得到相对应的dp元素。左右同时加一相当于加二。
+    * s[i] != s[j]: dp[i][j] = max(dp[i+1][j], dp[i][j-1])。当i j 无法匹配时，我们需要看包含 i+1 子序列更长还是 j-1 更长。
+3. dp 数组初始化： 根据递推公式，dp[i+1][j-1]，没有覆盖到 i == j 的位置。初始化就需要涵盖。所以dp[i][i] = 1。最长回文子序列为1（a）
+4. 遍历顺序。我们使用 i 从下到上，j 从左到右。j >= i+1。 因为 j==i 的情况已经在初始化时包含了
+
+```java
+class Solution {
+    public int longestPalindromeSubseq(String s) {
+        char[] chars = s.toCharArray();
+
+        int[][] dp = new int[chars.length][chars.length];
+        int result = 1;
+
+        for(int i=0; i<chars.length; i++)
+            dp[i][i] = 1;
+
+        for(int i=chars.length-1; i>=0; i--)
+        {
+            for(int j=i+1; j<chars.length; j++)
+            {
+                if(chars[i] == chars[j])
+                {
+                    dp[i][j] = dp[i+1][j-1] + 2;
+                }else{
+                    dp[i][j] = Math.max(dp[i+1][j], dp[i][j-1]);
+                }
+                result = Math.max(result, dp[i][j]);
+             
+            }
+        }
+        return result;
+    }
+}
+```
+
+![image](../pictures/dp.png)
+## 单调栈
+
+### 739. 每日温度
+
+```
+请根据每日 气温 列表，重新生成一个列表。对应位置的输出为：要想观测到更高的气温，至少需要等待的天数。如果气温在这之后都不会升高，请在该位置用 0 来代替。
+
+例如，给定一个列表 temperatures = [73, 74, 75, 71, 69, 72, 76, 73]，你的输出应该是 [1, 1, 4, 2, 1, 1, 0, 0]。
+
+提示：气温 列表长度的范围是 [1, 30000]。每个气温的值的均为华氏度，都是在 [30, 100] 范围内的整数。
+```
+
+本题使用单调栈解决，通常情况下，给定一个一维数组，要寻找一个元素左边或者右边第一个比自己大或者小的元素。O（n）
+
+我们将温度数组下标放入栈中，然后对比栈头和温度数组对应下标的元素。此时分为三种情况
+1. temperatures[i] < temperatures[stack.top()]
+2. temperatures[i] === temperatures[stack.top()]
+3. tempeatures[i] > temperatures[stack.top()]
+
+前两种情况直接把 下标 i 放入栈中，第三种情况需要不断比较栈头的元素，直到temperatures[i] 小于等于站内元素，并将i放入栈中。 在这个比较中，需要有个前提就是stack 不为空。 在while 循环中内部计算 i 与 stack.top() 的距离，并存入result 数组成为结果。
+
+```java
+class Solution {
+    public int[] dailyTemperatures(int[] temperatures) {
+        Deque<Integer> stack = new LinkedList<>();
+
+        stack.push(0);
+        int[] result = new int[temperatures.length];
+
+        for(int i=1; i<temperatures.length; i++)
+        {
+            if(temperatures[i] <= temperatures[stack.peek()])
+            {
+                stack.push(i);
+            }else{
+                while(stack.size() != 0 && temperatures[i] > temperatures[stack.peek()])
+                {
+                    result[i] = i - stack.peek();
+                    stack.pop();
+                }
+                stack.push(i);
+            }
+        }
+        return result;
+    }
+}
+```
+
+### 496.下一个更大元素 I
+
+```
+给你两个 没有重复元素 的数组 nums1 和 nums2 ，其中nums1 是 nums2 的子集。
+
+请你找出 nums1 中每个元素在 nums2 中的下一个比其大的值。
+
+nums1 中数字 x 的下一个更大元素是指 x 在 nums2 中对应位置的右边的第一个比 x 大的元素。如果不存在，对应位置输出 -1 。
+
+示例 1:
+
+输入: nums1 = [4,1,2], nums2 = [1,3,4,2].
+输出: [-1,3,-1]
+解释:
+对于 num1 中的数字 4 ，你无法在第二个数组中找到下一个更大的数字，因此输出 -1 。
+对于 num1 中的数字 1 ，第二个数组中数字1右边的下一个较大数字是 3 。
+对于 num1 中的数字 2 ，第二个数组中没有下一个更大的数字，因此输出 -1 。
+
+示例 2:
+输入: nums1 = [2,4], nums2 = [1,2,3,4].
+输出: [3,-1]
+解释:
+对于 num1 中的数字 2 ，第二个数组中的下一个较大数字是 3 。
+对于 num1 中的数字 4 ，第二个数组中没有下一个更大的数字，因此输出-1 
+```
+
+本题要寻找在nums2 中的下一个元素大于 nums1 中所对应数字。也就是nums1[i] == nums2[j] 找到nums2 的j 然后在nums2 中找到下一个大于它的数。 结果需要返回一个数组长度相当于nums1，每一个下标对应nums2 中大于nums1中对应位置上的数。
+
+result 中所有位置初始化成-1。 使用map将 nums1 中的数字作为键，下标作为值插入其中。 使用单调栈递增逻辑遍历nums2，如果nums2[i] <= 栈头， 将nums2[i] 压入栈中。如果大于，同时nums2[i] 出现在了nums1 中（这一点通过map 来确认），那么就获取nums2[i] 在nums1 中的下标，将这个下标作为索引，nums2[i] 作为值放入result 数组中。
+
+```java
+class Solution {
+    public int[] nextGreaterElement(int[] nums1, int[] nums2) {
+        HashMap<Integer,Integer> map = new HashMap<Integer,Integer>();
+        Deque<Integer> stack = new LinkedList<>();
+
+        int[] result = new int[nums1.length];
+        for(int i=0; i<result.length; i++)
+            result[i] = -1;
+        
+        for(int i=0; i<nums1.length; i++)
+            map.put(nums1[i], i);
+
+        stack.push(0);
+
+        for(int i=1; i<nums2.length; i++)
+        {
+            if(nums2[i] <= nums2[stack.peek()])
+            {
+                stack.push(i);
+            }else{
+                while(stack.size() != 0 && nums2[i] > nums2[stack.peek()])
+                {
+           
+                    if(map.containsKey(nums2[stack.peek()]))
+                    {
+                        int idx = map.get(nums2[stack.peek()]);
+                        result[idx] = nums2[i];
+                    }
+                    stack.pop();
+                }
+                stack.push(i);
+            }
+        }
+        
+    return result;
+    }
+}
+
+```
+
+### 503.下一个更大元素II
+
+```
+给定一个循环数组（最后一个元素的下一个元素是数组的第一个元素），输出每个元素的下一个更大元素。数字 x 的下一个更大的元素是按数组遍历顺序，这个数字之后的第一个比它更大的数，这意味着你应该循环地搜索它的下一个更大的数。如果不存在，则输出 -1。
+
+示例 1:
+
+输入: [1,2,1]
+输出: [2,-1,2]
+解释: 第一个 1 的下一个更大的数是 2；数字 2 找不到下一个更大的数；第二个 1 的下一个最大的数需要循环搜索，结果也是 2。
+提示:
+
+1 <= nums.length <= 10^4
+-10^9 <= nums[i] <= 10^9
+```
+
+本题采用取模的方式模拟数组成环的情况。初始化一个与nums 等长的数组，使用与单调栈相同的代码逻辑，但是遍历两边nums 数组。此时每次获取下标就不再是 i ，而是 i % len 。这就可以模拟第二次遍历数组的情况。
+
+```java
+class Solution {
+    public int[] nextGreaterElements(int[] nums) {
+        
+        int[] result = new int[nums.length];
+        for(int i=0; i<result.length; i++)
+            result[i] = -1;
+
+        Stack<Integer> stack = new Stack<>();
+        stack.push(0);
+
+        int len = nums.length;
+
+        for(int i=1; i<len*2; i++)
+        {
+            if(nums[i % len] <= nums[stack.peek() % len])
+                stack.push(i % len);
+            else{
+                while(!stack.isEmpty() && nums[i % len] > nums[stack.peek() % len])
+                {
+                    result[stack.peek() % len] = nums[i % len];
+                    stack.pop();
+                }
+                stack.push(i % len);
+            }
+        }
+
+        return result;
+    }   
+}
+```
+
+### 42. 接雨水
+
+```
+输入：height = [0,1,0,2,1,0,1,3,2,1,2,1]
+输出：6
+解释：上面是由数组 [0,1,0,2,1,0,1,3,2,1,2,1] 表示的高度图，在这种情况下，可以接 6 个单位的雨水（蓝色部分表示雨水）。
+```
+
+单调栈方法
+
+```java
+class Solution {
+    public int trap(int[] height) {
+        Deque<Integer> stack = new LinkedList<>();
+        
+        int result = 0;
+
+        stack.push(0);
+
+        for(int i=1; i<height.length; i++)
+        {
+            if(nums[i] <= nums[stack.peek()])
+                stack.push(i);
+            else{
+                while(!stack.isEmpty() && nums[i] > nums[stack.peek()])
+                {
+                    int mid = stack.peek();
+                    stack.pop();
+
+                    if(!stack.isEmpty())
+                    {
+                        int h = Math.min(nums[stack.peek()], nums[i]) - nums[mid];
+                        int w = i - stack.peek() - 1;
+                        int area = h * w;
+                        result += area;
+                    }
+                }
+                stack.push(i);
+            }
+        }
+    }
+}
+
+```
+
+双指针方法
+
+```java
+class Solution {
+    public int trap(int[] height) {
+        int len = height.length;
+
+        int[] leftMax = new int[len];
+        int[] rightMax = new int[len];
+        
+        int result = 0;
+        leftMax[0] = height[0];
+        for(int i=1; i<len; i++)
+            leftMax[i] = Math.max(height[i], leftMax[i-1]);
+
+        rightMax[len-1] = height[len-1];
+        for(int i=len-2; i>=0; i--)
+            rightMax[i] = Math.max(height[i], rightMax[i+1]);
+        
+        for(int i=0; i<len; i++)
+        {
+            int count = Math.min(leftMax[i], rightMax[i]) - height[i];
+            if(count > 0)
+                result += count;
+        }
+        return result;
+    }
+}
+```
+
+双指针的方法实际上更加容易理解
+
+通过使用两个左右数组记录每个节点左右两边最高的高度，然后遍历一次数组，在每一个下标中寻找左右最小高度，减去当前高度。如果是一个正数就加到总和里，如果不是就忽略。
+
+
+### 84.柱状图中最大的矩形
+
+给定 n 个非负整数，用来表示柱状图中各个柱子的高度。每个柱子彼此相邻，且宽度为 1 。
+
+求在该柱状图中，能够勾勒出来的矩形的最大面积。
+
+```java
+class Solution {
+    public int largestRectangleArea(int[] heights) {
+        int[] arr = new int[heights.length + 2];
+        
+        arr[0] = 0;
+        arr[arr.length-1] = 0;
+        for(int i=0; i<heights.length; i++)
+            arr[i+1] = heights[i];
+
+
+        Deque<Integer> stack = new LinkedList<>();
+
+        stack.push(0);
+
+        int result = 0;
+
+        for(int i=1; i<arr.length; i++)
+        {
+            if(arr[i] >= arr[stack.peek()])
+                stack.push(i);
+            else{
+                while(!stack.isEmpty() && arr[i] < arr[stack.peek()])
+                {
+                    int mid = stack.peek();
+                    stack.pop();
+                    if(!stack.isEmpty())
+                    {
+                        int left = stack.peek();
+                        int right = i;
+                        int w = right-left-1;
+                        int h = arr[mid];
+                        int area = h*w;
+                        result = Math.max(result, area);
+                    }
+                }
+                stack.push(i);
+            }
+        }
+        return result;
+    }
+}
+```
+
+本题要采用单调递减栈，和接雨水是相反的思路。单调递减栈需要将比较逻辑反过来，当前数字小于栈头进行收割操作。 面积的计算和接雨水一样，弹出栈头元素作为中间，当前元素作为左边界，栈口下一个元素作为右边界。 左右相减再减一作为宽，中间高度作为高，相乘得到面积。 
+
+中间高度为什么可以作为高呢？ 因为加上左中右相连，此时宽为一（4-2-1=1），那么面积就是 1 * h。 如果中和右之间相隔一个，就代表中间隔的那一列高于中间，因为是递减栈。 此时的宽为二，高为中间的高。 
+
+## 阶段结语
+
+终于把代码随想录刷了第一遍。 前面的很多都忘了，但是又出了图论。但是我学数学的，离散数学是我的强项，所以我准备把图论那一部分也刷完。然后再二刷随想录。 这样我的代码能力就有了大进步了。 在二刷时，我觉得可以把相关题目也做一做，扩展一下。
+
+
