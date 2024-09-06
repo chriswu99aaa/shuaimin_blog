@@ -8534,4 +8534,1583 @@ class Solution {
 
 终于把代码随想录刷了第一遍。 前面的很多都忘了，但是又出了图论。但是我学数学的，离散数学是我的强项，所以我准备把图论那一部分也刷完。然后再二刷随想录。 这样我的代码能力就有了大进步了。 在二刷时，我觉得可以把相关题目也做一做，扩展一下。
 
+## 图论
 
+### 图的分类
+
+1. 有向图
+2. 无向图
+
+有向图就是带箭头的，有方向性的。 
+
+### 图的连通性
+
+在无向图中，两个节点之间，如果存在一条路径可以到达，两个节点就是连通的。 
+
+**Connected Component**: （连通分量）是一个节点的集合，在这个集合中每一个节点都彼此连通。 如果一个图只有一个连通分量，就代表这个图是连通的
+
+在有向图中，两个节点之间，存在一条路径从a 到 b，也存在一条路径从 b 到 a，那么这两个节点就是强连通的。 
+
+在有向图中，如果每一个节点都能彼此访问，这个有向图就是强连通的
+
+### 图的构造
+
+**邻接矩阵**：adjacent matrix
+
+* 有多少节点就申请多少维度的矩阵，空间花费是O(n *n)。
+
+* 优点是：便于理解，访问速度快
+
+* 缺点是：稀疏图有很多空间的浪费
+
+**邻接表** adjacent table
+
+* 通过边的数量表示图，有多少边申请多少内存
+* 优点是：节省空间
+* 缺点是：当需要确认两点之间是否存在边时，需要遍历链表
+
+![image](../pictures/adj-table.png)
+
+
+### 深度搜索
+
+dfs 三部曲
+
+1. 确定递归函数参数：
+    * 一般保存所有路径就会用到二维数组，保存唯一的路径就用一维数组
+2. 确认终止条件
+
+```
+if(终止条件)
+{
+    存放结果
+    return
+}
+```
+3. 处理当前搜索节点出发的路径
+```
+for(选择：本节点所连接的节点)
+    处理节点
+    dfs(图，节点)
+    回溯，撤销处理结果
+```
+
+### 98. 所有可达路径
+
+```
+给定一个有 n 个节点的有向无环图，节点编号从 1 到 n。请编写一个函数，找出并返回所有从节点 1 到节点 n 的路径。每条路径应以节点编号的列表形式表示。
+
+【输入描述】
+
+第一行包含两个整数 N，M，表示图中拥有 N 个节点，M 条边
+
+后续 M 行，每行包含两个整数 s 和 t，表示图中的 s 节点与 t 节点中有一条路径
+
+【输出描述】
+
+输出所有的可达路径，路径中所有节点的后面跟一个空格，每条路径独占一行，存在多条路径，路径输出的顺序可任意。
+
+如果不存在任何一条路径，则输出 -1。
+
+注意输出的序列中，最后一个节点后面没有空格！ 例如正确的答案是 1 3 5,而不是 1 3 5 ， 5后面没有空格！
+```
+
+```java
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Scanner;
+
+public class Main{
+    List<List<Integer>> result = new ArrayList<>();
+    List<Integer> path = new ArrayList<>();
+    
+    public void dfs(int[][] graph, int x, int n)
+    {
+        if(x == n)
+        {
+            result.add(new ArrayList<>(path));
+            return;
+        }
+        
+        for(int i=1; i<=n; i++)
+        {
+            if(graph[x][i] == 1)
+            {
+                path.add(i);
+                dfs(graph, i, n);
+                path.remmove(path.size()-1);
+            }
+            
+        }
+    }
+    
+   public static void main (String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        int n = scanner.nextInt();
+        int m = scanner.nextInt();
+        
+        int[][] graph = new int[n+1][n+1];
+        
+        for(int i=0; i<m; i++)
+        {
+            int s = scanner.nextInt();
+            int t = scanner.nextInt();
+            
+            graph[s][t] = 1;
+            
+        }
+        
+        path.add(1);
+        dfs(graph,1,n);
+        
+        if(result.isEmpty()) return -1;
+        
+        for(List<Integer> path: result)
+        {
+            for(int i=0; i<path.size()-1; i++)
+            {
+                System.out.System.out.print(path.get(i) + " ");
+            }
+            System.out.println(path.get(path.size()-1));
+        }
+        
+    }
+        
+}
+```
+
+```java
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Scanner;
+import java.util.LinkedList;
+
+public class Main{
+    static List<List<Integer>> result = new ArrayList<>();
+    static List<Integer> path = new ArrayList<>();
+    
+   public static void dfs(List<LinkedList<Integer>> graph, int x, int n)
+   {
+       if(x == n)
+       {
+           result.add(new ArrayList<>(path));
+           return;
+       }
+       
+       for(int i: graph.get(x))
+       {
+           path.add(i);
+           dfs(graph, i, n);
+           path.remove(path.size()-1);
+       }
+   }
+   
+   public static void main (String[] args) {
+       Scanner scanner = new Scanner(System.in);
+       int n = scanner.nextInt();
+       int m = scanner.nextInt();
+       
+       List<LinkedList<Integer>> graph = new ArrayList<>(n+1);
+       
+       for(int i=0; i<=n; i++)
+       {
+            graph.add(new LinkedList<>());
+       }
+       
+       while(m >0)
+       {
+           int s = scanner.nextInt();
+           int t = scanner.nextInt();
+           graph.get(s).add(t);
+           m--;
+       }
+       
+       path.add(1);
+       dfs(graph,1,n);
+       
+       if(result.isEmpty())  System.out.println(-1);
+       for(List<Integer> path: result)
+       {
+           for(int i=0; i<path.size()-1; i++)
+           {
+               System.out.print(path.get(i) + " ");
+           }
+           System.out.println(path.get(path.size()-1));
+       }
+       
+       
+   }
+        
+}
+
+```
+
+这种acm 模式需要掌握输入输出，这并不难。 
+
+还是关注到核心的代码层面。 DFS 的深度搜索，会在一个节点现有的边上不断探索。 还是回到深度搜索三部曲。 确定递归函数，确定终止条件，确定单层处理逻辑。
+
+1. 递归函数：就是一个graph，当前节点x，和 目标节点n
+2. 确定终止条件：当x == n，也就是当前节点是目标节点时。 我们将path 存入result。
+3. 单层递归逻辑： 对当前节点的每一条边遍历，将它加入path， 对相邻的节点进行递归调用。  结束之后移除path最后一个节点，来形成回溯操作
+
+对于图的构造，我们可以中邻接矩阵，也可以用邻接表。 邻接表有一个list，每一个list 对应链表。链表上的节点代表与对应下标上节点相连。 邻接矩阵上如果是1就代表是一条边。 
+
+我需要适应两种构造方式，以及遍历上的细节
+
+
+### 广度搜索 BFS
+
+适用于寻找两点之间最短路径。 
+
+BFS 是一层一层的往外搜索，当寻找到目标节点时，就一定是最短路径。
+
+代码框架
+```java
+import java.util.Queue; 
+
+int[][] dir = {{0, 1}, {1, 0}, {-1, 0}, {0, -1}}; 
+
+// grid 是地图，也就是一个二维数组
+// visited标记访问过的节点，不要重复访问
+// x,y 表示开始搜索节点的下标
+
+class Tuple{
+    int x;
+    int y;
+    Tuple(int x, int y)
+    {
+        this.x = x;
+        this.y = y;
+    }
+    public int getFirst(){
+        return x;
+    }
+    public int getSecond()
+    {
+        return y;
+    }
+}
+void bfs(int[][] grid, boolean[][] visited, int x, int y)
+{
+    Queue<Tuple> queue = new LinkedList<>();
+    queue.push(new Tuple(x,y));
+    visited[x][y] = true;
+
+    while(!queue.isEmpty())
+    {
+        Tuple pair = queue.peek();
+        queue.pop();
+
+        int x = pair.getFirst();
+        int y = pair.getSecond();
+
+        int result = 0;
+
+        for(int i=0; i<4; i++)
+        {
+            int nextX = dir[i][0];
+            int nextY = dir[i][1];
+
+            if (nextx < 0 || nextx >= grid.size() || nexty < 0 || nexty >= grid[0].size())
+                continue;
+            
+            if(!visited[nextX][nextY]){
+                queue.push(new Tuple(nextX, nextY));
+                visited[nextX][nextY] = true;
+            }
+        }
+
+        
+    }
+}
+
+```
+### 99. 岛屿数量 DFS
+
+```
+给定一个由 1（陆地）和 0（水）组成的矩阵，你需要计算岛屿的数量。岛屿由水平方向或垂直方向上相邻的陆地连接而成，并且四周都是水域。你可以假设矩阵外均被水包围。
+
+输入描述：
+
+第一行包含两个整数 N, M，表示矩阵的行数和列数。
+
+后续 N 行，每行包含 M 个数字，数字为 1 或者 0。
+
+输出描述：
+
+输出一个整数，表示岛屿的数量。如果不存在岛屿，则输出 0。
+```
+
+
+```java
+// 版本二：包含终止条件
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Scanner;
+
+public class Main{
+
+    
+    static int[][] dir = {{0,1}, {1,0}, {-1,0}, {0,-1}};
+    
+    public static void dfs(int[][] grid, boolean[][] visited,int x, int y)
+    {
+        if(visited[x][y] || grid[x][y] == 0) return;
+        
+        visited[x][y] = true;
+        
+        for(int i=0; i<4; i++)
+        {
+            int nextX = x + dir[i][0];
+            int nextY = y + dir[i][1];
+            
+            if(nextX < 0 || nextX >= grid.length || nextY < 0 || nextY >= grid[0].length) continue;
+            
+            dfs(grid, visited, nextX, nextY);
+        }
+    }
+    
+   public static void main (String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        int n = scanner.nextInt();
+        int m = scanner.nextInt();
+        
+        int[][] grid = new int[n][m];
+        
+        int result = 0;
+        
+        for(int i=0; i<n; i++)
+        {
+            for(int j=0; j<m; j++)
+            {
+                int x = scanner.nextInt();
+                if(x == 1)
+                    grid[i][j] = 1;
+            }
+            
+        }
+        boolean[][] visited = new boolean[n][m];
+        
+        for(int i=0; i<n; i++)
+        {
+            for(int j=0; j<m; j++)
+            {
+                if(!visited[i][j] && grid[i][j] == 1)
+                {
+                    result++;
+                    dfs(grid, visited, i, j);
+                }
+            }
+        }
+        System.out.println(result);
+        
+        
+        
+    }
+        
+}
+```
+
+```java
+
+// 版本一：不写终止条件
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Scanner;
+
+public class Main{
+    static int[][] dir = {{0,1}, {1,0}, {-1,0}, {0,-1}};
+    
+    public static void dfs(int[][] grid, boolean[][] visited,int x, int y)
+    {       
+        for(int i=0; i<4; i++)
+        {
+            int nextX = x + dir[i][0];
+            int nextY = y + dir[i][1];
+            
+            if(nextX < 0 || nextX >= grid.length || nextY < 0 || nextY >= grid[0].length) 
+                continue;
+            
+            if(!visited[nextX][nextY] && grid[nextX][nextY]==1)
+            {
+                visited[nextX][nextY] = true;
+                dfs(grid, visited, nextX, nextY);
+            }          
+        }
+    }
+    
+   public static void main (String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        int n = scanner.nextInt();
+        int m = scanner.nextInt();
+        
+        int[][] grid = new int[n][m];
+        
+        int result = 0;
+        
+        for(int i=0; i<n; i++)
+        {
+            for(int j=0; j<m; j++)
+            {
+                int x = scanner.nextInt();
+                if(x == 1)
+                    grid[i][j] = 1;
+            }
+            
+        }
+        boolean[][] visited = new boolean[n][m];
+        
+        for(int i=0; i<n; i++)
+        {
+            for(int j=0; j<m; j++)
+            {
+                if(!visited[i][j] && grid[i][j] == 1)
+                {
+                    result++;
+                    dfs(grid, visited, i, j);
+                }
+            }
+        }
+        System.out.println(result);       
+    }     
+}
+```
+
+两种版本，如果写终止条件就把 visited 赋值为true 的操作放在dfs 函数 for 循环外部，代表每次递归调用之后对这个节点操作。 如果不写终止条件，就把对 visited 的操作放在 for 循环内部，每次递归调用之前先对 visited 进行赋值。 不写终止条件不代表没有终止条件，而是直接对不符合条件的节点省略递归调用。 比如访问过的节点，或者不是陆地的节点，就会直接跳过。 
+
+acm 模式中要自己构建输入输出， 所以要把数据录入邻接矩阵中。 
+
+按照深搜三部曲
+
+1. 确定递归函数参数： 首先要把那个图作为参数， 以及visited 访问矩阵传入。 另外需要x 和 y 两个坐标确定位置。 这也就是我们需要的参数
+2. 确定终止条件： 终止条件就是判断当前节点是否被访问过，以及当前节点是否为陆地。 如果访问过或者是海洋，就return。 在另一种版本中，在递归调用之前就检查是否访问过节点，以及节点是否为陆地，如果不满足条件直接跳过。 
+3. 单层处理逻辑： 首先把x y 对应的位置在visited 中改为true。然后对这个节点四个方向相邻的节点全部遍历一边，递归调用dfs 函数。 
+
+这个方法被称为深度搜索，因为在发现一个未访问过的陆地，会把这个节点周围的所有的陆地全部遍历出来。 每一个访问过的节点都会标记为true，从而不重复访问节点。 这也是为什么result ++ 在记录岛屿数量。
+
+### 岛屿数量 BFS
+
+```
+
+给定一个由 1（陆地）和 0（水）组成的矩阵，你需要计算岛屿的数量。岛屿由水平方向或垂直方向上相邻的陆地连接而成，并且四周都是水域。你可以假设矩阵外均被水包围。
+
+输入描述：
+
+第一行包含两个整数 N, M，表示矩阵的行数和列数。
+
+后续 N 行，每行包含 M 个数字，数字为 1 或者 0。
+
+输出描述：
+
+输出一个整数，表示岛屿的数量。如果不存在岛屿，则输出 0。
+```
+
+BFS 这个思路还是要利用Queue 这个数据结构，不断的将新发现的节点，也就是下标加入队列中，从而形成广度优先搜索。 在java 中还是需要自定义一个tuple 类来完成x y 的输入与输出。 为了防止重复访问节点，在节点加入队列的那一刻就对 visited 矩阵进行操作，而不是等这个节点从队列弹出后操作。
+
+```java
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Scanner;
+import java.util.LinkedList;
+import java.util.Queue;
+
+public class Main{
+    static class Tuple{
+        public int x;
+        public int y;
+        
+        public Tuple(int x, int y){
+            this.x = x;
+            this.y = y;
+        }
+        
+        public int getX(){
+            return this.x;
+        }
+        public int getY(){
+            return this.y;
+        }
+    }
+    
+    static Queue<Tuple> queue = new LinkedList<>();
+
+    static int[][] dir = {{0,1}, {1,0}, {-1,0}, {0,-1}};
+    
+    public static void bfs(int[][] grid, boolean[][] visited,int x, int y)
+    {  
+        queue.add(new Tuple(x, y));
+        visited[x][y] = true;
+        
+        while(!queue.isEmpty())
+        {
+            Tuple pair = queue.poll();
+            
+            int CurrentX = pair.getX();
+            int CurrentY = pair.getY();
+            
+            for(int i=0; i<4; i++)
+            {
+                int nextX = CurrentX + dir[i][0];
+                int nextY = CurrentY + dir[i][1];
+                
+                if(nextX < 0 || nextX >= grid.length || nextY < 0 || nextY >= grid[0].length) 
+                    continue;
+                    
+                if(!visited[nextX][nextY] && grid[nextX][nextY] == 1)
+                {
+                    queue.add(new Tuple(nextX,nextY));
+                    visited[nextX][nextY] = true;
+                }
+            }
+        }
+        
+    }
+    
+   public static void main (String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        int n = scanner.nextInt();
+        int m = scanner.nextInt();
+        
+        int[][] grid = new int[n][m];
+        
+        int result = 0;
+        
+        for(int i=0; i<n; i++)
+        {
+            for(int j=0; j<m; j++)
+            {
+                int x = scanner.nextInt();
+                if(x == 1)
+                    grid[i][j] = 1;
+            }
+            
+        }
+        boolean[][] visited = new boolean[n][m];
+        
+        for(int i=0; i<n; i++)
+        {
+            for(int j=0; j<m; j++)
+            {
+                if(!visited[i][j] && grid[i][j] == 1)
+                {
+                    result++;
+                    bfs(grid, visited, i, j);
+                }
+            }
+        }
+        scanner.close();
+        System.out.println(result);     
+    }
+        
+}
+```
+
+### 100. 岛屿的最大面积
+
+```
+给定一个由 1（陆地）和 0（水）组成的矩阵，计算岛屿的最大面积。岛屿面积的计算方式为组成岛屿的陆地的总数。岛屿由水平方向或垂直方向上相邻的陆地连接而成，并且四周都是水域。你可以假设矩阵外均被水包围。
+
+输入描述
+
+第一行包含两个整数 N, M，表示矩阵的行数和列数。后续 N 行，每行包含 M 个数字，数字为 1 或者 0，表示岛屿的单元格。
+
+输出描述
+
+输出一个整数，表示岛屿的最大面积。如果不存在岛屿，则输出 0。
+
+
+```
+
+```java
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Scanner;
+
+public class Main{
+    static int[][] dir = {{0,1}, {1,0}, {-1,0}, {0,-1}};
+    static int count = 0;
+    
+    public static void dfs(int[][] grid, boolean[][] visited,int x, int y)
+    {       
+        visited[x][y] = true;
+        
+        for(int i=0; i<4; i++)
+        {
+            int nextX = x + dir[i][0];
+            int nextY = y + dir[i][1];
+            
+            if(nextX < 0 || nextX >= grid.length || nextY < 0 || nextY >= grid[0].length) 
+                continue;
+                
+            if(!visited[nextX][nextY] && grid[nextX][nextY] == 1)
+            {
+                visited[nextX][nextY] = true;
+                count++;
+                dfs(grid, visited, nextX, nextY);
+                
+            }
+        }
+        
+    }
+    
+   public static void main (String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        int n = scanner.nextInt();
+        int m = scanner.nextInt();
+        
+        int[][] grid = new int[n][m];
+        
+        int result = 0;
+        
+        for(int i=0; i<n; i++)
+        {
+            for(int j=0; j<m; j++)
+            {
+                int x = scanner.nextInt();
+                
+                if(x == 1)
+                    grid[i][j] = 1;
+            }
+        }
+        
+        boolean[][] visited = new boolean[n][m];
+        
+        for(int i=0; i<n; i++)
+        {
+            for(int j=0; j<m; j++)
+            {
+                if(!visited[i][j] && grid[i][j] == 1)
+                {
+                    count = 1;
+                    visited[i][j] = true;
+                    dfs(grid, visited, i, j);
+                    result = Math.max(result, count);
+                }
+            }
+        }
+        scanner.close();
+        System.out.println(result);       
+    }     
+}
+```
+
+岛屿最大面积， 在岛屿数量 DFS 版本的基础上进行面积记录操作，也就是在递归中每发现一个与该节点相邻的节点就将count++。 在main 函数调用中，发现新节点就将count 归一， 然后在dfs 完成之后对比 count 大小。
+
+DFS 的具象思路是，当第一次遍历到一个岛屿时，就会首先将与之相连的陆地遍历出来，这个遍历通过递归实现。 当遇到终止条件时，或者所有递归函数调用完毕时就会返回。 不需要担心无限的递归调用，因为调用递归是有个条件判断的。 对于节点坐标也需要进行判断，如果越界直接跳过
+
+### 101. 孤岛的总面积
+
+```
+给定一个由 1（陆地）和 0（水）组成的矩阵，岛屿指的是由水平或垂直方向上相邻的陆地单元格组成的区域，且完全被水域单元格包围。孤岛是那些位于矩阵内部、所有单元格都不接触边缘的岛屿。
+
+现在你需要计算所有孤岛的总面积，岛屿面积的计算方式为组成岛屿的陆地的总数。
+
+输入描述
+
+第一行包含两个整数 N, M，表示矩阵的行数和列数。之后 N 行，每行包含 M 个数字，数字为 1 或者 0。
+
+输出描述
+
+输出一个整数，表示所有孤岛的总面积，如果不存在孤岛，则输出 0。
+```
+
+本题要找到所有孤岛的位置，也就是不在边界上四面环海的岛屿。 可以首先遍历把边界上可以找到的陆地变为海洋， 然后再遍历一次地图，此时还剩下几个岛屿就都是孤岛。 
+
+我们使用一个计数器记录岛屿数量，但是这个在前面的第一次改陆地为海洋的遍历中是没用的，所以在最后一次统计孤岛的遍历开始之前，要把area重设为 0 。 
+
+这个题目首先要从左右边往中间搜索陆地， 从上下边往中间遍历，在这之间吧陆地改为海洋。 在陆地改海洋完成之后，要将area 设为0，重新统计面积
+
+**深度搜索DFS**
+
+```java
+import java.util.Scanner;
+
+class Main{
+    
+    static final int[][] dir = {{0,1},{1,0}, {-1,0}, {0,-1}};
+    
+    static int area = 0;
+    
+    public static void dfs(int[][] grid, int x, int y)
+    {
+        area++;
+        grid[x][y] = 0;
+        for(int i=0; i<4; i++)
+        {
+            int nextX = x + dir[i][0];
+            int nextY = y + dir[i][1];
+            
+            if(nextX < 0 || nextX >= grid.length || nextY < 0 || nextY >= grid[0].length)
+                continue;
+                
+            if( grid[nextX][nextY] == 1)
+                dfs(grid, nextX, nextY);
+            
+        }
+        return;
+    }
+    
+    public static void main (String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        int n = scanner.nextInt();
+        int m = scanner.nextInt();
+        
+        int[][] grid = new int[n][m];
+        
+        for(int i=0; i<n; i++)
+        {
+            for(int j=0; j<m; j++)
+            {
+                int x = scanner.nextInt();
+                if(x == 1)
+                    grid[i][j] = 1;
+            }
+        }
+        
+        
+        for(int i=0; i<n; i++)
+        {
+            // 左边测寻找陆地遍历
+            if(grid[i][0] == 1)
+                dfs(grid, i, 0);
+            if(grid[i][m-1] == 1)
+                dfs(grid, i, m-1);
+        }
+        
+        for(int j=0; j<m; j++)
+        {
+            if(grid[0][j] == 1)
+                dfs(grid, 0, j);
+            if(grid[n-1][j] == 1)
+                dfs(grid, n-1, j);
+        }
+        
+        area = 0;
+        
+        for(int i=0; i<n; i++)
+        {
+            for(int j=0; j<m; j++)
+            {
+                if(grid[i][j] == 1)
+                    dfs(grid, i, j);
+            }
+        }
+        scanner.close();
+        System.out.println(area);
+        
+    }
+}
+```
+
+
+**广度搜索 BFS**
+```java
+import java.util.Scanner;
+import java.util.LinkedList;
+import java.util.Queue;
+
+class Main{
+    
+    static final int[][] dir = {{0,1},{1,0}, {-1,0}, {0,-1}};
+    
+    static int area = 0;
+    
+    public static void bfs(int[][] grid, int x, int y)
+    {
+        Queue<int[]> queue = new LinkedList<>();
+        area++;
+        grid[x][y] = 0;
+        
+        queue.add(new int[]{x,y});
+        
+        while(!queue.isEmpty())
+        {
+            int[] current = queue.poll();
+            
+            int CurrentX = current[0];
+            int CurrentY = current[1];
+            
+            for(int i=0; i<4; i++)
+            {
+                int nextX = CurrentX + dir[i][0];
+                int nextY = CurrentY + dir[i][1];
+                
+                if(nextX < 0 || nextX >= grid.length || nextY < 0 || nextY >= grid[0].length)
+                    continue;
+                
+                if(grid[nextX][nextY] == 1)
+                {
+                    grid[nextX][nextY] = 0;
+                    area++;
+                    queue.add(new int[] {nextX, nextY});
+                }
+                   
+            }
+        }
+        
+    }
+    
+    public static void main (String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        int n = scanner.nextInt();
+        int m = scanner.nextInt();
+        
+        int[][] grid = new int[n][m];
+        
+        for(int i=0; i<n; i++)
+        {
+            for(int j=0; j<m; j++)
+            {
+                int x = scanner.nextInt();
+                if(x == 1)
+                    grid[i][j] = 1;
+            }
+        }
+        
+        
+        for(int i=0; i<n; i++)
+        {
+            // 左右边测寻找陆地遍历
+            if(grid[i][0] == 1)
+                bfs(grid, i, 0);
+            if(grid[i][m-1] == 1)
+                bfs(grid, i, m-1);
+        }
+        
+        for(int j=0; j<m; j++)
+        {
+            // 上下边测寻找陆地遍历
+            if(grid[0][j] == 1)
+                bfs(grid, 0, j);
+            if(grid[n-1][j] == 1)
+                bfs(grid, n-1, j);
+        }
+        
+        area = 0;
+        
+        for(int i=0; i<n; i++)
+        {
+            for(int j=0; j<m; j++)
+            {
+                if(grid[i][j] == 1)
+                    bfs(grid, i, j);
+            }
+        }
+        
+        System.out.println(area);
+        scanner.close();
+        
+    }
+}
+```
+
+
+### 102. 沉没孤岛
+
+```
+给定一个由 1（陆地）和 0（水）组成的矩阵，岛屿指的是由水平或垂直方向上相邻的陆地单元格组成的区域，且完全被水域单元格包围。孤岛是那些位于矩阵内部、所有单元格都不接触边缘的岛屿。
+
+现在你需要将所有孤岛“沉没”，即将孤岛中的所有陆地单元格（1）转变为水域单元格（0）。
+
+输入描述：
+
+第一行包含两个整数 N, M，表示矩阵的行数和列数。
+
+之后 N 行，每行包含 M 个数字，数字为 1 或者 0，表示岛屿的单元格。
+
+输出描述
+
+输出将孤岛“沉没”之后的岛屿矩阵。
+```
+
+
+```java
+import java.util.Scanner;
+import java.util.LinkedList;
+import java.util.Queue;
+
+class Main{
+    
+    static final int[][] dir = {{0,1},{1,0}, {-1,0}, {0,-1}};
+    
+    
+    public static void bfs(int[][] grid, boolean[][] fliped, int x, int y)
+    {
+        Queue<int[]> queue = new LinkedList<>();
+ 
+        grid[x][y] = 0;
+        fliped[x][y] = true;
+        
+        queue.add(new int[]{x,y});
+        
+        while(!queue.isEmpty())
+        {
+            int[] current = queue.poll();
+            
+            int CurrentX = current[0];
+            int CurrentY = current[1];
+            
+            for(int i=0; i<4; i++)
+            {
+                int nextX = CurrentX + dir[i][0];
+                int nextY = CurrentY + dir[i][1];
+                
+                if(nextX < 0 || nextX >= grid.length || nextY < 0 || nextY >= grid[0].length)
+                    continue;
+                
+                if(grid[nextX][nextY] == 1)
+                {
+                    grid[nextX][nextY] = 0;
+         
+                    fliped[nextX][nextY] = true;
+                    
+                    queue.add(new int[] {nextX, nextY});
+                }                 
+            }
+        }
+        
+    }
+    
+    public static void main (String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        int n = scanner.nextInt();
+        int m = scanner.nextInt();
+        
+        int[][] grid = new int[n][m];
+        
+        for(int i=0; i<n; i++)
+        {
+            for(int j=0; j<m; j++)
+            {
+                int x = scanner.nextInt();
+                if(x == 1)
+                    grid[i][j] = 1;
+            }
+        }
+        
+        boolean[][] fliped = new boolean[n][m];
+        
+        for(int i=0; i<n; i++)
+        {
+            if(grid[i][0] == 1) 
+                bfs(grid, fliped, i, 0);
+            if(grid[i][m-1] == 1)
+                bfs(grid, fliped, i, m-1);
+        }
+        
+        for(int j=0; j<m; j++)
+        {
+            if(grid[0][j] == 1)
+                bfs(grid, fliped, 0, j);
+            if(grid[n-1][j] == 1)
+                bfs(grid, fliped, n-1, j);
+        }
+    
+        int[][] result = new int[n][m];
+        
+        for(int i=0; i<n; i++)
+        {
+            for(int j=0; j<m; j++)
+            {
+                if(fliped[i][j] == true)
+                    result[i][j] = 1;
+            }
+        }
+        for(int i=0; i<n; i++)
+        {
+            for(int j=0; j<m-1; j++)
+            {
+                System.out.print(result[i][j] + " ");
+            }
+            System.out.println(result[i][m-1]);
+        }       
+        scanner.close();
+    }
+}
+```
+
+```java
+import java.util.Scanner;
+import java.util.LinkedList;
+import java.util.Queue;
+
+class Main{
+    
+    static final int[][] dir = {{0,1},{1,0}, {-1,0}, {0,-1}};
+    
+    
+    public static void dfs(int[][] grid, int x, int y)
+    {
+        grid[x][y] = 2;
+        
+        for(int i=0; i<4; i++)
+        {
+            int nextX = x + dir[i][0];
+            int nextY = y + dir[i][1];
+            
+            if(nextX < 0 || nextX >= grid.length || nextY < 0 || nextY >= grid[0].length)
+                continue;
+            
+            if(grid[nextX][nextY] == 0 || grid[nextX][nextY] == 2)
+                continue;
+                
+            dfs(grid, nextX, nextY);
+            
+        }
+
+    }
+    
+    public static void main (String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        int n = scanner.nextInt();
+        int m = scanner.nextInt();
+        
+        int[][] grid = new int[n][m];
+        
+        for(int i=0; i<n; i++)
+        {
+            for(int j=0; j<m; j++)
+            {
+                int x = scanner.nextInt();
+                if(x == 1)
+                    grid[i][j] = 1;
+            }
+        }
+        
+        
+        for(int i=0; i<n; i++)
+        {
+            if(grid[i][0] == 1) 
+                dfs(grid,  i, 0);
+            if(grid[i][m-1] == 1)
+                dfs(grid, i, m-1);
+        }
+        
+        for(int j=0; j<m; j++)
+        {
+            if(grid[0][j] == 1)
+                dfs(grid, 0, j);
+            if(grid[n-1][j] == 1)
+                dfs(grid,n-1, j);
+        }
+        
+        for(int i=0; i<n; i++)
+        {
+            for(int j=0; j<m; j++)
+            {
+ 
+                if(grid[i][j] == 1) grid[i][j] = 0;
+                if(grid[i][j] == 2) grid[i][j] = 1;
+            }
+        }
+        
+        
+        for(int i=0; i<n; i++)
+        {
+            for(int j=0; j<m-1; j++)
+            {
+                System.out.print(grid[i][j] + " ");
+            }
+            System.out.println(grid[i][m-1]);
+        }
+        
+        scanner.close();
+        
+    }
+}
+```
+
+### 103. 水流问题
+
+```
+现有一个 N × M 的矩阵，每个单元格包含一个数值，这个数值代表该位置的相对高度。矩阵的左边界和上边界被认为是第一组边界，而矩阵的右边界和下边界被视为第二组边界。
+
+矩阵模拟了一个地形，当雨水落在上面时，水会根据地形的倾斜向低处流动，但只能从较高或等高的地点流向较低或等高并且相邻（上下左右方向）的地点。我们的目标是确定那些单元格，从这些单元格出发的水可以达到第一组边界和第二组边界。
+
+输入描述：
+
+第一行包含两个整数 N 和 M，分别表示矩阵的行数和列数。
+
+后续 N 行，每行包含 M 个整数，表示矩阵中的每个单元格的高度。
+
+输出描述：
+
+输出共有多行，每行输出两个整数，用一个空格隔开，表示可达第一组边界和第二组边界的单元格的坐标，输出顺序任意。
+```
+
+本题使用 DFS 从边界往中心遍历，也就是从低处往高处遍历。 需要寻找到的是所有可以到达第一第二边界的节点， 所以我们可以反着来从边界往节点遍历。 如果一个节点可以被第一组边界以及第二组边界访问到，就是我们的目标节点。
+
+
+这一题和寻找孤岛其实是一样的就是把边上的节点全部往中心遍历一遍。 
+
+在这个题目中，我们也需要终止条件，也就是如果递归访问过该节点，就直接返回。 如果该节点 大于 下一个节点 就跳过因为不符合高度条件。 注意我们是从低往高遍历，如果当前的大于之后的就不符合条件。
+
+
+```java
+import java.util.Scanner;
+
+class Main{
+    
+    static final int[][] dir = {{0,1},{1,0}, {-1,0}, {0,-1}};
+    
+    public static void dfs(int[][] grid, boolean[][] visited, int x, int y)
+    {
+        if(visited[x][y]) return;
+        
+        visited[x][y] = true;
+       
+        for(int i=0; i<4; i++)
+        {
+            int nextX = x + dir[i][0];
+            int nextY = y + dir[i][1];
+            
+            if(nextX < 0 || nextX >= grid.length || nextY < 0 || nextY >= grid[0].length)
+                continue;
+            
+            if(grid[x][y] > grid[nextX][nextY]) // 从低往高遍历
+                continue;
+            
+            dfs(grid, visited, nextX, nextY);
+         
+        }
+    }
+    
+    public static void main (String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        int n = scanner.nextInt();
+        int m = scanner.nextInt();
+        
+        int[][] grid = new int[n][m];
+        
+        for(int i=0; i<n; i++)
+        {
+            for(int j=0; j<m; j++)
+            {
+                grid[i][j] = scanner.nextInt();
+            }
+        }
+        
+        // 标记从第一组边界上的节点出发，可以遍历的节点
+        boolean[][] firstBoarder = new boolean[n][m];
+        
+        // 标记从第二组边界上的节点出发，可以遍历的节点
+        boolean[][] secondBoarder = new boolean[n][m];
+        
+        
+        // 从最上和最下行的节点出发，向高处遍历
+        for(int i=0; i<n; i++)
+        {
+            dfs(grid, firstBoarder, i, 0);
+            dfs(grid, secondBoarder, i, m-1);
+        }
+        // 从最左和最右列的节点出发，向高处遍历
+        for(int j=0; j<m; j++)
+        {
+            dfs(grid, firstBoarder, 0,j);
+            dfs(grid, secondBoarder, n-1, j);
+        }
+        
+        for(int i=0; i<n; i++)
+        {
+            for(int j=0; j<m; j++)
+            {
+                if(firstBoarder[i][j] == true && secondBoarder[i][j] == true)
+                    System.out.println(i + " " + j);
+            }
+        }
+           
+    }
+}
+```
+
+### 104.建造最大岛屿
+
+```
+题目描述：
+
+给定一个由 1（陆地）和 0（水）组成的矩阵，你最多可以将矩阵中的一格水变为一块陆地，在执行了此操作之后，矩阵中最大的岛屿面积是多少。
+
+岛屿面积的计算方式为组成岛屿的陆地的总数。岛屿是被水包围，并且通过水平方向或垂直方向上相邻的陆地连接而成的。你可以假设矩阵外均被水包围。
+
+输入描述：
+
+第一行包含两个整数 N, M，表示矩阵的行数和列数。之后 N 行，每行包含 M 个数字，数字为 1 或者 0，表示岛屿的单元格。
+
+输出描述：
+
+输出一个整数，表示最大的岛屿面积。
+```
+
+本题使用深度优先搜索，将每个岛屿的面积进行统计。 给每一个岛屿不同的编号，使用 Hashmap 数据结构进行记录，编号作为key， 面积作为value。  深度搜索的模版都是一样的， 终止条件是 遇到访问过的节点，或者当前节点为海洋。 单层递归逻辑就是， 将节点设为访问过的， 面积加一， grid 在该节点上的值改为mark，也就是岛屿编号。 在每一次探索完一个岛屿的所有陆地后，mark 会加一，准备给下一个岛屿。
+
+
+HashMap 和 HashSet 数据结构会在主函数中调用。 前者记录岛屿编号和面积，后者记录访问过的岛屿。 当完成对所有岛屿遍历之后，就要考虑将一块海洋变为陆地，然后统计此时的最大岛屿面积。 我们需要对所有grid 中存在的0进行遍历，考虑它上下左右四个方向是否存在岛屿。 在遍历所有坐标时，我们需要考虑当前节点是否为0，然后对HashSet清空。 因为在每一个 0 上我们会考虑四个方向，这其中就会有旁边是岛屿的情况。 如果发现了当前 0 未访问的岛屿，就加上这个岛屿的面积。 如果访问过这个岛屿，或者这个岛屿的编号在Hashmap 中不存在就跳过。
+
+有一个细节需要注意area 初始化是0，在深度搜索遍历时会统计每一个岛屿的面积。 但是在后面改0 为 1 的遍历时，area 会设成1，因为当前节点是一个陆地，所有area 是 1 。
+
+```java
+import java.util.Scanner;
+import java.util.HashMap;
+import java.util.HashSet;
+
+class Main{
+    
+    static final int[][] dir = {{0,1},{1,0}, {-1,0}, {0,-1}};
+    
+    
+    static int area = 0;
+    
+    static int result = 0;
+        
+    public static void dfs(int[][] grid, boolean[][] visited, int x, int y, int mark)
+    {
+    
+        if(visited[x][y] || grid[x][y] == 0) return;
+        
+        visited[x][y] = true;
+        
+        grid[x][y] = mark;
+        
+        area++;
+        
+        for(int i=0; i<4; i++)
+        {
+            int nextX = x + dir[i][0];
+            int nextY = y + dir[i][1];
+            
+            if(nextX < 0 || nextX >= grid.length || nextY < 0 || nextY >= grid[0].length)
+                continue;
+            
+            dfs(grid, visited, nextX, nextY, mark);
+        }
+        
+    }
+    
+    public static void main (String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        int n = scanner.nextInt();
+        int m = scanner.nextInt();
+        
+        int[][] grid = new int[n][m];
+        
+        for(int i=0; i<n; i++)
+        {
+            for(int j=0; j<m; j++)
+            {
+                grid[i][j] = scanner.nextInt();
+            }
+        }
+        
+        boolean[][] visited = new boolean[n][m];
+        
+        
+        HashMap<Integer, Integer> IslandArea = new HashMap<>();
+        
+        HashSet<Integer> visitedIsland = new HashSet<>();
+        
+        int mark = 2;
+        
+        boolean AllGrid = true;
+        
+        for(int i=0; i<n; i++)
+        {
+            for(int j=0; j<m; j++)
+            {
+                if(grid[i][j] == 0) AllGrid = false;
+                
+                if(!visited[i][j] && grid[i][j] == 1)
+                {
+                    area = 0;
+                    dfs(grid, visited, i, j, mark);
+                    IslandArea.put(mark, area);
+                    mark++;
+                }
+            }
+        }
+        
+        result = 0;
+        // if (AllGrid) result =  m * n;
+        
+        for(int i=0; i<n; i++)
+        {
+            for(int j=0; j<m; j++)
+            {
+                
+                if(grid[i][j] == 0)
+                {
+                    area = 1;
+                    visitedIsland.clear();
+                    
+                    for(int k=0; k<4; k++)
+                    {
+                        int nextI = i + dir[k][0];
+                        int nextJ = j + dir[k][1];
+                        
+                        if(nextI < 0 || nextI >= grid.length || nextJ < 0 || nextJ >= grid[0].length)
+                            continue;
+                        
+                        int nextMark = grid[nextI][nextJ];
+                        
+                        if(visitedIsland.contains(nextMark) || !IslandArea.containsKey(nextMark))
+                            continue;
+                            
+                        area += IslandArea.get(nextMark);
+                        
+                        visitedIsland.add(nextMark);
+                    
+                    }
+                }
+                result = Math.max(result, area);
+            }           
+        }
+            System.out.println(result);   
+    }
+}
+```
+
+
+### 110. 字符串接龙
+
+```
+字典 strList 中从字符串 beginStr 和 endStr 的转换序列是一个按下述规格形成的序列：
+
+序列中第一个字符串是 beginStr。
+
+序列中最后一个字符串是 endStr。
+
+每次转换只能改变一个字符。
+
+转换过程中的中间字符串必须是字典 strList 中的字符串。
+
+给你两个字符串 beginStr 和 endStr 和一个字典 strList，找到从 beginStr 到 endStr 的最短转换序列中的字符串数目。如果不存在这样的转换序列，返回 0。
+
+输入描述
+
+第一行包含一个整数 N，表示字典 strList 中的字符串数量。 第二行包含两个字符串，用空格隔开，分别代表 beginStr 和 endStr。 后续 N 行，每行一个字符串，代表 strList 中的字符串。
+
+输出描述
+
+输出一个整数，代表从 beginStr 转换到 endStr 需要的最短转换序列中的字符串数量。如果不存在这样的转换序列，则输出 0。
+```
+
+本题使用BFS，因为只要找到目标节点，就一定是最短节点。 除了基本的queue 结构外，还需要利用 HashMap， HashSet。 前者记录每个形成Str 所需要的距离，后者记录这个Str 是否是指定的字符串集合中。 使用Hashset 是因为它作为查询容器，效率是最高的。
+
+在BFS while 循环中，队列顶部的str， 会在每一个位置上遍历，在每一个下标i 上的字母，都会用26个字母替换，所形成的字符串会与目标字符串对比。如果相等就返回 path + 1 。如果不相等，同时新字符串包含在 HashSet 以及StrPath 不包含这个字符串，就将这个字符串加入队列 queue， 也将这个新字符串加入 StrPath 中 。
+
+
+```java
+import java.util.Scanner;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Queue;
+import java.util.LinkedList;
+
+class Main{
+    public static int bfs(String beginStr, String endStr, List<String> wordList)
+    {
+        Queue<String> queue = new LinkedList<>();
+        
+        // 使用hashset 作为查询容器效率更高
+        HashSet<String> set = new HashSet<>(wordList);
+        
+        // 记录每一个string 从begin str 到当前的路径长度
+        HashMap<String, Integer> StrPath = new HashMap<>();
+        
+        queue.offer(beginStr);
+        
+        StrPath.put(beginStr, 1);
+        
+        while(!queue.isEmpty())
+        {
+            String CurStr = queue.poll();
+            int path = StrPath.get(CurStr);
+            
+            //对str 上每一个位置的字母都遍历一遍
+            for(int i=0; i<CurStr.length(); i++)
+            {
+                char[] chars = CurStr.toCharArray();
+                
+                //对位置i 上的字母用26个字母替换一次
+                for(char k='a'; k <= 'z'; k++)
+                {
+                    chars[i] = k;
+                    
+                    String newStr = new String(chars);
+                    
+                    //如果新形成的str 等于 endStr 就返回path+1
+                    if(newStr.equals(endStr))
+                    {
+                        return path+1;
+                    }
+                    
+                    // 如果新形成str 存在于hashset，同时 StrPath 没有包含这个新字符串。
+                    if(set.contains(newStr) && !StrPath.containsKey(newStr))
+                    {
+                        StrPath.put(newStr, path+1);
+                        queue.offer(newStr);
+                    }
+                }
+            }
+        }
+        return 0;
+        
+    }
+    
+    public static void main (String[] args) {
+        /* code */
+        // 接收输入
+        Scanner sc = new Scanner(System.in);
+        int N = sc.nextInt();
+        sc.nextLine();
+        String[] strs = sc.nextLine().split(" ");
+
+        
+        List<String> wordList = new ArrayList<>();
+        for (int i = 0; i < N; i++) {
+            wordList.add(sc.nextLine());
+        }
+
+                // 打印结果
+        int result = bfs(strs[0], strs[1], wordList);
+        System.out.println(result);  
+    }
+}
+```
+
+### 105.有向图的完全可达性
+
+```
+给定一个有向图，包含 N 个节点，节点编号分别为 1，2，...，N。现从 1 号节点开始，如果可以从 1 号节点的边可以到达任何节点，则输出 1，否则输出 -1。
+
+【输入描述】
+
+第一行包含两个正整数，表示节点数量 N 和边的数量 K。 后续 K 行，每行两个正整数 s 和 t，表示从 s 节点有一条边单向连接到 t 节点。
+
+【输出描述】
+
+如果可以从 1 号节点的边可以到达任何节点，则输出 1，否则输出 -1。
+```
+
+这是一个简单的图的遍历问题。 这个与之前的岛屿问题不同的是，这个题目相邻的节点只在一个一维数组里。 这个就要按照邻接矩阵的方式遍历，每一次获得这个节点相邻的节点。 而岛屿问题要遍历四个方向。 我们这个题的核心就是调用一次DFS 或者 BFS 是否所有的节点都可以访问到。 这就需要利用到一个visited 数组来记录我们所有访问过的节点。
+
+在深度搜索中， 我注意到一个有意思的现象。 如果我把终止条件设在DFS 调用前，也就是先检查是否访问过下一个节点，如果没有再调用DFS。这样就可以通过，但是将递归写在外面的方式就答案错误。
+
+
+```java
+import java.util.Scanner;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Queue;
+import java.util.LinkedList;
+
+class Main{
+    public static void dfs(List<List<Integer>> graph, boolean[] visited, int node )
+    {
+       
+        //得到与node 节点相邻的节点
+        for(int x: graph.get(node))
+        {
+            if(!visited[x])
+            {
+                visited[x] = true;
+                dfs(graph, visited, x);    
+            }
+            
+        }
+        return;
+    }
+    
+    public static void main (String[] args) {
+        /* code */
+        // 接收输入
+        Scanner sc = new Scanner(System.in);
+        
+        int n = sc.nextInt();
+        int k = sc.nextInt();
+        
+        List<List<Integer>> graph = new ArrayList<>(n+1);
+        
+        for(int i=0; i<=n; i++)
+        {
+            graph.add(new ArrayList<>());
+        }
+        
+        for(int i=0; i<k; i++)
+        {
+            int s = sc.nextInt();
+            int t = sc.nextInt();
+            
+            graph.get(s).add(t);
+        }
+        
+        boolean[] visited = new boolean[n+1];
+        
+        visited[1] = true;
+        
+        dfs(graph, visited, 1);
+        
+        for(int i=1; i<=n; i++)
+        {
+            if(!visited[i])
+            {
+                System.out.println(-1);
+                return;
+            }
+        }
+        System.out.println(1);
+    }
+}
+```
+
+### 并查集理论基础
+
+通过模板，我们可以知道，并查集主要有三个功能。
+
+1. 寻找根节点，函数：find(int u)，也就是判断这个节点的祖先节点是哪个
+2. 将两个节点接入到同一个集合，函数：join(int u, int v)，将两个节点连在同一个根节点上
+3. 判断两个节点是否在同一个集合，函数：isSame(int u, int v)，就是判断两个节点是不是同一个根节点
+
+```java
+int n = 1005;
+
+int[] father = new int[n];
+
+//并查集初始化 
+void init()
+{
+    for(int i=0; i<n; ++i)
+    {
+        father[i] = i;
+    }
+}
+
+//寻根操作
+int find(int u)
+{
+    if(u == father[u]) return u;
+
+    else return father[u] = find(father[u]);
+}
+
+//
+boolean isSame(int u, int v)
+{
+    u = find(u);
+    v= find(v);
+    return u == v;
+}
+
+void join(int u, int v)
+{
+    u = find(u);
+    v = find(v);
+
+    if(u == v) return;
+    father[v] = u;
+}
+
+```
