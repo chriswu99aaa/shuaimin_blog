@@ -10114,3 +10114,1517 @@ void join(int u, int v)
 }
 
 ```
+
+
+### 107. 寻找存在的路径
+
+
+```
+给定一个包含 n 个节点的无向图中，节点编号从 1 到 n （含 1 和 n ）。
+
+你的任务是判断是否有一条从节点 source 出发到节点 destination 的路径存在。
+
+输入描述
+
+第一行包含两个正整数 N 和 M，N 代表节点的个数，M 代表边的个数。 
+
+后续 M 行，每行两个正整数 s 和 t，代表从节点 s 与节点 t 之间有一条边。
+
+最后一行包含两个正整数，代表起始节点 source 和目标节点 destination。
+
+输出描述
+
+输出一个整数，代表是否存在从节点 source 到节点 destination 的路径。如果存在，输出 1；否则，输出 0。
+```
+
+
+判断两个节点是否存在路径，用并查集理论就是判断两个节点是否在同一个集合。 我们只需要使用并查集模版，写下find, join, isSame 三个函数。 然后在读入节点时不断调用join，最后使用isSame 函数检查最后的两个节点
+
+```java
+import java.util.*;
+
+class Disjoint{
+    
+    private int[] father;
+    
+    public Disjoint(int n)
+    {
+        father = new int[n];
+        
+        for(int i=0; i<n; ++i)
+        {
+            father[i] = i;
+        }
+    }
+    
+    public int find(int u)
+    {
+        if(u == father[u]) return u;
+        
+        //path compression
+        else return father[u] = find(father[u]);
+    }
+    
+    public void join(int u, int v)
+    {
+        u = find(u);
+        v = find(v);
+        
+        if(u == v) return;
+        
+        father[v] = u;
+    }
+    
+    public boolean isSame(int u, int v)
+    {
+        u = find(u);
+        v = find(v);
+        return u == v;
+    }
+}
+public class Main{
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        
+        int n = sc.nextInt();
+        int m = sc.nextInt();
+        
+        Disjoint disjoint = new Disjoint(n+1);
+        
+        
+        for(int i=0; i<m; i++)
+        {
+            disjoint.join(sc.nextInt(), sc.nextInt());
+        }
+        if(disjoint.isSame(sc.nextInt(), sc.nextInt()))
+        {
+            System.out.println(1);
+        }else{
+            System.out.println(0);
+        }
+    }
+ 
+}
+
+```
+
+
+### 108. 冗余连接
+
+```
+树可以看成是一个图（拥有 n 个节点和 n - 1 条边的连通无环无向图）。
+
+现给定一个拥有 n 个节点（节点编号从 1 到 n）和 n 条边的连通无向图，请找出一条可以删除的边，删除后图可以变成一棵树。
+
+输入描述
+
+第一行包含一个整数 N，表示图的节点个数和边的个数。
+
+后续 N 行，每行包含两个整数 s 和 t，表示图中 s 和 t 之间有一条边。
+
+输出描述
+
+输出一条可以删除的边。如果有多个答案，请删除标准输入中最后出现的那条边。
+
+```
+
+本题如果两个节点是不成环，就放入同一个集合，如果已经是在同一个集合里，就返回这两个节点。 因为每次不成环的边都会被加入同一集合，如果isSame 为 真，那么就代表着两个节点之前被加入过一个集合，此时树就会成环。 直接返回这两个节点。
+
+```java
+import java.util.*;
+
+class Disjoint{
+    
+    private int[] father;
+    
+    public Disjoint(int n)
+    {
+        father = new int[n];
+        
+        for(int i=0; i<n; i++)
+        {
+            father[i] = i;
+        }
+    }
+    
+    public int find(int u){
+        if(u == father[u]) 
+            return u;
+        else{
+            return father[u] = find(father[u]);
+        }
+    }
+    
+    public void join(int u, int v)
+    {
+        u = find(u);
+        v = find(v);
+        
+        if(u == v) return;
+        father[v] = u;
+    }
+    
+    public boolean isSame(int u, int v)
+    {
+        u = find(u);
+        v = find(v);
+        return u == v;
+    }
+}
+public class Main{
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+              
+        int m = sc.nextInt();
+        
+        Disjoint disjoint = new Disjoint(1001);
+        
+        for(int i=0; i<m; i++)
+        {
+            int s = sc.nextInt();
+            int t = sc.nextInt();
+            
+            if(disjoint.isSame(s,t))
+            {
+                System.out.println(s + " " + t);
+                return;
+            }
+                
+            else{
+                disjoint.join(s, t);
+            
+            }
+        }
+        }
+    
+}
+```
+
+### 109. 冗余连接II
+
+```
+有一种有向树,该树只有一个根节点，所有其他节点都是该根节点的后继。该树除了根节点之外的每一个节点都有且只有一个父节点，而根节点没有父节点。有向树拥有 n 个节点和 n - 1 条边 . 输入一个有向图，该图由一个有着 n 个节点(节点编号 从 1 到 n)，n 条边，请返回一条可以删除的边，使得删除该条边之后该有向图可以被当作一颗有向树
+
+第一行输入一个整数 N，表示有向图中节点和边的个数。 
+
+后续 N 行，每行输入两个整数 s 和 t，代表这是 s 节点连接并指向 t 节点的单向边
+
+输出一条可以删除的边，若有多条边可以删除，请输出标准输入中最后出现的一条边。
+
+```
+
+本题的解题思路是，首先把所有的边放入edges list。 并且记录每一个节点的 入度 in-degree。 接着，我们把所有的indegree 为 2 的节点全部加入vec。 因为在一个有向树中，跟节点in-degree 为 0，其他节点in-degree 为 1 。 所以如果有一个节点的in-degree 为 2，就代表有环。 一个有向图，只用删除一条边就可以成为有向树，我们需要找到那条边。 所以需要找到它。 
+
+情况一： 环内两个节点指向同一个节点，此时删除最后出现的那一对边就可以
+情况二：一个节点在环内指向in-degree 2 的节点，另一个环外节点指向in-degree 为 2 的节点。 此时要删除环内指向它的那个节点。
+情况三： 所有节点in-degree 为 1 ，也就代表环图内成有向环。 找到最后构成环的那个边，并删除。
+
+当检测到in-degree 为 2 的节点时，首先对最后发现的边进行删除确认，也就是遍历一遍图的所有边，出了删除的那一条边，如果构成一条边的两个节点在一个并查集中，就直接返回false ，也就是说，删除这条边之后图内不构成树，也就是删除了情况二中 环外的那条边。此时就删除vec 中倒数第二条边，因为每次最多两个边被发现。 如果删除之后是树，就返回这条边，这个就是答案。
+
+如果没有in-degree 为 2 的节点就代表图内形成有向环，此时直接删除最后一个边。
+
+题中 isTreeAfterRemoveEdge 是一个核心函数，模拟了删除一条边之后，图中是否是树。 检测的方式很简单就是利用并查集特点，两个节点是否在同一集合内。 如果在就不是树，因为一定在之前访问过这个边，所以直接删除
+
+
+```java
+import java.util.*;
+
+class Disjoint{
+    
+    private int[] father;
+    
+    public Disjoint(int n)
+    {
+        father = new int[n+1];
+        
+        for(int i=1; i<=n; i++)
+        {
+            father[i] = i;
+        }
+    }
+    
+    public int find(int u){
+        if(u == father[u]) 
+            return u;
+        else{
+            return father[u] = find(father[u]);
+        }
+    }
+    
+    public void join(int u, int v)
+    {
+        u = find(u);
+        v = find(v);
+        
+        if(u == v) return;
+        father[v] = u;
+    }
+    
+    public boolean isSame(int u, int v)
+    {
+        u = find(u);
+        v = find(v);
+        return u == v;
+    }
+}
+public class Main{
+    
+    public static boolean isTreeAfterRemoveEdge(Disjoint disjoint,List<int[]> edges, int deleteEdge)
+        {
+            for(int i=0; i<edges.size(); i++)
+            {
+                if(i == deleteEdge) continue;
+                
+                if(disjoint.isSame(edges.get(i)[0], edges.get(i)[1]))
+                    return false;
+                else
+                    disjoint.join(edges.get(i)[0], edges.get(i)[1]);
+            }
+            return true;
+        }
+    
+            
+    public static void getRemoveEdge(Disjoint disjoint, List<int[]> edges)
+        {
+            for(int i=0; i<edges.size(); i++)
+            {
+                if(disjoint.isSame(edges.get(i)[0], edges.get(i)[1]))
+                {
+                    // System.out.println("third");
+                    System.out.println(edges.get(i)[0] + " " + edges.get(i)[1]);
+                    return;
+                }else{
+                    disjoint.join(edges.get(i)[0], edges.get(i)[1]);
+                }
+            }
+        }
+    
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+              
+        int n = sc.nextInt();
+        
+        Disjoint disjoint = new Disjoint(n);
+
+        List<int[]> edges = new ArrayList<>(n);
+        
+        int[] inDegree = new int[n+1];
+        
+        //construct the graph and record in-degree of vertices
+        for(int i=0; i<n; i++)
+        {
+            int s = sc.nextInt();
+            
+            int t = sc.nextInt();
+            
+            edges.add(new int[] {s,t});
+            
+            inDegree[t]++;
+            
+        }
+        
+        List<Integer> vec = new ArrayList<>();
+        
+        //find vertex has in-degree 2
+        for(int i=n-1; i>=0; i--)
+        {
+            // System.out.println(edges.get(i)[1]);
+            if(inDegree[edges.get(i)[1]] == 2)
+            {
+                vec.add(i);
+            }
+        }
+        
+        if(vec.size() > 0)
+        {
+            //先删除最后一个边，如果不行就删除到数第二条边
+            if(isTreeAfterRemoveEdge(disjoint, edges, vec.get(0)))
+            {
+
+                System.out.println(edges.get(vec.get(0))[0] + " " + edges.get(vec.get(0))[1]);
+            }
+            else{
+
+                System.out.println(edges.get(vec.get(1))[0] + " " + edges.get(vec.get(1))[1]);
+            }
+            return;
+        }
+        
+        getRemoveEdge(disjoint, edges);
+        
+        }
+    
+}
+
+```
+
+### Prime 最小生成树
+
+Prime 三部曲
+
+1. 选离生成树最近的节点
+2. 最近节点加入生成树
+3. 更新非生成树节点离生成树距离（更新 MinDist 数组）
+
+
+
+```java
+import java.util.*;
+
+public class Main{
+    
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+              
+        int v = sc.nextInt();
+        int e = sc.nextInt();
+
+        int[][] grid = new int[v+1][v+1];
+
+        //需要初始化为最大值也就是10001，这个是节点最大数
+        for(int i=0; i<=v; i++)
+        {
+            Arrays.fill(grid[i], 10001);
+        }        
+
+        while(e-- > 0)
+        {
+            int s = sc.nextInt();
+            int t = sc.nextInt();
+            int w = sc.nextInt();
+
+            grid[s][t] = w;
+            grid[t][s] = w;
+
+        }
+
+        //控制生成树加入的数组
+        boolean isInTree = new boolean[v+1];
+
+        //表示非生成树节点离生成树最近距离
+        int[] MinDist = new int[v+1];
+
+        Arrays.fill(MinDist, 10001);
+
+        for(int i=1; i<v; i++)
+        {
+            //代表现在加入生成树的节点下标
+            int cur = -1;
+
+            //将最小值初始化成最大值，方便后续更新
+            int MinVal = Integer.MAX_VALUE;
+
+            //选择离生成树最近的非生成树节点
+            for(int j=1; j<=v; j++)
+            {
+                if(!isInTree[j] && MinDist[j] < MinVal)
+                {
+                    cur = j;
+                    Minval = MinDist[j];
+                }
+            }
+
+            isInTree[cur] = true;
+
+            for(int j=1; j<=v; j++)
+            {
+                if(!isInTree[j] && grid[cur][j] < MinDist[j])
+                {
+                    MinDist[j] = grid[cur][j];
+
+                }
+            }
+        }
+
+        int result = 0;
+
+        for(int i=2; i<v; i++)
+        {
+            result += MinDist[i];
+        }
+
+        System.out.println(result);
+        }
+    
+}
+
+```
+
+**拓展**
+
+如果要记录最小生成树的路径，或者要画出路径，此时就需要加入parent 数组记录每一个节点的parent。 
+
+在MinDist 数组里我们实际上是记录的是最小生成树边的权重。 所以在更新 MinDist 也可以更新parent 数组
+
+
+```
+parents[节点编号] = 节点编号
+```
+
+### Kruskal 最小生成树
+
+Kruskal 算法的核心就是针对边进行贪心算法。它首先对所有边进行排序从小到大，然后考虑将每条边加入生成树。
+
+Prim 算法 时间复杂度为 O(n^2)，其中 n 为节点数量，它的运行效率和图中边树无关，适用稠密图。
+
+Kruskal算法 时间复杂度 为 nlogn，其中n 为边的数量，适用稀疏图。
+
+
+1. 将每条边左右节点以及权重加入List 以 Edge 形式加入List 中。
+2. 将每条边使用权重排序，进行升序排序。
+3. 从小到大遍历每条边，将边加入生成树中，如果两个节点在同一个集合中就跳过，如果不再同一集合就加入生成树，并记录边的权重。 
+
+最终返回所有生成树边权重的总和。
+
+第三部判断两个节点是否在同一集合，我们使用并查集来判断。如果两个节点在同一集合就跳过，如果不在同一集合就合并加入生成树。
+
+
+```java
+import java.util.*;
+
+class Edge{
+    int l;
+    int r;
+    int val;
+    
+    public Edge(int l, int r, int val)
+    {
+        this.l = l;
+        this.r = r;
+        this.val = val;
+    }
+}
+
+public class Main{
+    
+    private static int n = 10001;
+    private static int[] father = new int[n];
+    
+    public static void init()
+    {
+        for(int i=0; i<n; i++)
+        {
+            father[i] = i;
+        }
+    }
+    
+    public static int find(int u)
+    {
+        if(u == father[u]) return u;
+        else return father[u] = find(father[u]);
+    }
+    
+    public static void join(int u, int v)
+    {
+        u = find(u);
+        v = find(v);
+        
+        if(u == v) return;
+        
+        father[v] = u;
+    }
+    
+    public static boolean isSame(int u, int v)
+    {
+        u = find(u);
+        v = find(v);
+        return v==u;
+    }
+    
+    
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+              
+        int v = sc.nextInt();
+        int e = sc.nextInt();
+        
+        //sotre the total distance for the minimum spanning tree
+        int result = 0;
+
+        List<Edge> edges = new ArrayList<>();
+        
+        for(int i=0; i<e; i++)
+        {
+            int s = sc.nextInt();
+            int t = sc.nextInt();
+            int w = sc.nextInt();
+            
+            edges.add(new Edge(s,t,w));
+        }
+        
+        
+        //将所有边权重从小到大排列
+        
+        edges.sort(Comparator.comparingInt(edge -> edge.val));
+        
+        
+        //并查集初始化
+        init();
+        
+        
+        for(Edge edge : edges)
+        {
+            int x = find(edge.l);
+            int y = find(edge.r);
+            int w = edge.val;
+            
+            if(x != y)
+            {
+                result += w;
+                join(x, y);
+            }
+        }
+
+        System.out.println(result);
+        sc.close();
+
+
+        }
+
+}
+
+
+```
+
+
+Prime 是在每一次都选择权重最小的边， Kruskal 先对边进行排序，然后从小到大考虑每一条边。 
+
+
+### 拓扑排序精讲
+
+
+拓扑排序解决的是文件或事物之间有依赖性的情况下，如何对事物进行排序。
+
+通俗来说，给定一个有向图，将这个图转换为现性的排序就是，拓扑排序。
+
+拓扑排序的一个核心就是记录节点的入度，把入度为0的节点左右开始节点加入队列中，不断的弹出队列元素。 因为队列内元素都是入度0，所以把所有该节点指向的节点入度减一。 如果此时指向的节点入度也变为0，就将它加入队列中
+
+```java
+import java.util.*;
+ 
+class Main{
+        
+    public static void main (String[] args) {
+        Scanner sc = new Scanner(System.in);
+         
+        int n = sc.nextInt();
+        int m = sc.nextInt();
+         
+        int[] inDegrees = new int[n+1];
+         
+        Queue<Integer> queue = new LinkedList<>();
+         
+        List<Integer> result = new ArrayList<>();
+         
+        List<List<Integer>> graph = new ArrayList<>();
+         
+        for(int i=0; i<n; i++)
+        {
+            graph.add(new ArrayList<>());
+        }
+         
+         
+        for(int i=0; i<m; i++)
+        {
+            int s = sc.nextInt();
+            int t = sc.nextInt();
+             
+            graph.get(s).add(t);
+             
+            inDegrees[t]++;
+        }
+         
+        for(int i=0; i<n; i++)
+        {
+            if(inDegrees[i] == 0)
+                queue.add(i);
+        }
+         
+        while(!queue.isEmpty())
+        {
+            int cur = queue.poll();
+             
+            result.add(cur);
+             
+            for(int file : graph.get(cur))
+            {
+                inDegrees[file]--;
+                if(inDegrees[file] == 0)
+                {
+                    queue.add(file);
+                }
+            }
+             
+        }
+         
+        if(result.size() == n)
+        {
+            for(int i=0; i<result.size()-1; i++)
+            {
+                System.out.print(result.get(i) + " ");
+            }
+            System.out.println(result.get(result.size()-1));
+        }else{
+            System.out.println(-1);    
+        }
+         
+    }
+}
+
+```
+
+### dijkstra（朴素版）精讲
+
+```
+题目描述】
+
+小明是一位科学家，他需要参加一场重要的国际科学大会，以展示自己的最新研究成果。
+
+小明的起点是第一个车站，终点是最后一个车站。然而，途中的各个车站之间的道路状况、交通拥堵程度以及可能的自然因素（如天气变化）等不同，这些因素都会影响每条路径的通行时间。
+
+小明希望能选择一条花费时间最少的路线，以确保他能够尽快到达目的地。
+
+【输入描述】
+
+第一行包含两个正整数，第一个正整数 N 表示一共有 N 个公共汽车站，第二个正整数 M 表示有 M 条公路。
+
+接下来为 M 行，每行包括三个整数，S、E 和 V，代表了从 S 车站可以单向直达 E 车站，并且需要花费 V 单位的时间。
+
+【输出描述】
+
+输出一个整数，代表小明从起点到终点所花费的最小时间。
+```
+
+Dijkstra 算法求的是有向图中，寻找从源节点到目标节点的最短路径。 算法完成就可以记录所有节点的最短路径。 Dijkstra 的代码核心逻辑与 Prim 算法一直。 二者拥有相同的逻辑，也就是在每一次遍历中加入离当前主体最近的节点。 使用BFS 搜索逻辑遍历整张图。
+
+Dijkstra 与 Prim 的区别在于 前者记录的是每一个节点离源节点最近距离。
+
+在最开始我们需要将grpah 数组初始化为int 最大值， cur 指针为1，而不是在prim 中的-1 。  此时不要忽略MinDist 数组初始化也是最大值。 
+
+Dijkstra 三部曲
+1. 选择距离源节点最近的节点
+2. 将最近节点加入集合中
+3. 基于该节点更新minDist 数组
+
+在第三部，我们有三个判断条件
+1. 节点是否放访问过
+2. graph[cur][j] 不是最大值，如果是最大值就代表在这之前没有有效的路径更新过这个节点。 有可能这个节点没有与任何边相连。
+3. graph[cur][j] + minDist[cur] < minDist[j]： 当前节点的最短距离加上图中cur 到 j 的距离小于以知minDsit[j] 的距离
+
+```java
+import java.util.*;
+
+class Main{
+    
+    public static void main (String[] args) {
+        Scanner sc = new Scanner(System.in);
+        
+        int n = sc.nextInt();
+        int m = sc.nextInt();
+        
+        int[][] graph = new int[n+1][n+1];
+        
+        for(int i=0; i<=n; i++)
+        {
+            Arrays.fill(graph[i], Integer.MAX_VALUE);
+        }
+        
+        for(int i=0; i<m; i++)
+        {
+            int s = sc.nextInt();
+            int t = sc.nextInt();
+            int val = sc.nextInt();
+            
+            graph[s][t] = val;
+        }
+        
+        //记录访问过的节点，确保不重复访问节点而陷入死循环
+        boolean[] visited = new boolean[n+1];
+        
+        //记录节点到源节点的距离
+        int[] minDist = new int[n+1];
+        
+        Arrays.fill(minDist, Integer.MAX_VALUE);
+        
+        int start = 1;
+        int end = n;
+        
+        visited[start] = true;
+        minDist[start] = 0;
+        
+        for(int i=1; i<=n; i++)
+        {
+            int cur = 1; 
+            int minVal = Integer.MAX_VALUE;
+            
+            for(int j=1; j<=n; j++)
+            {
+                if(!visited[j] && minDist[j] < minVal)
+                {
+                    cur = j;
+                    minVal = minDist[j];
+                }
+            }
+            
+            visited[cur] = true;
+            
+            
+            for(int j=1; j<=n; j++)
+            {
+                if(!visited[j] && graph[cur][j] != Integer.MAX_VALUE &&graph[cur][j] + minDist[cur] < minDist[j])
+                {
+                    minDist[j] = graph[cur][j] + minDist[cur];
+                    
+
+                }
+            }
+        }
+        
+        if(minDist[end] == Integer.MAX_VALUE)
+            System.out.println(-1);
+        else
+            System.out.println(minDist[end]);
+            
+        sc.close();
+    }
+}
+```
+
+如果要记录最短路径
+
+```java
+import java.util.*;
+
+class Main{
+    
+    public static void main (String[] args) {
+        Scanner sc = new Scanner(System.in);
+        
+        int n = sc.nextInt();
+        int m = sc.nextInt();
+        
+        int[][] graph = new int[n+1][n+1];
+        
+        for(int i=0; i<=n; i++)
+        {
+            Arrays.fill(graph[i], Integer.MAX_VALUE);
+        }
+        
+        for(int i=0; i<m; i++)
+        {
+            int s = sc.nextInt();
+            int t = sc.nextInt();
+            int val = sc.nextInt();
+            
+            graph[s][t] = val;
+        }
+        
+        //记录访问过的节点，确保不重复访问节点而陷入死循环
+        boolean[] visited = new boolean[n+1];
+        
+        //如果要求最短路径就要加上这段
+        int[] parents = new int[n+1];
+        
+        Arrays.fill(parents, -1);
+        
+        //记录节点到源节点的距离
+        int[] minDist = new int[n+1];
+        
+        Arrays.fill(minDist, Integer.MAX_VALUE);
+        
+        int start = 1;
+        int end = n;
+        
+        visited[start] = true;
+        minDist[start] = 0;
+        
+        for(int i=1; i<=n; i++)
+        {
+            int cur = 1; 
+            int minVal = Integer.MAX_VALUE;
+            
+            for(int j=1; j<=n; j++)
+            {
+                if(!visited[j] && minDist[j] < minVal)
+                {
+                    cur = j;
+                    minVal = minDist[j];
+                }
+            }
+            
+            visited[cur] = true;
+            
+            
+            for(int j=1; j<=n; j++)
+            {
+                if(!visited[j] && graph[cur][j] != Integer.MAX_VALUE &&graph[cur][j] + minDist[cur] < minDist[j])
+                {
+                    minDist[j] = graph[cur][j] + minDist[cur];
+                    
+                    //记录父节点，从而输出路径
+                    parents[j] = cur;
+                }
+            }
+        }
+        
+        // 输出最短情况
+        for (int i = 1; i <= n; i++) {
+            System.out.println(parents[i] + " -> " + i);
+    }
+            
+        sc.close();
+    }
+}
+```
+
+### Dijkstra 堆优化版
+
+使用小顶堆优化Dijkstra 是如果遇到稀疏图，我们可以用邻接表的形式表示图。 此时就可以利用小顶堆 PriorityQueue， 每一次弹出的都是最小的边。 在这一题中，我实践comparator 这个类的继承与调用，改写自己的compare 函数。 这个对后续很有启发。 
+
+```java
+import java.util.*;
+
+class Edge{
+    int to;
+    int val;
+
+    public Edge(int to, int val)
+    {
+        this.to = to;;
+        this.val = val;
+    }
+}
+
+class Pair<U, V>{
+    private final U vertex;
+    private final V edgeVal;
+
+    public Pair(U vertex, V edgeVal)
+    {
+        this.vertex = vertex;
+        this.edgeVal = edgeVal;
+    }
+}
+
+class MyComparison implements Comparator<Pair<Integer, Integer>>{
+    @override
+    public int compare(int first, int second)
+    {
+        return Integer.compare(first, second);
+    }
+}
+
+class Main{
+    
+    public static void main (String[] args) {
+        Scanner sc = new Scanner(System.in);
+        
+        int n = sc.nextInt();
+        int m = sc.nextInt();
+        
+        //使用邻接表的方式存储图
+        List<LinkedList<Edge>> graph = new ArrayList<>(n+1);
+        
+        for(int i=0; i<n; i++)
+        {
+            graph.add(new LinkedList<>());
+        }
+
+        for(int i=0; i<m; i++)
+        {
+            int s = sc.nextInt();
+            int t = sc.nextInt();
+            int val = sc.nextInt();
+            
+            graph.get(s).add(new Edge(t, val));
+        }
+
+        int[] minVal = new int[n+1];
+
+        boolean[] visited = new boolean[n+1];
+
+        minVal[1] = 0;
+
+        visited[1] = true;
+
+        PriorityQueue<Pair<Integer, Integer>> pq = new PriorityQueue<Pair<>>();
+
+        pq.add(1);
+
+        while(!pq.isEmpty())
+        {
+            Pair<Integer, Integer> cur = pq.poll();
+
+            if(visited[cur.vertex]) continue;
+
+            visited[cur.vertex] = true;
+
+            for(Edge edge : graph.get(cur.vertex))
+            {
+                if(!visited[edge.to] && edge.val + minDist[cur.vertex] < minDist[edge.to])
+                {
+                    minDist[edge.to] = edge.val + minDist[cur.vertex];
+                    pq.add(edge.to);
+                }
+            }
+        }    
+        
+        if(minDist[end] == Integer.MAX_VALUE)
+            System.out.println(-1);
+        else
+            System.out.println(minDist[end]);
+            
+        sc.close();
+    }
+}
+```
+
+### Bellman_ford 算法精讲
+
+
+```
+某国为促进城市间经济交流，决定对货物运输提供补贴。共有 n 个编号为 1 到 n 的城市，通过道路网络连接，网络中的道路仅允许从某个城市单向通行到另一个城市，不能反向通行。
+
+网络中的道路都有各自的运输成本和政府补贴，道路的权值计算方式为：运输成本 - 政府补贴。
+
+权值为正表示扣除了政府补贴后运输货物仍需支付的费用；权值为负则表示政府的补贴超过了支出的运输成本，实际表现为运输过程中还能赚取一定的收益。
+
+请找出从城市 1 到城市 n 的所有可能路径中，综合政府补贴后的最低运输成本。
+
+如果最低运输成本是一个负数，它表示在遵循最优路径的情况下，运输过程中反而能够实现盈利。
+
+输入描述
+
+第一行包含两个正整数，第一个正整数 n 表示该国一共有 n 个城市，第二个整数 m 表示这些城市中共有 m 条道路。
+
+接下来为 m 行，每行包括三个整数，s、t 和 v，表示 s 号城市运输货物到达 t 号城市，道路权值为 v（单向图）。
+
+输出描述
+
+如果能够从城市 1 到连通到城市 n， 请输出一个整数，表示运输成本。如果该整数是负数，则表示实现了盈利。如果从城市 1 没有路径可达城市 n，请输出 "unconnected"。
+
+```
+
+Bellman-Ford 算法的一个核心就是松弛操作，也就是渐进式的靠近起点至每一个节点的最短距离。 这个算法对每一条边进行 V-1 次松弛操作。 一次操作会寻找到离起点一条边的节点的最短距离。 两次松弛操作就会寻找到离起点两条边的节点最短距离。
+
+每次主体是边时都需要生成 Edge 类 来储存数据。 
+
+时间复杂度: O(V*E)
+空间复杂度: O(N)
+
+
+```java
+import java.util.*;
+
+class Edge{
+    
+    int from;
+    int to;
+    int val;
+    
+    public Edge(int from, int to, int val)
+    {
+        this.from = from;
+        this.to = to;
+        this.val = val;
+    }
+}
+class Main{
+    public static void main (String[] args) {
+        Scanner sc = new Scanner(System.in);
+        
+        int n = sc.nextInt();
+        int m = sc.nextInt();
+        
+        List<Edge> grid = new ArrayList<>(n);
+        
+        for(int i=0; i<m; i++)
+        {
+            int s = sc.nextInt();
+            int t = sc.nextInt();
+            int val = sc.nextInt();
+            
+            grid.add(new Edge(s,t,val));
+        }
+        
+        int[] minDist = new int[n+1];
+        Arrays.fill(minDist, Integer.MAX_VALUE);
+        
+        minDist[1] = 0;
+        
+        //对n-1条边进心松弛操作
+        
+        for(int i=1; i<n; i++)
+        {
+            for(Edge edge : grid)
+            {
+                if(minDist[edge.from] != Integer.MAX_VALUE  && minDist[edge.to] > minDist[edge.from] + edge.val)
+                    minDist[edge.to] = minDist[edge.from] + edge.val;
+                
+            }
+        }
+        
+        if(minDist[n] == Integer.MAX_VALUE)
+        {
+            System.out.println("unconnected");
+        }else{
+            System.out.println(minDist[n]);
+        }
+        
+    }
+    
+}
+```
+
+### Bellman_ford 队列优化算法（又名SPFA）
+
+```
+某国为促进城市间经济交流，决定对货物运输提供补贴。共有 n 个编号为 1 到 n 的城市，通过道路网络连接，网络中的道路仅允许从某个城市单向通行到另一个城市，不能反向通行。
+
+网络中的道路都有各自的运输成本和政府补贴，道路的权值计算方式为：运输成本 - 政府补贴。
+
+权值为正表示扣除了政府补贴后运输货物仍需支付的费用；权值为负则表示政府的补贴超过了支出的运输成本，实际表现为运输过程中还能赚取一定的收益。
+
+请找出从城市 1 到城市 n 的所有可能路径中，综合政府补贴后的最低运输成本。
+
+如果最低运输成本是一个负数，它表示在遵循最优路径的情况下，运输过程中反而能够实现盈利。
+
+输入描述
+
+第一行包含两个正整数，第一个正整数 n 表示该国一共有 n 个城市，第二个整数 m 表示这些城市中共有 m 条道路。
+
+接下来为 m 行，每行包括三个整数，s、t 和 v，表示 s 号城市运输货物到达 t 号城市，道路权值为 v（单向图）。
+
+输出描述
+
+如果能够从城市 1 到连通到城市 n， 请输出一个整数，表示运输成本。如果该整数是负数，则表示实现了盈利。如果从城市 1 没有路径可达城市 n，请输出 "unconnected"。
+
+```
+
+本题我们使用了队列优化算法。 在稀疏图中这个的效果更好，如果在稠密图中，这个算法的性能与普通版Bellman ford 差不多
+
+O(V*E)
+
+```java
+import java.util.*;
+
+class Edge{
+    
+    int from;
+    int to;
+    int val;
+    
+    public Edge(int from, int to, int val)
+    {
+        this.from = from;
+        this.to = to;
+        this.val = val;
+    }
+}
+class Main{
+    public static void main (String[] args) {
+        Scanner sc = new Scanner(System.in);
+        
+        int n = sc.nextInt();
+        int m = sc.nextInt();
+        
+        List<List<Edge>> graph = new ArrayList<>();
+        
+        for(int i=0 ; i<=n; i++)
+        {
+            graph.add(new ArrayList<>());
+        }
+        
+        for(int i=0; i<m; i++)
+        {
+            int from = sc.nextInt();
+            int to = sc.nextInt();
+            int val = sc.nextInt();
+            
+            graph.get(from).add(new Edge(from, to, val));
+        }
+        
+        int[] minDist = new int[n+1];
+        Arrays.fill(minDist, Integer.MAX_VALUE);
+        
+        minDist[1] = 0;
+        
+        Queue<Integer> queue = new LinkedList<>();
+        
+        
+        boolean[] inQueue = new boolean[n+1];
+        
+        //加入第一个元素，也就是起点
+        queue.add(1);
+        
+        //对n-1条边进心松弛操作
+        
+        while(!queue.isEmpty())
+        {
+            int cur = queue.poll();
+            
+            inQueue[cur] = false;
+            
+            for(Edge edge : graph.get(cur))
+            {
+                //不再需要判读啊 minDist[edge.from] 是否为Integer.MAX_VALUE，因为
+                //都是从访问过的节点进行探索。 
+                if(minDist[edge.to] > minDist[edge.from] + edge.val)
+                {
+                    minDist[edge.to] = minDist[edge.from] + edge.val;
+                    
+                    if(!inQueue[edge.to])
+                    {
+                        queue.add(edge.to);
+                        inQueue[edge.to] = true;
+                    }
+                }
+                
+            }
+            
+        }
+        
+        if(minDist[n] == Integer.MAX_VALUE)
+        {
+            System.out.println("unconnected");
+        }else{
+            System.out.println(minDist[n]);
+        }
+        
+    }
+    
+}
+```
+
+
+
+### bellman_ford之判断负权回路
+
+```
+某国为促进城市间经济交流，决定对货物运输提供补贴。共有 n 个编号为 1 到 n 的城市，通过道路网络连接，网络中的道路仅允许从某个城市单向通行到另一个城市，不能反向通行。
+
+网络中的道路都有各自的运输成本和政府补贴，道路的权值计算方式为：运输成本 - 政府补贴。权值为正表示扣除了政府补贴后运输货物仍需支付的费用；
+
+权值为负则表示政府的补贴超过了支出的运输成本，实际表现为运输过程中还能赚取一定的收益。
+
+然而，在评估从城市 1 到城市 n 的所有可能路径中综合政府补贴后的最低运输成本时，存在一种情况：图中可能出现负权回路。
+
+负权回路是指一系列道路的总权值为负，这样的回路使得通过反复经过回路中的道路，理论上可以无限地减少总成本或无限地增加总收益。
+
+为了避免货物运输商采用负权回路这种情况无限的赚取政府补贴，算法还需检测这种特殊情况。
+
+请找出从城市 1 到城市 n 的所有可能路径中，综合政府补贴后的最低运输成本。同时能够检测并适当处理负权回路的存在。
+
+城市 1 到城市 n 之间可能会出现没有路径的情况
+
+【输入描述】
+
+第一行包含两个正整数，第一个正整数 n 表示该国一共有 n 个城市，第二个整数 m 表示这些城市中共有 m 条道路。
+
+接下来为 m 行，每行包括三个整数，s、t 和 v，表示 s 号城市运输货物到达 t 号城市，道路权值为 v。
+
+【输出描述】
+
+如果没有发现负权回路，则输出一个整数，表示从城市 1 到城市 n 的最低运输成本（包括政府补贴）。
+
+如果该整数是负数，则表示实现了盈利。如果发现了负权回路的存在，则输出 "circle"。如果从城市 1 无法到达城市 n，则输出 "unconnected"。
+```
+
+负权回路的检测基于一个性质： 对每一个边进行V-1 次松弛操作就会找到所有节点到七点的的最短距离。 所以我们就运行V 次松弛操作，如果此时minDist 数组依然可以更新，就代表图中有负权回路。因为如果图中有负权回路，minDist 数组就可以一直更新，导致我们无法找到最优解。 
+
+
+```java
+import java.util.*;
+
+class Edge{
+    
+    int from;
+    int to;
+    int val;
+    
+    public Edge(int from, int to, int val)
+    {
+        this.from = from;
+        this.to = to;
+        this.val = val;
+    }
+}
+
+class Main{
+    
+    public static void main (String[] args) {
+        Scanner sc = new Scanner(System.in);
+        
+        int n = sc.nextInt();
+        int m = sc.nextInt();
+        
+        List<Edge> graph = new ArrayList<>();
+        
+        
+        for(int i=0; i<m; i++)
+        {
+            int s = sc.nextInt();
+            int t = sc.nextInt();
+            int val = sc.nextInt();
+            
+            graph.add(new Edge(s,t,val));
+        }
+        
+        int[] minDist = new int[n+1];
+        
+        Arrays.fill(minDist, Integer.MAX_VALUE);
+        
+        minDist[1] = 0;
+        
+        boolean flag = false;
+        
+        for(int i=1; i<=n; i++)
+        {
+            for(Edge edge : graph)
+            {
+                if(i < n)
+                {
+                    if(minDist[edge.from] != Integer.MAX_VALUE && minDist[edge.to] > minDist[edge.from] + edge.val)
+                    {
+                        minDist[edge.to] = minDist[edge.from] + edge.val;
+                    }    
+                }else{
+                    if(minDist[edge.from] != Integer.MAX_VALUE && minDist[edge.to] > minDist[edge.from] + edge.val)
+                        {
+                            flag = true;
+                        } 
+                }        
+            }
+        }
+          
+        if(flag == true)
+        {
+            System.out.println("circle");
+        }
+        else if(minDist[n] == Integer.MAX_VALUE)
+            System.out.println("unconnected");
+        else
+        {
+            System.out.println(minDist[n]);
+            // System.out.println("else branch");
+        }
+
+        
+        
+        
+    }
+}
+```
+
+负权回路也可以用 SPFA 算法实现。 其核心也是计算每个节点只能加入队列V-1 次，如果一个节点接入队列V 次就代表图中有负权路。
+
+```java
+import java.util.*;
+
+class Edge{
+    
+    int from;
+    int to;
+    int val;
+    
+    public Edge(int from, int to, int val)
+    {
+        this.from = from;
+        this.to = to;
+        this.val = val;
+    }
+}
+
+class Main{
+    
+    public static void main (String[] args) {
+        Scanner sc = new Scanner(System.in);
+        
+        int n = sc.nextInt();
+        int m = sc.nextInt();
+        
+        List<LinkedList<Edge>> graph = new ArrayList<>();
+        
+        for(int i=0; i<=n ; i++)
+            graph.add(new LinkedList<>());
+        
+        for(int i=0; i<m; i++)
+        {
+            int s = sc.nextInt();
+            int t = sc.nextInt();
+            int val = sc.nextInt();
+            
+            graph.get(s).add(new Edge(s,t,val));
+        }
+        
+        int[] minDist = new int[n+1];
+        
+        Arrays.fill(minDist, Integer.MAX_VALUE);
+        
+        minDist[1] = 0;
+        
+        boolean flag = false;
+        
+        //记录每个节点访问次数
+        int[] count = new int[n+1];
+        
+        Queue<Integer> queue = new LinkedList<>();
+        
+        queue.add(1);
+        
+        while(!queue.isEmpty())
+        {
+            int cur = queue.poll();
+            
+                for(Edge edge : graph.get(cur))
+                {
+                    if(minDist[edge.to] > minDist[edge.from] + edge.val)
+                    {
+                        minDist[edge.to] = minDist[edge.from] + edge.val;
+                        queue.add(edge.to);
+                        count[cur]++;
+                        
+                        if(count[edge.to] == n)
+                        {
+                            flag = true;
+                            while(!queue.isEmpty()) queue.poll();
+                            
+                            break;
+                        }
+                    }
+     
+                }
+            
+        }
+        
+              
+        if(flag == true)
+        {
+            System.out.println("circle");
+        }
+        else if(minDist[n] == Integer.MAX_VALUE)
+            System.out.println("unconnected");
+        else
+        {
+            System.out.println(minDist[n]);
+            // System.out.println("else branch");
+        }
+
+    }
+}
+```
+
+
+### Floyd 算法精讲
+
+```
+小明喜欢去公园散步，公园内布置了许多的景点，相互之间通过小路连接，小明希望在观看景点的同时，能够节省体力，走最短的路径。
+
+给定一个公园景点图，图中有 N 个景点（编号为 1 到 N），以及 M 条双向道路连接着这些景点。每条道路上行走的距离都是已知的。
+
+小明有 Q 个观景计划，每个计划都有一个起点 start 和一个终点 end，表示他想从景点 start 前往景点 end。由于小明希望节省体力，他想知道每个观景计划中从起点到终点的最短路径长度。 请你帮助小明计算出每个观景计划的最短路径长度。
+
+【输入描述】
+
+第一行包含两个整数 N, M, 分别表示景点的数量和道路的数量。
+
+接下来的 M 行，每行包含三个整数 u, v, w，表示景点 u 和景点 v 之间有一条长度为 w 的双向道路。
+
+接下里的一行包含一个整数 Q，表示观景计划的数量。
+
+接下来的 Q 行，每行包含两个整数 start, end，表示一个观景计划的起点和终点。
+
+【输出描述】
+
+对于每个观景计划，输出一行表示从起点到终点的最短路径长度。如果两个景点之间不存在路径，则输出 -1。
+```
+
+
+本题是经典多源多点最短距离题目。 我们需要找到每个节点对之间的最短距离。 Floyd 算法的本质就是动态规划，它基于这样一个事实。 i 到 j 的最短路径， 一定是基于 i 到 k 的最短路径，和 k 到 j 的最短路径。 递推公式使用了一个 [1,,,k-1] 的集合， 它代表从i 到 k 会经历的节点的集合。 因为要达到k ，所以集合中不包含k。
+
+在递推公式中包含两种情况，
+1. 节点
+
+```java
+import java.util.*;
+
+class Edge{
+    int from;
+    int to;
+    int val;
+    
+    public Edge(int from, int to, int val)
+    {
+        this.from = from;
+        this.to = to;
+        this.val = val;
+    }
+}
+
+class Main{
+    
+    public static void main (String[] args) {
+        Scanner sc = new Scanner(System.in);
+        
+        int n = sc.nextInt();
+        int m = sc.nextInt();
+        
+        
+        int[][][] grid = new int[n+1][n+1][n+1];
+        
+        for(int k=0; k<=n; k++)
+        {
+           for(int i=0; i<=n; i++)
+            {
+                for(int j=0; j<=n; j++)
+                {
+                    grid[i][j][k] = 10005;
+                
+                }
+            }            
+        }
+
+        
+        for(int i=0; i<m; i++)
+        {
+            int s = sc.nextInt();
+            int t = sc.nextInt();
+            int val = sc.nextInt();
+            
+            grid[s][t][0] = val;
+            grid[t][s][0] = val;
+        }
+        
+        
+        
+        for(int k=1; k<=n; k++)
+        {
+            for(int i=1; i<=n; i++)
+            {
+                for(int j=1; j<=n; j++)
+                {
+                    grid[i][j][k] = Math.min(grid[i][j][k-1], grid[i][k][k-1] + grid[k][j][k-1]);
+                
+                    // System.out.println("i " + i + " j " + j + " k " + k + " -> " + grid[i][j][k]);
+                }
+            }
+        }
+        
+        int q = sc.nextInt();
+        
+        while(q > 0)
+        {
+            q--;
+            int src = sc.nextInt();
+            int dst = sc.nextInt();
+            
+            if(grid[src][dst][n] != 10005)
+                System.out.println(grid[src][dst][n]);
+            else
+                System.out.println(-1);
+        }
+        
+        
+    }
+}
+```
